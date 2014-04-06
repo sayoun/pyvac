@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block navbar %}
+{% endblock %}
+
+    {% block body %}
+          <form class="form-signin" action="" method="post" id="login_form">
+            <h2 class="form-signin-heading">Please sign in</h2>
+            <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+            <input name="login" type="text" class="input-block-level" placeholder="Email address" value="{{ login }}">
+            <input name="password" type="password" class="input-block-level" placeholder="Password">
+            <button name="submit" class="btn btn-large btn-primary" type="submit">Sign in</button>
+          </form>
+    {% endblock %}

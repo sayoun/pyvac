@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<form action="" method="post" id="createUserForm" class="form-horizontal">
+
+    <fieldset>
+        <legend>User</legend>
+        <input type="hidden" name="user_id" value="{{user.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+            <label class="control-label" for="inputLogin">{% trans %}Login:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.login" id="inputLogin" value="{{user.login|default('', true)}}"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputFirstname">{% trans %}Firstname:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.firstname" id="inputFirstname" value="{{user.firstname|default('', true)}}"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputLastname">{% trans %}Lastname:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.lastname" id="inputLastname" value="{{user.lastname|default('', true)}}"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">{% trans %}Email:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.email" id="inputEmail" value="{{user.email|default('', true)}}"/>
+            </div>
+        </div>
+
+        {% block password %}
+        <div class="control-group">
+            <label class="control-label" for="inputCurrentPassword">{% trans %}current password:{% endtrans %}</label>
+            <div class="controls">
+                <input type="password" name="current_password" id="inputCurrentPassword" value=""/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">{% trans %}password:{% endtrans %}</label>
+            <div class="controls">
+                <input type="password" name="user.password" id="inputPassword" value=""/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputConfirmPassword">{% trans %}confirm password:{% endtrans %}</label>
+            <div class="controls">
+                <input type="password" name="confirm_password" id="inputConfirmPassword" value=""/>
+            </div>
+        </div>
+        {% endblock %}
+
+        {% block groups %}
+        {% if has_permission('admin_view') %}
+        <div class="control-group">
+            <span class="control-label">{% trans %}groups:{% endtrans %}</span>
+            <div class="controls">
+            {% for g in groups %}
+                <label for="group_{{g.id}}" class="checkbox inline">
+                    <input type="checkbox" name="groups" value="{{g.id}}" id="group_{{g.id}}"  class="input-small"
+                    {% if g in user.groups %}checked="checked"{% endif %}/>{{g.name}}
+                </label>
+            {% endfor %}
+            </div>
+        </div>
+
+        {% if user.role != 'admin' %}
+        <div class="control-group">
+            <label class="control-label">{% trans %}manager:{% endtrans %}</label>
+            <div class="controls">
+            <select name="user.manager_id">
+            {% for m in managers %}
+                {% if m.id != user.id%}
+                <option  value="{{ m.id }}" {% if m.id == user.manager_id %}selected="selected"{% endif %}>{{ m.name }}</option>
+                {% endif %}
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endif %}
+        {% endblock %}
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" class="btn">Valider</button>
+            </div>
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}

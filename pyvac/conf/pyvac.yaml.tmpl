@@ -1,0 +1,67 @@
+celeryconfig:
+    CELERY_ENABLE_UTC: True
+    CELERY_TIMEZONE: 'Europe/Paris'
+    CELERYD_MAX_TASKS_PER_CHILD: 1000
+    CELERY_IMPORTS:
+        - 'pyvac.task.poller'
+        - 'pyvac.task.worker'
+    # using rabbitmq amqp broker
+    BROKER_URL: '{{celery.amqp.broker_url}}'
+    BROKER_CONNECTION_MAX_RETRIES: 0
+    BROKER_CONNECTION_RETRY: 'on'
+    CELERY_RESULT_BACKEND: 'amqp'
+    CELERY_TASK_RESULT_EXPIRES: 60
+    CELERY_DISABLE_RATE_LIMITS: True
+    CELERYBEAT_SCHEDULE:
+        'pyvac-poller':
+            task: 'poller'
+            schedule: 60
+    CELERY_QUEUES:
+        pyvac_work:
+            exchange: 'pyvac_work'
+            exchange_type: 'direct'
+            binding_key: 'pyvac_work'
+            routing_key: 'pyvac_work'
+            queue_arguments:
+                x-ha-policy: 'all'
+        pyvac_poll:
+            exchange: 'pyvac_poll'
+            exchange_type: 'direct'
+            binding_key: 'pyvac_poll'
+            routing_key: 'pyvac_poll'
+            queue_arguments:
+                x-ha-policy: 'all'
+    CELERY_CREATE_MISSING_QUEUES: True
+    CELERY_DEFAULT_QUEUE: 'pyvac_work'
+    CELERY_DEFAULT_EXCHANGE_TYPE: 'direct'
+    CELERY_DEFAULT_ROUTING_KEY: 'pyvac_work'
+    CELERY_ROUTES:
+        - 'worker_pending':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
+        - 'worker_accepted':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
+        - 'worker_approved':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
+        - 'worker_denied':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
+        - 'worker_accepted_notified':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
+        - 'poller':
+            queue: 'pyvac_poll'
+            routing_key: 'pyvac_poll'
+
+databases:
+    pyvac:
+        # Database engine configuration
+        sqlalchemy.url: '{sql.driver}://{sql.user}:{sql.password}@{sql.host}:{sql.port}/{sql.database}'
+        # Log sql request to logging
+        sqlalchemy.echo: 0
+
+caldav:
+    # http url including credentials to calendar were to write request entries after admin validation
+    url: '{{caldav.url}}'

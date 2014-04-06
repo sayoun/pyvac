@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="users-contain">
+  <legend>Requests</legend>
+</div>
+
+  <table id="requests" class="table table-bordered table-condensed table-striped table-hover">
+    <thead>
+      <tr>
+        <th>{% trans %}User{% endtrans %}</th>
+        {% if pyvac.user.is_super %}
+        <th>{% trans %}Manager{% endtrans %}</th>
+        {% endif %}
+        <th>{% trans %}Period{% endtrans %}</th>
+        {% if pyvac.user.is_super %}
+        <th>{% trans %}Conflict{% endtrans %}</th>
+        {% endif %}
+        <th>{% trans %}Number{% endtrans %}</th>
+        <th>{% trans %}Type{% endtrans %}</th>
+        <th>{% trans %}Status{% endtrans %}</th>
+        <th>{% trans %}Action{% endtrans %}</th>
+        <th>{% trans %}Notified{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr id="tr_req_{{ req.id }}">
+            <td>{{ req.user.name }}</td>
+            {% if pyvac.user.is_super %}
+            <td>{{ req.user.manager.name }}</td>
+            {% endif %}
+            <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
+            {% if pyvac.user.is_super %}
+            <td>{% if req.conflict%}
+            <a id="td_conflict_req_{{ req.id }}" href="#" data-toggle="tooltip" title="" data-original-title="{{conflicts[req.id]}}"><span class="badge-important badge">{{ req.conflict|count }}</span></a>
+            {% else %}<span class="badge">{{ req.conflict|count }}</span>{% endif %}</td>
+            {% endif %}
+            <td>{{ req.days }}</td>
+            <td>{{ req.type }}</td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}</td>
+            <td id="td_req_buttons_{{ req.id }}">
+              {% if pyvac.user.is_super %}
+                  {% if req.status != 'CANCELED' %}
+                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
+                    {% if pyvac.user.is_admin %}
+                        {% if req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
+                    {% else %}
+                        {% if req.status == 'ACCEPTED_MANAGER' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
+                    {% endif %}
+                    >
+                        ACCEPT
+                    </a>
+                    <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-small"
+                    {% if req.status == 'DENIED' %}disabled="disabled"{% endif %}>
+                        DENY
+                    </a>
+                    <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                    {% if req.status == 'CANCELED' %}disabled="disabled"{% endif %}>
+                        CANCEL
+                    </a>
+                  {% else %}
+                    <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                    {% if req.status == 'CANCELED' %}disabled="disabled"{% endif %}>
+                        CANCEL
+                    </a>
+                  {% endif %}
+              {% else %}
+              <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+              {% if req.status == 'CANCELED' %}disabled="disabled"{% endif %}>
+                CANCEL
+              </a>
+              {% endif %}
+            </td>
+            <td>{{ req.notified }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Refuse a request</h3>
+    <div id="flasherrorModal" class="alert alert-error" style="display:none;">
+    </div>
+  </div>
+  <div class="modal-body">
+    <p>You must provide a refusal reason</p>
+    <textarea placeholder="We need you at this period." id="reasonrefuse"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button id="btnrefuse" data-rid="-1" class="btn btn-danger">Refuse</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    {% if pyvac.user.is_super %}
+    {% for id, con in conflicts.iteritems() %}
+        $('#td_conflict_req_{{id}}').tooltip({})
+    {% endfor %}
+    {% endif %}
+
+    ajax_refuse_request = function() {
+          /* stop form from submitting normally */
+          event.preventDefault();
+          // retrieve reason from textarea
+          var reason = $('textarea#reasonrefuse').val();
+
+          if (!reason) {
+            $("#flasherrorModal").show();
+            $("#flasherrorModal").html('You must specify a reason !')
+            return;
+          }
+          request_id = $('button[id="btnrefuse"]').attr('data-rid');
+          td_req_status_id = '#td_req_status_' + request_id
+
+          url_refuse = "{{ route_url('request_refuse') }}"
+
+          var posting = $.post( url, {'request_id': request_id, 'reason': reason},
+          function( data ) {
+            // write new status in cell
+            $(td_req_status_id).html(data);
+            // disable deny button
+            $( '#td_req_buttons_' + request_id +'> a#refuse-request').attr('disabled', 'disabled');
+
+            // reset textarea values and request_id to empty for next call
+            $('textarea#reasonrefuse').val('');
+            $('button[id="btnrefuse"]').attr('data-rid', -1);
+            // hide modal
+            $('#myModal').modal('hide');
+          },
+          'json');
+    };
+
+    ajax_request = function() {
+
+          /* stop form from submitting normally */
+          event.preventDefault();
+
+          if ($(this).attr('disabled') == 'disabled'){
+            return;
+          }
+          request_id =  $( this ).attr('data-rid');
+          td_req_status_id = '#td_req_status_' + request_id
+
+          /* Send the data using post */
+          url_accept = "{{ route_url('request_accept') }}"
+          url_refuse = "{{ route_url('request_refuse') }}"
+          url_cancel = "{{ route_url('request_cancel') }}"
+
+          if ($( this ).attr('title') == 'accept')
+          {
+            a_button = 'a#accept-request';
+            url = url_accept;
+          }
+          else if ($( this ).attr('title') == 'refuse')
+          {
+            a_button = 'a#refuse-request';
+            url = url_refuse;
+            $('button[id="btnrefuse"]').attr('data-rid', request_id);
+            $('#myModal').modal('show');
+            return 1;
+          }
+          else if ($( this ).attr('title') == 'cancel')
+          {
+            a_button = 'a#cancel-request';
+            url = url_cancel;
+          }
+
+          var posting = $.post( url, {'request_id': request_id},
+          function( data ) {
+            $( td_req_status_id ).html(data);
+            $( '#td_req_buttons_' + request_id +'> '+a_button ).attr('disabled', 'disabled');
+            if (a_button == 'a#cancel-request'){
+              // $('#tr_req_' + request_id).hide();
+            }
+          },
+          'json');
+      };
+
+    $( 'a[id="accept-request"]' )
+      .click(ajax_request);
+
+    $( 'a[id="refuse-request"]' )
+      .click(ajax_request);
+
+    $( 'a[id="cancel-request"]' )
+      .click(ajax_request);
+
+    $( 'button[id="btnrefuse"]' )
+      .click(ajax_refuse_request);
+
+</script>
+
+{% endblock %}

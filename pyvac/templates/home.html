@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<form action="{{ route_url('request_send') }}" method="post" id="todoForm" class="form-horizontal">
+
+    <fieldset>
+        <legend>Leave request</legend>
+        <input type="hidden" name="user_id" value="{{pyvac.user.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+          <div id="datefrompicker"></div>
+            <label class="control-label" for="datefrompicker">Period</label>
+            <div class="controls">
+               <input type="text" name="date_from" id="alternate" value="{{date_from|default('', true)}}" class="input" placeholder="DD/MM/YYYY - DD/MM/YYYY" required="required"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Type</span>
+            <div class="controls">
+            {% for type in types %}
+                <label class="radio inline">
+                  <input type="radio" name="type" id="type{{ type }}" value="{{ type }}" {% if loop.first %}checked=""{% endif %}>{{ type }}
+                </label>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Total</span>
+            <div class="controls">
+                <input type="number" name="days" id="days" value="{{days|default('0', true)}}" class="input-xsmini" placeholder="0" pattern="[0-9]+([\.|,][0-9])?" step="0.5" required="required" min="0"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" class="btn">Submit</button>
+            </div>
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}
+
+
+{% block js %}
+
+  <script>
+  $(function() {
+    var cur = -1, prv = -1, days = 0;
+
+    $.datepicker.regional['fr'] = {
+        closeText: 'Fermer',
+        prevText: 'Précédent',
+        nextText: 'Suivant',
+        currentText: 'Aujourd\'hui',
+        monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin',
+        'Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+        monthNamesShort: ['Janv.','Févr.','Mars','Avril','Mai','Juin',
+        'Juil.','Août','Sept.','Oct.','Nov.','Déc.'],
+        dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
+        dayNamesShort: ['Dim.','Lun.','Mar.','Mer.','Jeu.','Ven.','Sam.'],
+        dayNamesMin: ['D','L','M','M','J','V','S'],
+        weekHeader: 'Sem.',
+        dateFormat: 'dd/mm/yy',
+        firstDay: 1,
+        isRTL: false,
+        showMonthAfterYear: false,
+        yearSuffix: ''};
+
+  /*$.datepicker.setDefaults($.datepicker.regional['fr']);*/
+
+function DateDiff(date1, date2) {
+    var datediff = date1.getTime() - date2.getTime(); //store the getTime diff - or +
+    return Math.abs(Math.floor(datediff / (24*60*60*1000))); //Convert values to -/+ days and return value
+}
+
+  $("#datefrompicker").datepicker({
+      showOtherMonths: true,
+      numberOfMonths: 2,
+      selectOtherMonths: true,
+      showButtonPanel: false,
+      changeMonth: false,
+      dateFormat: 'dd/mm/yy',
+      showWeek: false,
+      firstDay: 1,
+      minDate: 0,
+      altField: "#alternate",
+
+    beforeShowDay: function ( date ) {
+        /* do not select weekend days */
+        var day = date.getDay();
+        var isWeekend = (day == 6) || (day == 0);
+        if (isWeekend)
+        {
+            return [false, ''];
+        }
+
+        if ( prv == -1 && prv == cur ) {
+            return [true, false];
+        }
+
+          return [true, ( (date.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date.getTime() <= Math.max(prv.getTime(), cur.getTime())) ? 'date-range-selected' : '')];
+       },
+
+    onSelect: function ( dateText, inst ) {
+          var d1, d2;
+
+          prv = cur;
+          dt = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
+          cur = dt;
+          //cur = dt.getTime();
+          if ( prv == -1 || prv == cur ) {
+             prv = cur;
+             $('#alternate').val( dateText );
+          } else {
+             dd = DateDiff(prv, cur);
+             t = dd % 7;
+
+             last_include = 1;
+
+             if (cur < prv) {
+                 w1 = cur.getDay();
+                 w2 = prv.getDay();
+             }
+             else {
+                 w2 = cur.getDay();
+                 w1 = prv.getDay();
+             }
+             if (w1 > w2) t-=2;
+             if ((w1 == 0 && w2 == 6) || w1 == 6) t--;
+             realdiff = Math.abs((Math.floor(dd/7)*5)+t)
+
+             d1 = $.datepicker.formatDate( 'dd/mm/yy', new Date(Math.min(prv.getTime(), cur.getTime())), {} );
+             d2 = $.datepicker.formatDate( 'dd/mm/yy', new Date(Math.max(prv.getTime(), cur.getTime())), {} );
+             $('#alternate').val( d1+' - '+d2 );
+             days = realdiff + last_include;
+             $('#days').val( realdiff + last_include );
+          }
+       },
+
+    });
+  });
+  </script>
+
+
+{% endblock %}

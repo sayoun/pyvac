@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pyvac</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="{{ static_url('pyvac:static/css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ static_url('pyvac:static/css/jquery-ui.css') }}" rel="stylesheet"/>
+    <link href="{{ static_url('pyvac:static/themes/smoothness/jquery-ui.css') }}" rel="stylesheet"/>
+    <link href="{{ static_url('pyvac:static/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet"/>
+
+    <link href="{{ static_url('pyvac:static/css/bootstrap-responsive.css') }}" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+        /*padding-top: 40px;*/
+        background-color: #f5f5f5;
+      }
+
+      #flashmsg {
+        max-width: 400px;
+      }
+
+      #flashmsg .alert {
+        position: fixed;
+        top: 0px;
+        left: 0%;
+        /*left: 25%;*/
+        height: auto;
+        min-height: 24px;
+        width: 97%;
+        /*width: 50%;*/
+        /*max-width: 400px;*/
+        z-index: 9999;
+      }
+      #flashmsg .alert-info {
+        color: #006400;
+        background-color: #90EE90;
+        border-color: #50C24E;
+      }
+      #flashmsg .alert-error {
+        color: #FFFFFF;
+        background-color: #F00;
+        border-color: #8B0000;
+      }
+
+      .navbar {
+        position: fixed;
+      }
+
+      .form-signin {
+        max-width: 300px;
+        padding: 19px 29px 29px;
+        margin: 0 auto 20px;
+        background-color: #fff;
+        border: 1px solid #e5e5e5;
+        -webkit-border-radius: 5px;
+           -moz-border-radius: 5px;
+                border-radius: 5px;
+        -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+           -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                box-shadow: 0 1px 2px rgba(0,0,0,.05);
+      }
+      .form-signin .form-signin-heading,
+      .form-signin .checkbox {
+        margin-bottom: 10px;
+      }
+      .form-signin input[type="text"],
+      .form-signin input[type="password"] {
+        font-size: 16px;
+        height: auto;
+        margin-bottom: 15px;
+        padding: 7px 9px;
+      }
+
+      .input-xsmini {
+        width: 42px;
+      }
+
+      :required {
+        border: 2px dotted orange;
+      }
+
+      .date-range-selected > .ui-state-active,
+      .date-range-selected > .ui-state-default {
+        background: none;
+        background-color: lightsteelblue;
+      }
+
+      div.tooltip-inner {
+          text-align: left;
+          -webkit-border-radius: 0px;
+          -moz-border-radius: 0px;
+          border-radius: 0px;
+          margin-bottom: 6px;
+          background-color: #000000;
+          font-size: 14px;
+          max-width: 280px;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    {% block navbar %}
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="{{route_url('home')}}"><i class="fa fa-home fa-fw"></i> Pyvac</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              {% if pyvac.user %}
+              <li {% if matched_route == 'list_request'%}class="active"{% endif %}>
+              <a href="{{route_url('list_request')}}"><i class="fa fa-tasks fa-fw"></i> Requests
+              <span class="badge-info badge">{{ pyvac.requests_count }}</span></a>
+              </li>
+              {% endif %}
+            </ul>
+            <ul class="nav pull-right">
+              <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user fa-fw"></i> {{ pyvac.user.name }} <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{route_url('edit_account', user_id=pyvac.user.id)}}"><i class="fa fa-gear fa-fw"></i> Profile</a></li>
+                <li><a href="{{route_url('logout')}}"><i class="fa fa-power-off fa-fw"></i> Logout</a></li>
+                {% if has_permission('admin_view') %}
+                <li class="divider"></li>
+                <!-- <li><a href="#"><i class="fa fa-th fa-fw"></i> Manage Teams</a></li> -->
+                <li><a href="{{route_url('list_account')}}"><i class="fa fa-users fa-fw"></i> Manage Users</a></li>
+                <li><a href="{{route_url('export_request')}}"><i class="fa fa-files-o fa-fw"></i> Export Data</a></li>
+                {% endif %}
+              </ul>
+              </li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    {% endblock %}
+
+
+    {% block flashmsg %}
+
+    <div id="flashmsg" class="container">
+      {% if request.session.peek_flash() %}
+        {% for message in request.session.pop_flash() %}
+        <div class="alert alert-{{ message|flash_type }} fade in">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+           {{ message|flash_msg }}
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    {% endblock %}
+
+
+    <div class="container">
+
+    {% block body %}
+    {% endblock %}
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{{ static_url('pyvac:static/js/jquery-latest.js') }}"></script>
+    <script src="{{ static_url('pyvac:static/js/jquery-ui.js') }}"></script>
+    <script src="{{ static_url('pyvac:static/js/bootstrap.js') }}"></script>
+    <script>
+$(document).ready(function(){
+  setTimeout(function(){
+    $("#flashmsg").fadeOut("slow");
+  }, 1700);
+});
+</script>
+    {% block js %}
+    {% endblock %}
+
+  </body>
+</html>
