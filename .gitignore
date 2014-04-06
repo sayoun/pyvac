@@ -47,5 +47,5 @@ conf/.pc
 api/.pc
 
 celerybeat-schedule
-.pc
-.sqlite
+*.pc
+*.sqlite
