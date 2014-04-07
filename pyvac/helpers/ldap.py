@@ -4,7 +4,8 @@ import os
 import logging
 import hashlib
 from base64 import urlsafe_b64encode as encode
-
+import random
+import string
 import yaml
 
 try:
@@ -13,7 +14,7 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 import ldap
-from ldap import dn
+from ldap import dn, modlist
 
 log = logging.getLogger(__file__)
 
@@ -112,6 +113,38 @@ class LdapWrapper(object):
         self._bind(user_data['dn'], password)
         return user_data
 
+    def add_new(self, login, manager, country, firstname, lastname, mail,
+                unit=None, uid=None):
+        """ Add new user into ldap directory """
+        # The dn of our new entry/object
+        dn = 'cn=%s,c=%s,%s' % (login, country, self._base)
+        # A dict to help build the "body" of the object
+        attrs = {}
+        attrs['objectClass'] = ['inetOrgPerson', 'top']
+        attrs['employeeType'] = ['Employee']
+        attrs['cn'] = [login]
+        attrs['givenName'] = [firstname]
+        attrs['sn'] = [lastname]
+        if uid:
+            attrs['uid'] = [uid]
+        attrs['mail'] = [mail]
+        if not unit:
+            unit = 'development'
+        attrs['ou'] = [unit]
+
+        # generate a random password for the user, he will change it later
+        password = randomstring()
+        attrs['userPassword'] = [hashPassword(password)]
+        attrs['manager'] = [manager]
+
+        # Convert our dict for the add-function using modlist-module
+        ldif = modlist.addModlist(attrs)
+
+        # Do the actual synchronous add-operation to the ldapserver
+        self._conn.add_s(dn, ldif)
+
+        return password
+
 
 class LdapCache(object):
     """ Ldap cache class """
@@ -143,3 +176,13 @@ def hashPassword(password):
     h = hashlib.sha1(password)
     h.update(salt)
     return "{SSHA}" + encode(h.digest() + salt)
+
+
+def randomstring(length=8):
+    """ Generates a random ascii string """
+    chars = string.letters + string.digits
+
+    # Generate string from population
+    data = [random.choice(chars) for _ in xrange(length)]
+
+    return ''.join(data)
