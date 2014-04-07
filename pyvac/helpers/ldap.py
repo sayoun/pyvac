@@ -113,8 +113,8 @@ class LdapWrapper(object):
         self._bind(user_data['dn'], password)
         return user_data
 
-    def add_new(self, login, manager, country, firstname, lastname, mail,
-                unit=None, uid=None):
+    def add_user(self, login, manager, country, firstname, lastname, mail,
+                 unit=None, uid=None):
         """ Add new user into ldap directory """
         # The dn of our new entry/object
         dn = 'cn=%s,c=%s,%s' % (login, country, self._base)
@@ -143,7 +143,34 @@ class LdapWrapper(object):
         # Do the actual synchronous add-operation to the ldapserver
         self._conn.add_s(dn, ldif)
 
+        # return password to display it to the administrator
         return password
+
+    def update_user(self, login, country, fields):
+        """ Update user params in ldap directory """
+        # The dn of our new entry/object
+        dn = 'cn=%s,c=%s,%s' % (login, country, self._base)
+
+        # retrieve current user information
+        required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
+                    'manager', 'mail', 'ou', 'uid']
+        res = self._search(self._filter % dn, required)
+        USER_DN, entry = res[0]
+
+        old = {}
+        new = {}
+        # for each field to be updated
+        for field in fields:
+            # get old value
+            old[field] = entry[field]
+            # set new value
+            new[field] = fields[field]
+
+        # Convert place-holders for modify-operation using modlist-module
+        ldif = modlist.modifyModlist(old, new)
+
+        # Do the actual modification
+        self._conn.modify_s(dn, ldif)
 
 
 class LdapCache(object):
@@ -169,9 +196,7 @@ class LdapCache(object):
 
 
 def hashPassword(password):
-    """
-    Generate a password in SSHA format suitable for ldap
-    """
+    """ Generate a password in SSHA format suitable for ldap """
     salt = os.urandom(4)
     h = hashlib.sha1(password)
     h.update(salt)
