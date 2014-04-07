@@ -202,12 +202,12 @@ class User(Base):
     @classmethod
     def get_admin_by_country(cls, session, country):
         """
-        Get users with role admin for a specific country
+        Get user with role admin for a specific country
         """
-        return cls.find(session,
-                        where=(cls.country == country,
-                               cls.role == 'admin'),
-                        order_by=cls.id)
+        return cls.first(session,
+                         where=(cls.country == country,
+                                cls.role == 'admin'),
+                         order_by=cls.id)
 
     @classmethod
     def by_dn(cls, session, user_dn):
@@ -231,11 +231,21 @@ class User(Base):
             login = user_data['login']
             user = User.by_login(session, login)
             if not user:
-                user = User.create_from_ldap(session, user_data)
+                # check what type of user it is
+                group = u'user'
+                # if it's a manager members should have him associated as such
+                what = '(manager=%s)' % user_data['dn']
+                if len(ldap._search(what, None)) > 0:
+                    group = u'manager'
+                # if it's an admin he should be in admin group
+                what = '(member=%s)' % user_data['dn']
+                if len(ldap._search_admin(what, None)) > 0:
+                    group = u'admin'
+                user = User.create_from_ldap(session, user_data, group)
             return user
 
     @classmethod
-    def create_from_ldap(cls, session, data):
+    def create_from_ldap(cls, session, data, group):
         """
         Create a new user in database using ldap data information
         """
@@ -244,16 +254,32 @@ class User(Base):
                     firstname=unicode(data['firstname']),
                     lastname=unicode(data['lastname']),
                     country=unicode(data['country']),
-                    manager_dn=unicode(data['manager']),
+                    manager_dn=unicode(data.get('manager')),
                     ldap_user=True,
                     dn=unicode(data['dn']),
+                    role=group,
                     )
         # in user group
-        user.groups.append(Group.by_name(session, u'user'))
+        user.groups.append(Group.by_name(session, group))
         session.add(user)
         session.flush()
 
         return user
+
+    def get_admin(self, session):
+        """
+        Get admin for country of user
+        """
+        ret = []
+        if not self.ldap_user:
+            return self.get_admin_by_country(session, self.country)
+        else:
+            # retrieve from ldap
+            ldap = LdapCache()
+            admin = ldap.get_hr_by_country(self.country)
+            if admin:
+                ret = [admin]
+        return ret
 
 
 class Request(Base):

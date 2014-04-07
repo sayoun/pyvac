@@ -44,6 +44,8 @@ class LdapWrapper(object):
         self.manager_attr = conf['manager_attr']
         self.country_attr = conf['country_attr']
 
+        self.admin_dn = conf['admin_dn']
+
         system_DN = conf['system_dn']
         system_password = conf['system_pass']
 
@@ -57,6 +59,10 @@ class LdapWrapper(object):
 
     def _search(self, what, retrieve):
         return self._conn.search_s(self._base, ldap.SCOPE_SUBTREE, what,
+                                   retrieve)
+
+    def _search_admin(self, what, retrieve):
+        return self._conn.search_s(self.admin_dn, ldap.SCOPE_SUBTREE, what,
                                    retrieve)
 
     def _search_by_item(self, item):
@@ -75,6 +81,20 @@ class LdapWrapper(object):
     def search_user_by_dn(self, user_dn):
         return self._search_by_item(user_dn)
 
+    def _extract_country(self, user_dn):
+        """ Get country from a user dn """
+        for rdn in dn.str2dn(user_dn):
+            rdn = rdn[0]
+            if rdn[0] == self.country_attr:
+                return rdn[1]
+
+    def _extract_cn(self, user_dn):
+        """ Get cn from a user dn """
+        for rdn in dn.str2dn(user_dn):
+            rdn = rdn[0]
+            if rdn[0] == self.login_attr:
+                return rdn[1]
+
     def parse_ldap_entry(self, user_dn, entry):
         """
         Format ldap entry and parse user_dn to output dict with expected values
@@ -91,11 +111,7 @@ class LdapWrapper(object):
         }
         # save user dn
         data['dn'] = user_dn
-        # get country from user_dn
-        for rdn in dn.str2dn(user_dn):
-            rdn = rdn[0]
-            if rdn[0] == self.country_attr:
-                data['country'] = rdn[1]
+        data['country'] = self._extract_country(user_dn)
 
         # get manager cn from data
         for rdn in dn.str2dn(data['manager']):
@@ -172,9 +188,21 @@ class LdapWrapper(object):
         # Do the actual modification
         self._conn.modify_s(dn, ldif)
 
+    def get_hr_by_country(self, country):
+        """ Get hr mail of country for a user_dn"""
+        what = '(member=*)'
+        results = self._search_admin(what, None)
+        for USER_DN, entry in results:
+            item = self._extract_country(entry['member'])
+            if item == country:
+                # found valid hr user for this country
+                login = self._extract_cn(entry['member'])
+                user_data = self.search_user_by_login(login)
+                return user_data
+
 
 class LdapCache(object):
-    """ Ldap cache class """
+    """ Ldap cache class singleton """
     _instance = None
 
     def __new__(cls, *args, **kwargs):

@@ -4,7 +4,8 @@ import yaml
 
 from celery.signals import worker_process_init
 from pyvac.helpers.sqla import create_engine
-from pyvac.helpers.ldap_auth import LdapCache
+from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.mail import SmtpCache
 
 try:
     from yaml import CSafeLoader as YAMLLoader
@@ -22,3 +23,4 @@ def configure_workers(sender=None, conf=None, **kwargs):
     create_engine('pyvac', conf.get('databases').get('pyvac'),
                   scoped=False)
     LdapCache.configure('pyvac/conf/ldap.yaml')
+    SmtpCache.configure(conf.get('smtp'))
