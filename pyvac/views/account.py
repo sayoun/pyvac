@@ -76,6 +76,15 @@ class Edit(AccountMixin, EditView):
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'
 
+        # update in ldap too
+        print '*' * 80
+        print account
+        print account.dn
+        ldap = LdapCache()
+        user_data = ldap.search_user_by_login(account.login)
+        print user_data
+        print '*' * 80
+
     def validate(self, model, errors):
         r = self.request
         settings = r.registry.settings

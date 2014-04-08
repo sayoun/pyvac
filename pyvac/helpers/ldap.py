@@ -182,11 +182,16 @@ class LdapWrapper(object):
             # set new value
             new[field] = fields[field]
 
+        print '+' * 80
+        print 'updating in ldap with params'
+        print 'old', old
+        print 'new', new
+        print '+' * 80
         # Convert place-holders for modify-operation using modlist-module
-        ldif = modlist.modifyModlist(old, new)
+        # ldif = modlist.modifyModlist(old, new)
 
         # Do the actual modification
-        self._conn.modify_s(dn, ldif)
+        # self._conn.modify_s(dn, ldif)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
