@@ -181,7 +181,8 @@ class User(Base):
             other = User.by_login(session, self.login)
             if other and other.id != self.id:
                 errors.append(u'duplicate login %s' % self.login)
-        if not self.password:
+        # no need for password for ldap users
+        if not self.ldap_user and not self.password:
             errors.append(u'password is required')
         if not self.email:
             errors.append(u'email is required')

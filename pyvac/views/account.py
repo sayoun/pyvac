@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from pyramid.settings import asbool
+
 from .base import View, CreateView, EditView, DeleteView
 
 from pyvac.models import User, Group
 from pyvac.helpers.i18n import trans as _
+from pyvac.helpers.ldap import LdapCache
 
 
 log = logging.getLogger(__name__)
@@ -75,10 +78,14 @@ class Edit(AccountMixin, EditView):
 
     def validate(self, model, errors):
         r = self.request
+        settings = r.registry.settings
+        ldap = False
+        if 'pyvac.use_ldap' in settings:
+            ldap = asbool(settings.get('pyvac.use_ldap'))
 
-        if 'current_password' in r.params:
+        if 'current_password' in r.params and r.params['current_password']:
             if not User.by_credentials(self.session, model.login,
-                                       r.params['current_password']):
+                                       r.params['current_password'], ldap):
                 errors.append(_(u'current password is not correct'))
             elif r.params['user.password'] == r.params['current_password']:
                 errors.append(_(u'password is inchanged'))
