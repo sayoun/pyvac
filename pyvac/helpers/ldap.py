@@ -193,12 +193,13 @@ class LdapWrapper(object):
         what = '(member=*)'
         results = self._search_admin(what, None)
         for USER_DN, entry in results:
-            item = self._extract_country(entry['member'])
-            if item == country:
-                # found valid hr user for this country
-                login = self._extract_cn(entry['member'])
-                user_data = self.search_user_by_login(login)
-                return user_data
+            # item = self._extract_country(entry['member'])
+            # XXX: for now return on the first HR found
+            # if item == country:
+            # found valid hr user for this country
+            login = self._extract_cn(entry['member'])
+            user_data = self.search_user_by_login(login)
+            return user_data
 
 
 class LdapCache(object):

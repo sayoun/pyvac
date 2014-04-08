@@ -8,7 +8,7 @@ import logging
 from dateutil.relativedelta import relativedelta
 from celery.task import Task
 
-from pyvac.models import DBSession, Request, User
+from pyvac.models import DBSession, Request
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.mail import SmtpCache
 
@@ -41,9 +41,16 @@ class BaseWorker(Task):
 
         return True
 
-    def send_mail(self, src, dst, req_type, text):
+    def send_mail(self, sender, target, request, content):
         """ Send a mail """
-        self.smtp.send_mail(src, dst, req_type, text)
+        self.smtp.send_mail(sender, target, request, content)
+
+    def get_admin_mail(self, admin):
+        """ Return admin email from ldap dict or model """
+        if isinstance(admin, dict):
+            return admin['email']
+        else:
+            return admin.email
 
 
 class WorkerPending(BaseWorker):
@@ -55,13 +62,12 @@ class WorkerPending(BaseWorker):
         send mail to manager
         """
         req = Request.by_id(self.session, data['req_id'])
-        text = 'New request FROM %s (%s)' % (req.user.name,
-                                             req.user.email)
         # send mail to manager
         src = req.user.email
         dst = req.user.manager_mail
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        content = """New request from %s
+Request details: %s""" % (req.user.name, req.summarymail)
+        self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # update request status after sending email
         req.notified = True
@@ -79,21 +85,19 @@ class WorkerAccepted(BaseWorker):
         send mail to HR
         """
         req = Request.by_id(self.session, data['req_id'])
-
-        text = 'FROM %s (%s) TO %s (%s)' % (req.user.manager.name,
-                                            req.user.manager_mail,
-                                            req.user.name,
-                                            req.user.email)
+        # send mail to user
         src = req.user.manager_mail
         dst = req.user.email
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        content = """Your request has been accepted by %s. Waiting for HR validation.
+Request details: %s""" % (req.user.manager.name, req.summarymail)
+        self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        admin = req.user.get_admin(self.session)
         # send mail to HR
-        dst = admin.email
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        admin = req.user.get_admin(self.session)
+        dst = self.get_admin_mail(admin)
+        content = """Manager %s has accepted a new request. Waiting for your validation.
+Request details: %s""" % (req.user.manager.name, req.summarymail)
+        self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # update request status after sending email
         req.notified = True
@@ -107,7 +111,7 @@ class WorkerAcceptedNotified(BaseWorker):
 
     def process(self, data):
         """ accepted by manager
-        send mail to user
+        auto flag as accepted by HR
         """
         req = Request.by_id(self.session, data['req_id'])
         # after Request.created_at + 3 days, auto accept it by HR
@@ -134,23 +138,18 @@ class WorkerApproved(BaseWorker):
 
         admin = req.user.get_admin(self.session)
         # send mail to user
-        src = admin.email
+        src = self.get_admin_mail(admin)
         dst = req.user.email
-        text = 'FROM %s (%s) TO %s (%s)' % (admin.name,
-                                            admin.email,
-                                            req.user.name,
-                                            req.user.email)
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        content = """HR has accepted your request, it has been added to calendar.
+Request details: %s""" % req.summarymail
+        self.send_mail(sender=src, target=dst, request=req, content=content)
+
         # send mail to manager
         src = admin.email
         dst = req.user.manager_mail
-        text = 'FROM %s (%s) TO %s (%s)' % (admin.name,
-                                            admin.email,
-                                            req.user.manager.name,
-                                            req.user.manager_mail)
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        content = """HR has approved a request you accepted, it has been added to calendar.
+Request details: %s""" % req.summarymail
+        self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # update request status after sending email
         req.notified = True
@@ -169,21 +168,18 @@ class WorkerDenied(BaseWorker):
     name = 'worker_denied'
 
     def process(self, data):
-        """ denied
+        """ denied by XXX
         send mail to user
         """
         req = Request.by_id(self.session, data['req_id'])
 
         admin = req.user.get_admin(self.session)
         # send mail to user
-        src = admin.email
+        src = self.get_admin_mail(admin)
         dst = req.user.email
-        text = 'DENIED FROM %s (%s) TO %s (%s)' % (admin.name,
-                                                   admin.email,
-                                                   req.user.name,
-                                                   req.user.email)
-        self.send_mail(src=src, dst=dst, req_type=req.status,
-                       text=text)
+        content = """You request has been refused for the following reason: %s
+Request details: %s""" % (req.reason, req.summarymail)
+        self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # update request status after sending email
         req.notified = True

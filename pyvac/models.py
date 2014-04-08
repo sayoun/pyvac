@@ -270,16 +270,12 @@ class User(Base):
         """
         Get admin for country of user
         """
-        ret = []
         if not self.ldap_user:
             return self.get_admin_by_country(session, self.country)
         else:
             # retrieve from ldap
             ldap = LdapCache()
-            admin = ldap.get_hr_by_country(self.country)
-            if admin:
-                ret = [admin]
-        return ret
+            return ldap.get_hr_by_country(self.country)
 
 
 class Request(Base):
@@ -442,6 +438,18 @@ class Request(Base):
         """
         # name, datefrom, dateto, number of days, type of days
         return ('%s,%s,%s,%d,%s' %
+                (self.user.name,
+                 self.date_from.strftime('%d/%m/%Y'),
+                 self.date_to.strftime('%d/%m/%Y'),
+                 self.days,
+                 self.type))
+
+    @property
+    def summarymail(self):
+        """
+        Get a short string representation of a request, for mail summary.
+        """
+        return ('%s: %s - %s (%d %s)' %
                 (self.user.name,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),

@@ -30,20 +30,19 @@ class SmtpWrapper(object):
 
         log.info('Smtp wrapper initialized')
 
-    def send_mail(self, src, dst, req_type, text):
+    def send_mail(self, sender, target, request, content):
         """ Send a mail through smtp using given parameters """
-        # Create a text/plain message
-        msg = MIMEText(text)
+        msg = MIMEText(content)
 
-        msg['Subject'] = 'Request %s' % req_type
-        msg['From'] = src
-        msg['To'] = dst
+        msg['Subject'] = 'Request %s' % request.type
+        msg['From'] = sender
+        msg['To'] = target
 
         conn = smtplib.SMTP(self.host, self.port)
         if self.starttls:
             conn.starttls()
-        _from = self._from if self._from else src
-        conn.sendmail(_from, [dst], msg.as_string())
+        _from = self._from if self._from else sender
+        conn.sendmail(_from, [target], msg.as_string())
         conn.quit()
 
         log.info('Message sent through SMTP.')
