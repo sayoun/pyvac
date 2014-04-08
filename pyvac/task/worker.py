@@ -6,7 +6,7 @@ from datetime import datetime
 import logging
 
 from dateutil.relativedelta import relativedelta
-from celery.task import Task
+from celery.task import Task, subtask
 
 from pyvac.models import DBSession, Request
 from pyvac.helpers.calendar import addToCal
@@ -124,6 +124,10 @@ class WorkerAcceptedNotified(BaseWorker):
             self.session.flush()
             self.session.commit()
 
+            data['autoaccept'] = True
+            async_result = subtask(WorkerApproved).delay(data=data)
+            self.log.info('task scheduled %r' % async_result)
+
 
 class WorkerApproved(BaseWorker):
 
@@ -140,14 +144,22 @@ class WorkerApproved(BaseWorker):
         # send mail to user
         src = self.get_admin_mail(admin)
         dst = req.user.email
-        content = """HR has accepted your request, it has been added to calendar.
+        if 'autoaccept' in data:
+            content = """Your request was automatically approved, it has been added to calendar.
+Request details: %s""" % req.summarymail
+        else:
+            content = """HR has accepted your request, it has been added to calendar.
 Request details: %s""" % req.summarymail
         self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # send mail to manager
         src = admin.email
         dst = req.user.manager_mail
-        content = """HR has approved a request you accepted, it has been added to calendar.
+        if 'autoaccept' in data:
+            content = """A request you accepted was automatically approved, it has been added to calendar.
+Request details: %s""" % req.summarymail
+        else:
+            content = """HR has approved a request you accepted, it has been added to calendar.
 Request details: %s""" % req.summarymail
         self.send_mail(sender=src, target=dst, request=req, content=content)
 
