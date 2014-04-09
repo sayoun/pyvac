@@ -11,7 +11,11 @@
         <div class="control-group">
             <label class="control-label" for="inputLogin">{% trans %}Login:{% endtrans %}</label>
             <div class="controls">
-               <input type="text" name="user.login" id="inputLogin" value="{{user.login|default('', true)}}"/>
+               <input type="text" name="user.login" id="inputLogin" value="{{user.login|default('', true)}}"
+               {% if user.ldap_user %}
+               disabled="disabled"
+               {% endif %}
+               />
             </div>
         </div>
         <div class="control-group">

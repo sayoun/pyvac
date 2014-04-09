@@ -7,7 +7,7 @@ from .base import View, CreateView, EditView, DeleteView
 
 from pyvac.models import User, Group
 from pyvac.helpers.i18n import trans as _
-from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.ldap import LdapCache, hashPassword
 
 
 log = logging.getLogger(__name__)
@@ -58,6 +58,18 @@ class Create(AccountMixin, CreateView):
         super(Create, self).update_model(account)
         self.append_groups(account)
 
+        if account.ldap_user:
+            # create in ldap
+            r = self.request
+            if 'user.password' in r.params and r.params['user.password']:
+                password = [hashPassword(r.params['user.password'])]
+
+            ldap = LdapCache()
+            ldap.add_user(account, password)
+
+        if self.user and not self.user.is_admin:
+            self.redirect_route = 'list_request'
+
     def validate(self, model, errors):
         r = self.request
         if r.params['user.password'] != r.params['confirm_password']:
@@ -73,17 +85,18 @@ class Edit(AccountMixin, EditView):
     def save_model(self, account):
         super(Edit, self).update_model(account)
         self.append_groups(account)
+
+        if account.ldap_user:
+            # update in ldap
+            r = self.request
+            if 'user.password' in r.params and r.params['user.password']:
+                password = [hashPassword(r.params['user.password'])]
+
+            ldap = LdapCache()
+            ldap.update_user(account, password)
+
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'
-
-        # update in ldap too
-        print '*' * 80
-        print account
-        print account.dn
-        ldap = LdapCache()
-        user_data = ldap.search_user_by_login(account.login)
-        print user_data
-        print '*' * 80
 
     def validate(self, model, errors):
         r = self.request
@@ -112,3 +125,10 @@ class Delete(AccountMixin, DeleteView):
     """
     Delete account
     """
+
+    def delete(self, account):
+        super(Delete, self).delete(account)
+        if account.ldap_user:
+            # delete in ldap
+            ldap = LdapCache()
+            ldap.delete_user(account.dn)

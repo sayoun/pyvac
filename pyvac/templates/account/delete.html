@@ -1,3 +1,31 @@
-{% extends "/shared/form_delete.html" %}
+{% extends "layout.html" %}
 
-{%block delete%}the account &laquo;{{user.login}}&raquo;{% endblock%}?
+{% block body %}
+<form action="" method="post" id="deleteUserForm" class="form-horizontal">
+
+    <fieldset>
+        <legend>User</legend>
+        <input type="hidden" name="user_id" value="{{user.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+            <label class="control-label" for="inputLogin">{% trans %}Login:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.login" id="inputLogin" value="{{user.login|default('', true)}}"
+               {% if user.ldap_user %}
+               disabled="disabled"
+               {% endif %}
+               />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" class="btn">Delete</button>
+            </div>
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}

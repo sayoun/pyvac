@@ -131,7 +131,7 @@ class User(Base):
             return self.manager.email
         else:
             ldap = LdapCache()
-            user_data = ldap.search_user_by_login(self.manager_dn)
+            user_data = ldap.search_user_by_dn(self.manager_dn)
             return user_data['email']
 
     @classmethod
@@ -162,7 +162,10 @@ class User(Base):
         Get a user from given credentials
         """
         if ldap:
-            return cls.by_ldap_credentials(session, login, password)
+            try:
+                return cls.by_ldap_credentials(session, login, password)
+            except Exception:
+                return None
         else:
             user = cls.by_login(session, login)
             if not user:
@@ -231,6 +234,7 @@ class User(Base):
         if user_data is not None:
             login = user_data['login']
             user = User.by_login(session, login)
+            # create user if needed
             if not user:
                 # check what type of user it is
                 group = u'user'
@@ -243,6 +247,14 @@ class User(Base):
                 if len(ldap._search_admin(what, None)) > 0:
                     group = u'admin'
                 user = User.create_from_ldap(session, user_data, group)
+            else:
+                # update user with ldap informations in case it changed
+                user.email = unicode(user_data['email'])
+                user.firstname = unicode(user_data['firstname'])
+                user.lastname = unicode(user_data['lastname'])
+                user.manager_dn = unicode(user_data['manager_dn'])
+                user.dn = unicode(user_data['dn'])
+
             return user
 
     @classmethod
@@ -255,7 +267,7 @@ class User(Base):
                     firstname=unicode(data['firstname']),
                     lastname=unicode(data['lastname']),
                     country=unicode(data['country']),
-                    manager_dn=unicode(data.get('manager')),
+                    manager_dn=unicode(data['manager_dn']),
                     ldap_user=True,
                     dn=unicode(data['dn']),
                     role=group,

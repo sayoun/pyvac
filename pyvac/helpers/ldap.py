@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import os
 import logging
 import hashlib
-from base64 import urlsafe_b64encode as encode
+from base64 import b64encode as encode
 import random
 import string
 import yaml
@@ -46,27 +46,34 @@ class LdapWrapper(object):
 
         self.admin_dn = conf['admin_dn']
 
-        system_DN = conf['system_dn']
-        system_password = conf['system_pass']
+        self.system_DN = conf['system_dn']
+        self.system_password = conf['system_pass']
 
         self._conn = ldap.initialize(url)
-        self._conn.simple_bind_s(system_DN, system_password)
+        self._bind(self.system_DN, self.system_password)
 
         log.info('Ldap wrapper initialized')
 
     def _bind(self, dn, password):
+        log.debug('binding with dn: %s' % dn)
         self._conn.simple_bind_s(dn, password)
 
     def _search(self, what, retrieve):
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        log.debug('searching: %s for: %s' % (what, retrieve))
         return self._conn.search_s(self._base, ldap.SCOPE_SUBTREE, what,
                                    retrieve)
 
     def _search_admin(self, what, retrieve):
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
         return self._conn.search_s(self.admin_dn, ldap.SCOPE_SUBTREE, what,
                                    retrieve)
 
     def _search_by_item(self, item):
-        required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager']
+        required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager',
+                           'userPassword']
         res = self._search(self._filter % item, required_fields)
         if not res:
             raise UnknownLdapUser
@@ -107,17 +114,13 @@ class LdapWrapper(object):
             'firstname': entry[self.firstname_attr].pop(),
             'lastname': entry[self.lastname_attr].pop(),
             'login': entry[self.login_attr].pop(),
-            'manager': entry[self.manager_attr].pop(),
+            'manager_dn': entry[self.manager_attr].pop(),
         }
         # save user dn
         data['dn'] = user_dn
         data['country'] = self._extract_country(user_dn)
-
-        # get manager cn from data
-        for rdn in dn.str2dn(data['manager']):
-            rdn = rdn[0]
-            if rdn[0] == self.login_attr:
-                data['manager'] = rdn[1]
+        data['manager_cn'] = self._extract_country(data['manager_dn'])
+        data['userPassword'] = entry['userPassword'].pop()
 
         return data
 
@@ -129,48 +132,63 @@ class LdapWrapper(object):
         self._bind(user_data['dn'], password)
         return user_data
 
-    def add_user(self, login, manager, country, firstname, lastname, mail,
-                 unit=None, uid=None):
+    def add_user(self, user, unit=None, uid=None):
         """ Add new user into ldap directory """
         # The dn of our new entry/object
-        dn = 'cn=%s,c=%s,%s' % (login, country, self._base)
+        dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
         # A dict to help build the "body" of the object
         attrs = {}
         attrs['objectClass'] = ['inetOrgPerson', 'top']
         attrs['employeeType'] = ['Employee']
-        attrs['cn'] = [login]
-        attrs['givenName'] = [firstname]
-        attrs['sn'] = [lastname]
+        attrs['cn'] = [user.login]
+        attrs['givenName'] = [user.firstname]
+        attrs['sn'] = [user.lastname]
         if uid:
             attrs['uid'] = [uid]
-        attrs['mail'] = [mail]
+        attrs['mail'] = [user.email]
         if not unit:
             unit = 'development'
         attrs['ou'] = [unit]
 
         # generate a random password for the user, he will change it later
         password = randomstring()
+        log.info('temporary password generated for user %s: %s' %
+                 (dn, password))
         attrs['userPassword'] = [hashPassword(password)]
-        attrs['manager'] = [manager]
+        attrs['manager'] = [user.manager_dn]
 
         # Convert our dict for the add-function using modlist-module
         ldif = modlist.addModlist(attrs)
 
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
         self._conn.add_s(dn, ldif)
 
         # return password to display it to the administrator
         return password
 
-    def update_user(self, login, country, fields):
+    def update_user(self, user, password=None):
         """ Update user params in ldap directory """
-        # The dn of our new entry/object
-        dn = 'cn=%s,c=%s,%s' % (login, country, self._base)
 
+        # convert fields to ldap fields
+        # retrieve them from model as it was updated before
+        fields = {
+            'mail': [str(user.email)],
+            'givenName': [str(user.firstname)],
+            'sn': [str(user.lastname)],
+            'manager': [str(user.manager_dn)],
+        }
+        if password:
+            fields['userPassword'] = password
+
+        # dn of object we want to update
+        dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
         # retrieve current user information
         required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
-                    'manager', 'mail', 'ou', 'uid']
-        res = self._search(self._filter % dn, required)
+                    'manager', 'mail', 'ou', 'uid', 'userPassword']
+        item = 'cn=*%s*' % user.login
+        res = self._search(self._filter % item, required)
         USER_DN, entry = res[0]
 
         old = {}
@@ -178,20 +196,24 @@ class LdapWrapper(object):
         # for each field to be updated
         for field in fields:
             # get old value
-            old[field] = entry[field]
+            old[field] = entry.get(field, '')
             # set new value
             new[field] = fields[field]
 
-        print '+' * 80
-        print 'updating in ldap with params'
-        print 'old', old
-        print 'new', new
-        print '+' * 80
         # Convert place-holders for modify-operation using modlist-module
-        # ldif = modlist.modifyModlist(old, new)
+        ldif = modlist.modifyModlist(old, new)
+        if ldif:
+            # Do the actual modification if needed
+            print self._conn.modify_s(dn, ldif)
 
-        # Do the actual modification
-        # self._conn.modify_s(dn, ldif)
+    def delete_user(self, user_dn):
+        """ Delete user from ldap """
+        log.info('deleting user %s from ldap' % user_dn)
+
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # Do the actual synchronous add-operation to the ldapserver
+        self._conn.delete_s(user_dn)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
@@ -232,9 +254,7 @@ class LdapCache(object):
 def hashPassword(password):
     """ Generate a password in SSHA format suitable for ldap """
     salt = os.urandom(4)
-    h = hashlib.sha1(password)
-    h.update(salt)
-    return "{SSHA}" + encode(h.digest() + salt)
+    return '{SSHA}' + encode(hashlib.sha1(str(password) + salt).digest() + salt)
 
 
 def randomstring(length=8):
