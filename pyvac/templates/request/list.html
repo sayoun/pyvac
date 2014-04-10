@@ -28,7 +28,7 @@
       <tr id="tr_req_{{ req.id }}">
             <td>{{ req.user.name }}</td>
             {% if pyvac.user.is_super %}
-            <td>{{ req.user.manager.name }}</td>
+            <td>{{ req.user.manager_dn|extract_cn }}</td>
             {% endif %}
             <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
             {% if pyvac.user.is_super %}

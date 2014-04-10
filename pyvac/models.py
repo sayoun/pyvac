@@ -346,6 +346,18 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
+    def by_manager_ldap(cls, session, manager, count=None):
+        """
+        Get requests for users under given manager.
+        """
+        return cls.find(session,
+                        join=(cls.user),
+                        where=(User.manager_dn == manager.dn,
+                               cls.status != 'CANCELED'),
+                        count=count,
+                        order_by=cls.user_id)
+
+    @classmethod
     def by_user(cls, session, user, count=None):
         """
         Get requests for given user.

@@ -73,7 +73,8 @@ class List(View):
             return {u'requests': requests, u'conflicts': conflicts}
         elif self.user.is_super:
             conflicts = {}
-            requests = Request.by_manager(self.session, self.user)
+            # requests = Request.by_manager(self.session, self.user)
+            requests = Request.by_manager_ldap(self.session, self.user)
             for req in requests:
                 req.conflict = [req2.summary for req2 in Request.in_conflict(self.session, req)]
                 if req.conflict:

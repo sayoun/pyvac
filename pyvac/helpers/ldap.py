@@ -162,7 +162,7 @@ class LdapWrapper(object):
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
         result = self._conn.add_s(dn, ldif)
-        log.debug('ldap result: %r' % result)
+        # log.debug('ldap result: %r' % result)
 
         # return password to display it to the administrator
         return dn
@@ -205,7 +205,7 @@ class LdapWrapper(object):
         if ldif:
             # Do the actual modification if needed
             result = self._conn.modify_s(dn, ldif)
-            log.debug('ldap result: %r' % result)
+            # log.debug('ldap result: %r' % result)
 
     def delete_user(self, user_dn):
         """ Delete user from ldap """
@@ -215,7 +215,7 @@ class LdapWrapper(object):
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
         result = self._conn.delete_s(user_dn)
-        log.debug('ldap result: %r' % result)
+        # log.debug('ldap result: %r' % result)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
