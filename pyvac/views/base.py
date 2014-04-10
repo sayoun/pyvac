@@ -5,6 +5,7 @@ from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 # from pyramid.response import Response
+from pyramid.settings import asbool
 
 from pyvac.helpers.sqla import ModelError
 
@@ -148,6 +149,11 @@ class CreateView(RedirectView):
         self.session.add(model)
 
     def render(self):
+        settings = self.request.registry.settings
+        ldap = False
+        if 'pyvac.use_ldap' in settings:
+            ldap = asbool(settings.get('pyvac.use_ldap'))
+
         if 'form.cancelled' in self.request.params:
             return self.redirect()
 
@@ -162,9 +168,9 @@ class CreateView(RedirectView):
             if not errors:
                 try:
                     self.update_model(model)
-                    model.validate(self.session)
-                except ModelError, e:
-                    errors.extend(e.errors)
+                    model.validate(self.session, ldap)
+                except ModelError as err:
+                    errors.extend(err.errors)
 
             if not errors:
                 self.save_model(model)
@@ -172,10 +178,11 @@ class CreateView(RedirectView):
 
         rv = {'errors': errors,
               self.model.__tablename__: model,
+              'use_ldap': ldap,
               'csrf_token': self.request.session.get_csrf_token()}
 
         self.update_view(model, rv)
-        # log.debug(repr(rv))
+        log.debug(repr(rv))
         return rv
 
 

@@ -98,12 +98,6 @@ class _Base(object):
         """
         return True
 
-    def __repr__(self):
-        cls = self.__class__
-        classname = "%s.%s" % (cls.__module__, cls.__name__)
-
-        return "<%s (#%d)>" % (classname, self.id)
-
     def __getitem__(self, key):
         return getattr(self, key)
 

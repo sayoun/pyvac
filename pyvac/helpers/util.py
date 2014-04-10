@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ldap import dn
 
 
 def flash_type(message):
@@ -35,3 +36,11 @@ def is_manager(user):
         if groupname == g.name:
             return True
     return False
+
+
+def extract_cn(user_dn):
+    """ Get cn from a user dn """
+    for rdn in dn.str2dn(user_dn):
+        rdn = rdn[0]
+        if rdn[0] == 'cn':
+            return rdn[1]

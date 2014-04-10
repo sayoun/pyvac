@@ -96,8 +96,10 @@ class User(Base):
     ldap_user = Column(Boolean, nullable=False, default=False)
     dn = Column(Unicode(255), nullable=False, default=u'')
 
-    country = Column(Enum('fr', 'us', 'lu', 'cn'), nullable=False,
-                     name='enum_user_country',
+    choose_country = set(['fr', 'us', 'lu', 'cn'])
+
+    country = Column(Enum(*choose_country, name='enum_user_country'),
+                     nullable=False,
                      default='fr')
 
     @property
@@ -173,9 +175,10 @@ class User(Base):
             if crypt.check(user.password, password):
                 return user
 
-    def validate(self, session):
+    def validate(self, session, ldap=False):
         """
         Validate that the current user can be saved.
+        If ldap is active, do not handle passwords.
         """
         errors = []
         if not self.login:
@@ -185,7 +188,7 @@ class User(Base):
             if other and other.id != self.id:
                 errors.append(u'duplicate login %s' % self.login)
         # no need for password for ldap users
-        if not self.ldap_user and not self.password:
+        if not ldap and not self.password:
             errors.append(u'password is required')
         if not self.email:
             errors.append(u'email is required')

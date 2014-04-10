@@ -132,45 +132,43 @@ class LdapWrapper(object):
         self._bind(user_data['dn'], password)
         return user_data
 
-    def add_user(self, user, unit=None, uid=None):
+    def add_user(self, user, password, unit=None, uid=None):
         """ Add new user into ldap directory """
         # The dn of our new entry/object
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
+        log.info('create user %s in ldap' % dn)
+
         # A dict to help build the "body" of the object
         attrs = {}
         attrs['objectClass'] = ['inetOrgPerson', 'top']
         attrs['employeeType'] = ['Employee']
-        attrs['cn'] = [user.login]
-        attrs['givenName'] = [user.firstname]
-        attrs['sn'] = [user.lastname]
+        attrs['cn'] = [str(user.login)]
+        attrs['givenName'] = [str(user.firstname)]
+        attrs['sn'] = [str(user.lastname)]
         if uid:
-            attrs['uid'] = [uid]
-        attrs['mail'] = [user.email]
+            attrs['uid'] = [str(uid)]
+        attrs['mail'] = [str(user.email)]
         if not unit:
             unit = 'development'
-        attrs['ou'] = [unit]
+        attrs['ou'] = [str(unit)]
 
-        # generate a random password for the user, he will change it later
-        password = randomstring()
-        log.info('temporary password generated for user %s: %s' %
-                 (dn, password))
-        attrs['userPassword'] = [hashPassword(password)]
-        attrs['manager'] = [user.manager_dn]
+        attrs['userPassword'] = [hashPassword(str(password))]
+        attrs['manager'] = [str(user.manager_dn)]
 
         # Convert our dict for the add-function using modlist-module
         ldif = modlist.addModlist(attrs)
-
+        log.info('sending for dn %r: %r' % (dn, ldif))
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
-        self._conn.add_s(dn, ldif)
+        result = self._conn.add_s(dn, ldif)
+        log.debug('ldap result: %r' % result)
 
         # return password to display it to the administrator
-        return password
+        return dn
 
     def update_user(self, user, password=None):
         """ Update user params in ldap directory """
-
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
         fields = {
@@ -184,6 +182,8 @@ class LdapWrapper(object):
 
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
+        log.info('updating user %s from ldap' % dn)
+
         # retrieve current user information
         required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
                     'manager', 'mail', 'ou', 'uid', 'userPassword']
@@ -204,7 +204,8 @@ class LdapWrapper(object):
         ldif = modlist.modifyModlist(old, new)
         if ldif:
             # Do the actual modification if needed
-            print self._conn.modify_s(dn, ldif)
+            result = self._conn.modify_s(dn, ldif)
+            log.debug('ldap result: %r' % result)
 
     def delete_user(self, user_dn):
         """ Delete user from ldap """
@@ -213,7 +214,8 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
-        self._conn.delete_s(user_dn)
+        result = self._conn.delete_s(user_dn)
+        log.debug('ldap result: %r' % result)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
@@ -227,6 +229,34 @@ class LdapWrapper(object):
             login = self._extract_cn(entry['member'])
             user_data = self.search_user_by_login(login)
             return user_data
+
+    def list_ou(self):
+        """ Retrieve available organisational units """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = ['ou']
+        item = 'ou=*'
+        res = self._search(self._filter % item, required)
+        units = []
+        for USER_DN, entry in res:
+            units.extend(entry['ou'])
+        # only return unique entries
+        return set(units)
+
+    def list_manager(self):
+        """ Retrieve available managers dn """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = ['ou']
+        item = 'ou=*'
+        res = self._search(self._filter % item, required)
+        managers = []
+        for USER_DN, entry in res:
+            managers.append(USER_DN)
+        # only return unique entries
+        return sorted(managers)
 
 
 class LdapCache(object):
