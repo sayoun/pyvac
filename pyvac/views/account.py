@@ -41,12 +41,17 @@ class AccountMixin:
 
         view['groups'] = Group.all(self.session, order_by=Group.name)
         view['managers'] = User.by_role(self.session, 'manager')
+
         if ldap:
             ldap = LdapCache()
+            if self.get_model().login:
+                view['ldap_user'] = ldap.search_user_by_login(self.get_model().login)
+            else:
+                view['ldap_user'] = {}
             view['managers'] = ldap.list_manager()
             view['units'] = ldap.list_ou()
             view['countries'] = User.choose_country
-            # generate a random password for the user, he will change it later
+            # generate a random password for the user, he must change it later
             password = randomstring()
             log.info('temporary password generated: %s' % password)
             view['password'] = password
@@ -115,11 +120,16 @@ class Edit(AccountMixin, EditView):
         if account.ldap_user:
             # update in ldap
             r = self.request
+            password = None
             if 'user.password' in r.params and r.params['user.password']:
                 password = [hashPassword(str(r.params['user.password']))]
 
+            unit = None
+            if 'unit' in r.params and r.params['unit']:
+                unit = r.params['unit']
+
             ldap = LdapCache()
-            ldap.update_user(account, password)
+            ldap.update_user(account, password=password, unit=unit)
 
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'

@@ -119,7 +119,7 @@
                 <div class="controls">
                 <select name="unit">
                 {% for unit in units %}
-                    <option  value="{{ unit }}" {% if unit == "development" %}selected="selected"{% endif %}>{{ unit }}</option>
+                    <option  value="{{ unit }}" {% if unit in ldap_user.ou %}selected="selected"{% endif %}>{{ unit|extract_cn }}</option>
                 {% endfor %}
                  </select>
                 </div>
@@ -131,7 +131,7 @@
                 <select name="user.manager_dn">
                 {% for m in managers %}
                     {% if m != user.dn %}
-                    <option  value="{{ m }}">{{ m|extract_cn }}</option>
+                    <option  value="{{ m }}" {% if ldap_user.manager_dn == m %}selected="selected"{% endif %}>{{ m|extract_cn }}</option>
                     {% endif %}
                 {% endfor %}
                  </select>

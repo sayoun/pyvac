@@ -49,6 +49,8 @@ class LdapWrapper(object):
         self.system_DN = conf['system_dn']
         self.system_password = conf['system_pass']
 
+        self.team_dn = conf['team_dn']
+
         self._conn = ldap.initialize(url)
         self._bind(self.system_DN, self.system_password)
 
@@ -71,9 +73,15 @@ class LdapWrapper(object):
         return self._conn.search_s(self.admin_dn, ldap.SCOPE_SUBTREE, what,
                                    retrieve)
 
+    def _search_team(self, what, retrieve):
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        return self._conn.search_s(self.team_dn, ldap.SCOPE_SUBTREE, what,
+                                   retrieve)
+
     def _search_by_item(self, item):
         required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager',
-                           'userPassword']
+                           'ou', 'userPassword']
         res = self._search(self._filter % item, required_fields)
         if not res:
             raise UnknownLdapUser
@@ -121,6 +129,7 @@ class LdapWrapper(object):
         data['country'] = self._extract_country(user_dn)
         data['manager_cn'] = self._extract_country(data['manager_dn'])
         data['userPassword'] = entry['userPassword'].pop()
+        data['ou'] = entry['ou']
 
         return data
 
@@ -161,13 +170,12 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
-        result = self._conn.add_s(dn, ldif)
-        # log.debug('ldap result: %r' % result)
+        self._conn.add_s(dn, ldif)
 
         # return password to display it to the administrator
         return dn
 
-    def update_user(self, user, password=None):
+    def update_user(self, user, password=None, unit=None):
         """ Update user params in ldap directory """
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
@@ -179,6 +187,9 @@ class LdapWrapper(object):
         }
         if password:
             fields['userPassword'] = password
+
+        if unit:
+            fields['ou'] = [str(unit)]
 
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
@@ -203,9 +214,9 @@ class LdapWrapper(object):
         # Convert place-holders for modify-operation using modlist-module
         ldif = modlist.modifyModlist(old, new)
         if ldif:
+            log.info('sending for dn %r: %r' % (dn, ldif))
             # Do the actual modification if needed
-            result = self._conn.modify_s(dn, ldif)
-            # log.debug('ldap result: %r' % result)
+            self._conn.modify_s(dn, ldif)
 
     def delete_user(self, user_dn):
         """ Delete user from ldap """
@@ -214,8 +225,7 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # Do the actual synchronous add-operation to the ldapserver
-        result = self._conn.delete_s(user_dn)
-        # log.debug('ldap result: %r' % result)
+        self._conn.delete_s(user_dn)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
@@ -235,12 +245,12 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # retrieve all users so we can extract OU
-        required = ['ou']
-        item = 'ou=*'
-        res = self._search(self._filter % item, required)
+        required = None
+        item = '(member=*)'
+        res = self._search_team(item, required)
         units = []
         for USER_DN, entry in res:
-            units.extend(entry['ou'])
+            units.append(USER_DN)
         # only return unique entries
         return set(units)
 
@@ -249,12 +259,11 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # retrieve all users so we can extract OU
-        required = ['ou']
-        item = 'ou=*'
-        res = self._search(self._filter % item, required)
-        managers = []
-        for USER_DN, entry in res:
-            managers.append(USER_DN)
+        required = None
+        item = '(&(member=*)(cn=manager*))'
+        res = self._search_team(item, required)
+        USER_DN, entry = res[0]
+        managers = entry['member']
         # only return unique entries
         return sorted(managers)
 

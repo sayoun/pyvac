@@ -237,18 +237,20 @@ class User(Base):
         if user_data is not None:
             login = user_data['login']
             user = User.by_login(session, login)
+
+            # check what type of user it is
+            group = u'user'
+            # if it's a manager members should have him associated as such
+            what = '(manager=%s)' % user_data['dn']
+            if len(ldap._search(what, None)) > 0:
+                group = u'manager'
+            # if it's an admin he should be in admin group
+            what = '(member=%s)' % user_data['dn']
+            if len(ldap._search_admin(what, None)) > 0:
+                group = u'admin'
+
             # create user if needed
             if not user:
-                # check what type of user it is
-                group = u'user'
-                # if it's a manager members should have him associated as such
-                what = '(manager=%s)' % user_data['dn']
-                if len(ldap._search(what, None)) > 0:
-                    group = u'manager'
-                # if it's an admin he should be in admin group
-                what = '(member=%s)' % user_data['dn']
-                if len(ldap._search_admin(what, None)) > 0:
-                    group = u'admin'
                 user = User.create_from_ldap(session, user_data, group)
             else:
                 # update user with ldap informations in case it changed
@@ -257,6 +259,7 @@ class User(Base):
                 user.lastname = unicode(user_data['lastname'])
                 user.manager_dn = unicode(user_data['manager_dn'])
                 user.dn = unicode(user_data['dn'])
+                user.role = group
 
             return user
 
@@ -338,6 +341,9 @@ class Request(Base):
         """
         Get requests for users under given manager.
         """
+        if manager.ldap_user:
+            return cls.by_manager_ldap(session, manager, count=count)
+
         return cls.find(session,
                         join=(cls.user),
                         where=(User.manager_id == manager.id,
