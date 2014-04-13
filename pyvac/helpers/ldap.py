@@ -94,7 +94,8 @@ class LdapWrapper(object):
         return self._search_by_item(item)
 
     def search_user_by_dn(self, user_dn):
-        return self._search_by_item(user_dn)
+        item = 'cn=*%s*' % self._extract_cn(user_dn)
+        return self._search_by_item(item)
 
     def _extract_country(self, user_dn):
         """ Get country from a user dn """
