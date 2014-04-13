@@ -34,7 +34,7 @@ class SmtpWrapper(object):
         """ Send a mail through smtp using given parameters """
         msg = MIMEText(content)
 
-        msg['Subject'] = 'Request %s' % request.type
+        msg['Subject'] = 'Request %s' % request.status
         msg['From'] = sender
         msg['To'] = target
 
