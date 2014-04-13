@@ -1,5 +1,5 @@
-Pyvac README
-============
+pyvac
+=====
 
 Getting Started
 ---------------
