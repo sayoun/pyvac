@@ -31,8 +31,10 @@ requires = [
     'pyyaml',
 
     'cryptacular',
-    # 'requests >=1.2, <1.0',  # version excluded bugs in case a proxy is used
-    # 'docutils',
+
+    'icalendar',
+    'vobject',
+    'python-ldap',
 ]
 
 if sys.version_info[:2] < (2, 7):
@@ -52,7 +54,7 @@ setup(name='pyvac',
       author='',
       author_email='',
       url='',
-      keywords='web wsgi bfg pylons pyramid',
+      keywords='web wsgi pylons pyramid',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
