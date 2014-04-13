@@ -138,13 +138,14 @@
           if ($(this).attr('disabled') == 'disabled'){
             return;
           }
+
           request_id =  $( this ).attr('data-rid');
-          td_req_status_id = '#td_req_status_' + request_id
+          td_req_status_id = '#td_req_status_' + request_id;
 
           /* Send the data using post */
-          url_accept = "{{ route_url('request_accept') }}"
-          url_refuse = "{{ route_url('request_refuse') }}"
-          url_cancel = "{{ route_url('request_cancel') }}"
+          url_accept = "{{ route_url('request_accept') }}";
+          url_refuse = "{{ route_url('request_refuse') }}";
+          url_cancel = "{{ route_url('request_cancel') }}";
 
           if ($( this ).attr('title') == 'accept')
           {
@@ -169,9 +170,9 @@
           function( data ) {
             $( td_req_status_id ).html(data);
             $( '#td_req_buttons_' + request_id +'> '+a_button ).attr('disabled', 'disabled');
-            if (a_button == 'a#cancel-request'){
+            //if (a_button == 'a#cancel-request'){
               // $('#tr_req_' + request_id).hide();
-            }
+            //}
           },
           'json');
       };

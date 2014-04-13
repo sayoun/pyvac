@@ -248,7 +248,7 @@ class User(Base):
             what = '(member=%s)' % user_data['dn']
             if len(ldap._search_admin(what, None)) > 0:
                 group = u'admin'
-
+            log.info('group found for %s: %s' % (login, group))
             # create user if needed
             if not user:
                 user = User.create_from_ldap(session, user_data, group)
