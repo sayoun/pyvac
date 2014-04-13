@@ -54,10 +54,7 @@ class UserTestCase(ModelTestCase):
 
     def test_get_admin_by_country(self):
         from pyvac.models import User
-        admins = User.get_admin_by_country(self.session, u'fr')
-        self.assertEqual(len(admins), 1)
-        # take the first
-        admin = admins[0]
+        admin = User.get_admin_by_country(self.session, u'fr')
         self.assertEqual(admin.name, u'admin')
         self.assertEqual(admin.country, u'fr')
 

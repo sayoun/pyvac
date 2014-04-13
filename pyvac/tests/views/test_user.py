@@ -7,14 +7,16 @@ class AccountTestCase(case.ViewAdminTestCase):
         from pyvac.views.user import Edit
         view = Edit(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set(['csrf_token', 'pyvac', 'user', 'errors']))
+                         set(['csrf_token', 'pyvac', 'user', 'errors',
+                              'use_ldap']))
         self.assertEqual(view['user'].login, u'admin')
 
     def test_update_password(self):
         from pyvac.views.user import ChangePassword as ChangePwd
         view = ChangePwd(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set(['csrf_token', 'pyvac', 'user', 'errors']))
+                         set(['csrf_token', 'pyvac', 'user', 'errors',
+                              'use_ldap']))
         self.assertEqual(view['user'].login, u'admin')
 
     def test_update_post_ok(self):
