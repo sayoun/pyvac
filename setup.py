@@ -33,7 +33,6 @@ requires = [
     'cryptacular',
 
     'icalendar',
-    'vobject',
     'python-ldap',
 ]
 
