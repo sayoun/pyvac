@@ -14,18 +14,14 @@ with open(os.path.join(here, 'pyvac', '__init__.py')) as v_file:
 
 requires = [
     'pyramid',
-    'waitress',
     'SQLAlchemy',
 
-    'pyramid_filterwarnings',
     'pyramid_jinja2',
     'pyramid_tm',
     'zope.sqlalchemy',
 
-    'celery==2.5.3',
-    'redis',
-    # debian kombu package version does not exist in version 2.5.X
-    'kombu==2.1.8',
+    'celery',
+    'kombu',
     'simplejson >=2.1, <3',
     'jsonschema >=0.7, <0.8',
     'pyyaml',
