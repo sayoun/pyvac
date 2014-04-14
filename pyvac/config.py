@@ -22,14 +22,20 @@ except ImportError:
 from pyvac.helpers.ldap import LdapCache
 
 
-def configure(filename='conf/pyvac.yaml', init_celery=True):
+def configure(filename='conf/pyvac.yaml', init_celery=True, default_app=None):
     with open(filename) as fdesc:
         conf = yaml.load(fdesc, YAMLLoader)
     if conf.get('logging'):
         dictConfig(conf.get('logging'))
 
     if init_celery:
-        from celery.app import default_app
+        if not default_app:
+            try:
+                from celery import Celery
+                default_app = Celery()
+            except ImportError:  # pragma: no cover
+                from celery.app import default_app
+
         default_app.config_from_object(conf.get('celeryconfig'))
         # XXX: must call loader for celery to register all the tasks
         default_app.loader.import_default_modules()

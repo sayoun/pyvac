@@ -5,10 +5,23 @@ from __future__ import absolute_import
 
 import sys
 
-from celery.app import default_app
-from celery.bin.celeryd import WorkerCommand as BaseWorkerCommand
-from celery.bin.celeryctl import help as BaseHelp
-from celery.bin.celeryctl import celeryctl as BaseCeleryCtl
+try:
+    from celery import Celery
+    default_app = Celery()
+except ImportError:  # pragma: no cover
+    from celery.app import default_app
+
+try:
+    from celery.bin.worker import worker as BaseWorkerCommand
+except ImportError:  # pragma: no cover
+    from celery.bin.celeryd import WorkerCommand as BaseWorkerCommand
+
+try:
+    from celery.bin.celery import help as BaseHelp
+    from celery.bin.celery import CeleryCommand as BaseCeleryCtl
+except ImportError:  # pragma: no cover
+    from celery.bin.celeryctl import help as BaseHelp
+    from celery.bin.celeryctl import celeryctl as BaseCeleryCtl
 
 from pyvac.config import configure
 
@@ -21,7 +34,7 @@ class CommandMixin(object):
             print >> sys.stderr, 'No configuration file specified.'
             sys.exit(1)
 
-        configure(sys.argv[1])
+        configure(sys.argv[1], default_app=default_app)
 
         self.app = default_app
         return argv[:1] + argv[2:]
