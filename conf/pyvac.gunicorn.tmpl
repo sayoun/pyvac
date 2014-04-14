@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+CONFIG = {
+        'mode': 'paster',
+        'environment': {
+                'ENVIRONMENT': 'production',
+        },
+        'user': 'pyvac',
+        'group': 'nogroup',
+        'working_dir': '/usr/lib/python2.7/dist-packages/pyvac/',
+        'python': '/usr/bin/python2.7',
+        'args': (
+            '--workers=2',
+            '--timeout=60',
+            '--bind=0.0.0.0:80',
+            '--log-level=info',
+            '/etc/gandi/pyvac-production.ini',
+            ),
+}
