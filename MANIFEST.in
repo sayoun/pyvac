@@ -1,4 +1,5 @@
 include LICENSE
 include *.txt *.ini *.cfg *.rst
+include conf/*.tmpl
 recursive-include pyvac *.ico *.png *.css *.gif *.jpg *.pt *.txt *.js *.html *.pot *.po *.pem
 recursive-exclude tests *
