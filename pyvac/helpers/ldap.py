@@ -237,7 +237,8 @@ class LdapWrapper(object):
             # XXX: for now return on the first HR found
             # if item == country:
             # found valid hr user for this country
-            login = self._extract_cn(entry['member'])
+            # take the first member of this group
+            login = self._extract_cn(entry['member'][0])
             user_data = self.search_user_by_login(login)
             return user_data
 

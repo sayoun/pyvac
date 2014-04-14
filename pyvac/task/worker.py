@@ -153,7 +153,7 @@ Request details: %s""" % req.summarymail
         self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # send mail to manager
-        src = admin.email
+        src = self.get_admin_mail(admin)
         dst = req.user.manager_mail
         if 'autoaccept' in data:
             content = """A request you accepted was automatically approved, it has been added to calendar.
