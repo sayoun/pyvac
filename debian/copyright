@@ -1,0 +1,11 @@
+Format: http://dep.debian.net/deps/dep5
+Upstream-Name: pyvac
+Source: https://github.com/sayoun/pyvac
+
+Files: *
+Copyright: 2014 Dejan Filipovic
+License: GPL-2
+
+License: GPL-2
+ See /usr/share/common-licenses/GPL-2
+ 

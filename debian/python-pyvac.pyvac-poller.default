@@ -1,0 +1,9 @@
+CONFFILE=/etc/gandi/pyvac.yaml
+LOGLEVEL="INFO"
+QUEUEPOLL="pyvac_poll"
+RUN="no"
+
+# Define user/group will run as
+DAEMONUSER=pyvac
+DAEMONGROUP=nogroup
+DAEMON_OPTS="$CONFFILE -l $LOGLEVEL -B -Q $QUEUEPOLL -c 1 --schedule=/var/run/pyvac-poller/beat.db"

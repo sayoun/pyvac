@@ -1,0 +1,11 @@
+# Required until debian generates metadata-1.1 or 1.2 egg_info
+python_dateutil python-dateutil (>= 1.4)
+logutils python-logutils
+jsonschema python-jsonschema (>= 0.7)
+simplejson python-simplejson (>= 2.1)
+celery python-celery
+kombu python-kombu
+icalendar python-icalendar
+pyramid python-pyramid
+pyramid_jinja2 python-pyramid-jinja2
+PasteScript python-pastescript (>= 1.7.5)

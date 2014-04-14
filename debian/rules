@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+PYVERS=$(shell pyversions -r)
+
+%:
+    dh $@ --with python2
+
+override_dh_installinit:
+    dh_installinit --name=pyvac-poller --no-restart-on-upgrade --no-start
+    dh_installinit --name=pyvac-worker --no-restart-on-upgrade --no-start
+
+.PHONY: override_dh_installinit

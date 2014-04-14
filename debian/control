@@ -1,0 +1,35 @@
+Source: pyvac
+Priority: optional
+Section: python
+Maintainer: Dejan Filipovic <sayoun@gandi.net>
+Build-Depends: debhelper (>= 8),
+ python (>= 2.6),
+ python-pyramid,
+ python-sqlalchemy (>= 0.7.2),
+ python-pyramid-jinja2,
+ python-pyramid-tm,
+ python-zope.sqlalchemy,
+ python-jsonschema (>= 0.7),
+ python-simplejson (>= 2.1),
+ python-dateutil (>= 1.4),
+ python-yaml,
+ python-logutils,
+ python-celery,
+ python-cryptacular,
+ python-ldap,
+ quilt
+Build-Depends-Indep: python-setuptools
+Standards-Version: 3.9.3
+X-Python-Version: >= 2.7
+
+Package: python-pyvac
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Provides: ${python:Provides}
+Suggests: httpd-wsgi
+Description: a web application for human resources calendar
+ Pyvac is a python Pyramid HTTP application that use Celery
+ framework for backends.
+ .
+ Pyvac purpose is to allow HR to handle leave calendar of
+ employee and manage internal ldap of employee.

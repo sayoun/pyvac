@@ -1,0 +1,9 @@
+CONFFILE=/etc/gandi/pyvac.yaml
+LOGLEVEL="INFO"
+QUEUEPOLL="pyvac_work"
+RUN="no"
+
+# Define user/group will run as
+DAEMONUSER=pyvac
+DAEMONGROUP=nogroup
+DAEMON_OPTS="$CONFFILE -l $LOGLEVEL -Q $QUEUEPOLL"
