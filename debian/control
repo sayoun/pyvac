@@ -27,7 +27,7 @@ Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
 Provides: ${python:Provides}
 Suggests: httpd-wsgi
-Description: a web application for human resources calendar
+Description: Web application for human resources calendar
  Pyvac is a python Pyramid HTTP application that use Celery
  framework for backends.
  .
