@@ -1,3 +1,9 @@
+pyvac (0.1.0-2) unstable; urgency=low
+
+  * Fixes debian install directory for configuration
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 15 Apr 2014 11:37:41 +0200
+
 pyvac (0.1.0-1) unstable; urgency=low
 
   * Initial packaging.
