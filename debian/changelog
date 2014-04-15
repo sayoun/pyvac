@@ -1,3 +1,9 @@
+pyvac (0.1.0-3) unstable; urgency=low
+
+  * Fixes debian version requirements for jsonchema and simplejson
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 15 Apr 2014 13:34:17 +0200
+
 pyvac (0.1.0-2) unstable; urgency=low
 
   * Fixes debian install directory for configuration
