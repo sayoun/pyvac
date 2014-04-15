@@ -22,8 +22,8 @@ requires = [
 
     'celery',
     'kombu',
-    'simplejson >=2.1, <3',
-    'jsonschema >=0.7, <0.8',
+    'simplejson >=2.1',
+    'jsonschema >=0.7',
     'pyyaml',
 
     'cryptacular',
