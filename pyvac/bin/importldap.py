@@ -19,9 +19,15 @@ def usage(argv):
 
 
 def populate(engine, ldap):
+    """ Retrieve users from ldap directory and import them in local database
+    """
 
     session = DBSession()
 
+    # retrieve managers from dedicated group
+    managers = ldap.list_manager()
+
+    # retrieve users
     searchFilter = '(&(objectClass=inetOrgPerson)(employeetype=Employee))'
     required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
                 'manager', 'mail', 'ou', 'uid', 'userPassword']
@@ -29,12 +35,11 @@ def populate(engine, ldap):
     users = ldap._search(searchFilter, required)
     for user_dn, user_entry in users:
         user_data = ldap.parse_ldap_entry(user_dn, user_entry)
-        login = unicode(user_data['login'])
+        login = user_data['login'].decode('utf-8')
         # check what type of user it is
         group = u'user'
-        # if it's a manager members should have him associated as such
-        what = '(manager=%s)' % user_data['dn']
-        if len(ldap._search(what, None)) > 0:
+        # if it's a manager he should be in manager group
+        if user_data['dn'] in managers:
             group = u'manager'
         # if it's an admin he should be in admin group
         what = '(member=%s)' % user_data['dn']
@@ -46,11 +51,11 @@ def populate(engine, ldap):
             user = User.create_from_ldap(session, user_data, group)
         else:
             # update user with ldap informations in case it changed
-            user.email = unicode(user_data['email'])
-            user.firstname = unicode(user_data['firstname'])
-            user.lastname = unicode(user_data['lastname'])
-            user.manager_dn = unicode(user_data['manager_dn'])
-            user.dn = unicode(user_data['dn'])
+            user.email = user_data['email'].decode('utf-8')
+            user.firstname = user_data['firstname'].decode('utf-8')
+            user.lastname = user_data['lastname'].decode('utf-8')
+            user.manager_dn = user_data['manager_dn'].decode('utf-8')
+            user.dn = user_data['dn'].decode('utf-8')
             user.role = group
 
         session.add(user)
