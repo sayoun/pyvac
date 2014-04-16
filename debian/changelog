@@ -1,3 +1,9 @@
+pyvac (0.1.0-5) unstable; urgency=low
+
+  * Fixes query count request for postgres
+
+ -- sayoun <sayoun@granola.gandi.net>  Wed, 16 Apr 2014 11:19:45 +0200
+
 pyvac (0.1.0-4) unstable; urgency=low
 
   * Fixes enum declaration in models for postgres
