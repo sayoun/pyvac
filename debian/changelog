@@ -1,3 +1,9 @@
+pyvac (0.1.0-8) unstable; urgency=low
+
+  * Fixes bug with password encoding when updating ldap user
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 16 Apr 2014 16:53:45 +0200
+
 pyvac (0.1.0-7) unstable; urgency=low
 
   * Fixes login when using unicode characters and add import ldap user
