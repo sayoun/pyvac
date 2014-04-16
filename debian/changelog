@@ -1,3 +1,10 @@
+pyvac (0.1.0-7) unstable; urgency=low
+
+  * Fixes login when using unicode characters and add import ldap user
+    script
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 16 Apr 2014 16:28:05 +0200
+
 pyvac (0.1.0-6) unstable; urgency=low
 
   * Fixes packaging to include icons for font-awesome
