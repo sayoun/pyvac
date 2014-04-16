@@ -122,7 +122,7 @@ class Edit(AccountMixin, EditView):
             r = self.request
             password = None
             if 'user.password' in r.params and r.params['user.password']:
-                password = [hashPassword(str(r.params['user.password']))]
+                password = [hashPassword(r.params['user.password'])]
 
             unit = None
             if 'unit' in r.params and r.params['unit']:

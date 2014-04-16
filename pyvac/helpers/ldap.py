@@ -175,7 +175,7 @@ class LdapWrapper(object):
             unit = 'development'
         attrs['ou'] = [str(unit)]
 
-        attrs['userPassword'] = [hashPassword(str(password))]
+        attrs['userPassword'] = [hashPassword(password)]
         attrs['manager'] = [str(user.manager_dn)]
 
         # Convert our dict for the add-function using modlist-module
