@@ -9,3 +9,4 @@ icalendar python-icalendar
 pyramid python-pyramid
 pyramid_jinja2 python-pyramid-jinja2
 PasteScript python-pastescript (>= 1.7.5)
+passlib  python-passlib

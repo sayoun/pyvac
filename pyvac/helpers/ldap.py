@@ -1,12 +1,10 @@
 from __future__ import absolute_import
 
-import os
 import logging
-import hashlib
-from base64 import b64encode as encode
 import random
 import string
 import yaml
+from passlib.hash import ldap_salted_sha1
 
 try:
     from yaml import CSafeLoader as YAMLLoader
@@ -57,8 +55,13 @@ class LdapWrapper(object):
         log.info('Ldap wrapper initialized')
 
     def _bind(self, dn, password):
+        """ bind a user in ldap with given password
+
+        ldap does not support unicode for binding
+        so we must cast password to utf-8
+        """
         log.debug('binding with dn: %s' % dn)
-        self._conn.simple_bind_s(dn, password)
+        self._conn.simple_bind_s(dn, password.encode('utf-8'))
 
     def _search(self, what, retrieve):
         # rebind with system dn
@@ -138,6 +141,7 @@ class LdapWrapper(object):
         """ Authenticate user using given credentials """
 
         user_data = self.search_user_by_login(login)
+
         # try to bind with password
         self._bind(user_data['dn'], password)
         return user_data
@@ -294,8 +298,7 @@ class LdapCache(object):
 
 def hashPassword(password):
     """ Generate a password in SSHA format suitable for ldap """
-    salt = os.urandom(4)
-    return '{SSHA}' + encode(hashlib.sha1(str(password) + salt).digest() + salt)
+    return ldap_salted_sha1.encrypt(password)
 
 
 def randomstring(length=8):

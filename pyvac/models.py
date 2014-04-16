@@ -235,7 +235,7 @@ class User(Base):
         ldap = LdapCache()
         user_data = ldap.authenticate(login, password)
         if user_data is not None:
-            login = user_data['login']
+            login = unicode(user_data['login'])
             user = User.by_login(session, login)
 
             # check what type of user it is

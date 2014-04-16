@@ -27,6 +27,7 @@ requires = [
     'pyyaml',
 
     'cryptacular',
+    'passlib',
 
     'icalendar',
     'python-ldap',
