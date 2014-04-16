@@ -123,17 +123,26 @@ class LdapWrapper(object):
 
         data = {
             'email': entry[self.mail_attr].pop(),
-            'firstname': entry[self.firstname_attr].pop(),
             'lastname': entry[self.lastname_attr].pop(),
             'login': entry[self.login_attr].pop(),
-            'manager_dn': entry[self.manager_attr].pop(),
+            'manager_dn': '',
+            'firstname': '',
         }
+
+        if self.manager_attr in entry:
+            data['manager_dn'] = entry[self.manager_attr].pop()
+
+        if self.firstname_attr in entry:
+            data['firstname'] = entry[self.firstname_attr].pop()
+
+        if 'ou' in entry:
+            data['ou'] = entry['ou']
+
         # save user dn
         data['dn'] = user_dn
         data['country'] = self._extract_country(user_dn)
         data['manager_cn'] = self._extract_country(data['manager_dn'])
         data['userPassword'] = entry['userPassword'].pop()
-        data['ou'] = entry['ou']
 
         return data
 

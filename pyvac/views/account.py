@@ -24,7 +24,7 @@ class List(View):
     def render(self):
 
         return {u'user_count': User.find(self.session, count=True),
-                u'users': User.find(self.session),
+                u'users': User.find(self.session, order_by=[User.dn]),
                 }
 
 

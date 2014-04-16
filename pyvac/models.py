@@ -254,11 +254,11 @@ class User(Base):
                 user = User.create_from_ldap(session, user_data, group)
             else:
                 # update user with ldap informations in case it changed
-                user.email = unicode(user_data['email'])
-                user.firstname = unicode(user_data['firstname'])
-                user.lastname = unicode(user_data['lastname'])
-                user.manager_dn = unicode(user_data['manager_dn'])
-                user.dn = unicode(user_data['dn'])
+                user.email = user_data['email'].decode('utf-8')
+                user.firstname = user_data['firstname'].decode('utf-8')
+                user.lastname = user_data['lastname'].decode('utf-8')
+                user.manager_dn = user_data['manager_dn'].decode('utf-8')
+                user.dn = user_data['dn'].decode('utf-8')
                 user.role = group
 
             return user
@@ -268,14 +268,14 @@ class User(Base):
         """
         Create a new user in database using ldap data information
         """
-        user = User(login=unicode(data['login']),
-                    email=unicode(data['email']),
-                    firstname=unicode(data['firstname']),
-                    lastname=unicode(data['lastname']),
-                    country=unicode(data['country']),
-                    manager_dn=unicode(data['manager_dn']),
+        user = User(login=data['login'].decode('utf-8'),
+                    email=data['email'].decode('utf-8'),
+                    firstname=data['firstname'].decode('utf-8'),
+                    lastname=data['lastname'].decode('utf-8'),
+                    country=data['country'].decode('utf-8'),
+                    manager_dn=data['manager_dn'].decode('utf-8'),
                     ldap_user=True,
-                    dn=unicode(data['dn']),
+                    dn=data['dn'].decode('utf-8'),
                     role=group,
                     )
         # in user group
