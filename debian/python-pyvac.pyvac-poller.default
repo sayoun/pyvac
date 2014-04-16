@@ -1,4 +1,4 @@
-CONFFILE=/etc/gandi/pyvac.yaml
+CONFFILE=/etc/gandi/pyvac/pyvac.yaml
 LOGLEVEL="INFO"
 QUEUEPOLL="pyvac_poll"
 RUN="no"
