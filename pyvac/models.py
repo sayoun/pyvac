@@ -85,8 +85,8 @@ class User(Base):
     groups = relationship(Group, secondary=user__group, lazy='joined',
                           backref='users')
 
-    role = Column(Enum('user', 'manager', 'admin'), nullable=False,
-                  name='enum_user_role',
+    role = Column(Enum('user', 'manager', 'admin', name='enum_user_role'),
+                  nullable=False,
                   default='user')
 
     manager_id = Column(Integer, ForeignKey(u'user.id'))
