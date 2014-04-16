@@ -1,3 +1,9 @@
+pyvac (0.1.0-4) unstable; urgency=low
+
+  * Fixes enum declaration in models for postgres
+
+ -- sayoun <sayoun@granola.gandi.net>  Wed, 16 Apr 2014 09:53:01 +0200
+
 pyvac (0.1.0-3) unstable; urgency=low
 
   * Fixes debian version requirements for jsonchema and simplejson
