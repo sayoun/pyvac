@@ -1,3 +1,9 @@
+pyvac (0.1.0-10) unstable; urgency=low
+
+  * Add dependency to caldav package
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 16 Apr 2014 17:20:44 +0200
+
 pyvac (0.1.0-9) unstable; urgency=low
 
   * Fixes configuration file path for default file in initscript
