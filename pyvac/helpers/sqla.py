@@ -81,10 +81,11 @@ class _Base(object):
                 query = query.filter(filter)
 
         if order_by is not None:
-            if isinstance(order_by, (list, tuple)):
-                query = query.order_by(*order_by)
-            else:
-                query = query.order_by(order_by)
+            if count is None:
+                if isinstance(order_by, (list, tuple)):
+                    query = query.order_by(*order_by)
+                else:
+                    query = query.order_by(order_by)
         if limit:
             query = query.limit(limit)
         if offset:
