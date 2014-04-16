@@ -29,6 +29,7 @@ requires = [
     'cryptacular',
     'passlib',
 
+    'caldav',
     'icalendar',
     'python-ldap',
 ]
