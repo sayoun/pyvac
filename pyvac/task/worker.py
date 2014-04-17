@@ -72,6 +72,7 @@ Request details: %s""" % (req.user.name, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
+            log.exception('Error while sending mail')
             req.flag_error(str(err))
 
         self.session.flush()
@@ -106,6 +107,7 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
+            log.exception('Error while sending mail')
             req.flag_error(str(err))
 
         self.session.flush()
@@ -175,6 +177,7 @@ Request details: %s""" % req.summarymail
             # update request status after sending email
             req.notified = True
         except Exception as err:
+            log.exception('Error while sending mail')
             req.flag_error(str(err))
 
         try:
@@ -184,6 +187,7 @@ Request details: %s""" % req.summarymail
                      req.date_to,
                      req.summarycal)
         except Exception as err:
+            log.exception('Error while adding to calendar')
             req.flag_error(str(err))
 
         self.session.flush()
@@ -212,6 +216,7 @@ Request details: %s""" % (req.reason, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
+            log.exception('Error while sending mail')
             req.flag_error(str(err))
 
         self.session.flush()
