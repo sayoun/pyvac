@@ -54,6 +54,8 @@ celeryconfig:
         - 'poller':
             queue: 'pyvac_poll'
             routing_key: 'pyvac_poll'
+    CELERYD_HIJACK_ROOT_LOGGER: False
+    CELERYD_LOG_COLOR: 0
 
 databases:
     pyvac:
