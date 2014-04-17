@@ -410,7 +410,6 @@ class Request(Base):
                                and_(cls.date_from <= req.date_to,
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
-                               cls.status != 'CANCELED_NOTIFIED',
                                cls.id != req.id),
                         count=count,
                         order_by=cls.user_id)
