@@ -1,3 +1,9 @@
+pyvac (0.1.0-13) unstable; urgency=low
+
+  * Fixes manager name for email when in ldap mode
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 17 Apr 2014 10:50:45 +0200
+
 pyvac (0.1.0-12) unstable; urgency=low
 
   * Fixes conflict requests and log messages
