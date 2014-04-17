@@ -1,3 +1,9 @@
+pyvac (0.1.0-18) unstable; urgency=low
+
+  * Fixes auto accept by HR and exception logging
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 17 Apr 2014 16:44:18 +0200
+
 pyvac (0.1.0-17) unstable; urgency=low
 
   * Handle requests in ERROR on list page
