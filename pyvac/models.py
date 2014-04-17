@@ -136,6 +136,16 @@ class User(Base):
             user_data = ldap.search_user_by_dn(self.manager_dn)
             return user_data['email']
 
+    @property
+    def manager_name(self):
+        """ Get manager name for a user """
+        if not self.ldap_user:
+            return self.manager.name
+        else:
+            ldap = LdapCache()
+            user_data = ldap.search_user_by_dn(self.manager_dn)
+            return user_data['login']
+
     @classmethod
     def by_login(cls, session, login):
         """

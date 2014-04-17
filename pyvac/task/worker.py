@@ -89,14 +89,14 @@ class WorkerAccepted(BaseWorker):
         src = req.user.manager_mail
         dst = req.user.email
         content = """Your request has been accepted by %s. Waiting for HR validation.
-Request details: %s""" % (req.user.manager.name, req.summarymail)
+Request details: %s""" % (req.user.manager_name, req.summarymail)
         self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # send mail to HR
         admin = req.user.get_admin(self.session)
         dst = self.get_admin_mail(admin)
         content = """Manager %s has accepted a new request. Waiting for your validation.
-Request details: %s""" % (req.user.manager.name, req.summarymail)
+Request details: %s""" % (req.user.manager_name, req.summarymail)
         self.send_mail(sender=src, target=dst, request=req, content=content)
 
         # update request status after sending email
