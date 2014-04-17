@@ -121,8 +121,9 @@ class WorkerAcceptedNotified(BaseWorker):
         auto flag as accepted by HR
         """
         req = Request.by_id(self.session, data['req_id'])
+        delta = (req.created_at + relativedelta(days=3)) - datetime.now()
         # after Request.created_at + 3 days, auto accept it by HR
-        if (req.created_at + relativedelta(days=3)) >= datetime.now():
+        if delta.days > 3:
             # auto accept it as HR
             self.log.info('3 days passed, auto accept it by HR')
 
