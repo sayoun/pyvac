@@ -67,10 +67,13 @@ class WorkerPending(BaseWorker):
         dst = req.user.manager_mail
         content = """New request from %s
 Request details: %s""" % (req.user.name, req.summarymail)
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+        try:
+            self.send_mail(sender=src, target=dst, request=req, content=content)
+            # update request status after sending email
+            req.notified = True
+        except Exception as err:
+            req.flag_error(err)
 
-        # update request status after sending email
-        req.notified = True
         self.session.flush()
         self.session.commit()
 
@@ -90,17 +93,21 @@ class WorkerAccepted(BaseWorker):
         dst = req.user.email
         content = """Your request has been accepted by %s. Waiting for HR validation.
 Request details: %s""" % (req.user.manager_name, req.summarymail)
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+        try:
+            self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        # send mail to HR
-        admin = req.user.get_admin(self.session)
-        dst = self.get_admin_mail(admin)
-        content = """Manager %s has accepted a new request. Waiting for your validation.
+            # send mail to HR
+            admin = req.user.get_admin(self.session)
+            dst = self.get_admin_mail(admin)
+            content = """Manager %s has accepted a new request. Waiting for your validation.
 Request details: %s""" % (req.user.manager_name, req.summarymail)
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        # update request status after sending email
-        req.notified = True
+            # update request status after sending email
+            req.notified = True
+        except Exception as err:
+            req.flag_error(err)
+
         self.session.flush()
         self.session.commit()
 
@@ -150,29 +157,36 @@ Request details: %s""" % req.summarymail
         else:
             content = """HR has accepted your request, it has been added to calendar.
 Request details: %s""" % req.summarymail
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+        try:
+            self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        # send mail to manager
-        src = self.get_admin_mail(admin)
-        dst = req.user.manager_mail
-        if 'autoaccept' in data:
-            content = """A request you accepted was automatically approved, it has been added to calendar.
+            # send mail to manager
+            src = self.get_admin_mail(admin)
+            dst = req.user.manager_mail
+            if 'autoaccept' in data:
+                content = """A request you accepted was automatically approved, it has been added to calendar.
 Request details: %s""" % req.summarymail
-        else:
-            content = """HR has approved a request you accepted, it has been added to calendar.
+            else:
+                content = """HR has approved a request you accepted, it has been added to calendar.
 Request details: %s""" % req.summarymail
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        # update request status after sending email
-        req.notified = True
+            # update request status after sending email
+            req.notified = True
+        except Exception as err:
+            req.flag_error(err)
+
+        try:
+            # add new entry in caldav
+            addToCal(Conf.get('caldav').get('url'),
+                     req.date_from,
+                     req.date_to,
+                     req.summarycal)
+        except Exception as err:
+            req.flag_error(err)
+
         self.session.flush()
         self.session.commit()
-
-        # add new entry in caldav
-        addToCal(Conf.get('caldav').get('url'),
-                 req.date_from,
-                 req.date_to,
-                 req.summarycal)
 
 
 class WorkerDenied(BaseWorker):
@@ -191,9 +205,13 @@ class WorkerDenied(BaseWorker):
         dst = req.user.email
         content = """You request has been refused for the following reason: %s
 Request details: %s""" % (req.reason, req.summarymail)
-        self.send_mail(sender=src, target=dst, request=req, content=content)
+        try:
+            self.send_mail(sender=src, target=dst, request=req, content=content)
 
-        # update request status after sending email
-        req.notified = True
+            # update request status after sending email
+            req.notified = True
+        except Exception as err:
+            req.flag_error(err)
+
         self.session.flush()
         self.session.commit()

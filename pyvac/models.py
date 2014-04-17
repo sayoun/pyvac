@@ -346,6 +346,11 @@ class Request(Base):
         self.status = status
         self.notified = False
 
+    def flag_error(self, message):
+        """ Set request in ERROR and assign message """
+        self.status = 'ERROR'
+        self.message = message
+
     @classmethod
     def by_manager(cls, session, manager, count=None):
         """
