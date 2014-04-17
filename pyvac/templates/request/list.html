@@ -51,12 +51,12 @@
                     ACCEPT
                 </a>
                 <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-small"
-                {% if req.status == 'DENIED' %}disabled="disabled"{% endif %}>
+                {% if req.status == 'DENIED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
                     DENY
                 </a>
               {% else %}
               <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
-              {% if req.status == 'CANCELED' %}disabled="disabled"{% endif %}>
+              {% if req.status == 'CANCELED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
                 CANCEL
               </a>
               {% endif %}
