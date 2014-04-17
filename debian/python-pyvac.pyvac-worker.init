@@ -14,8 +14,8 @@
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 DAEMON=/usr/bin/pyvac_celeryd
-NAME=pyvac-trigger
-DESC="Pyvac trigger daemon"
+NAME=pyvac-worker
+DESC="Pyvac worker daemon"
 LOGDIR=/var/log/$NAME
 
 PIDFILE=/var/run/$NAME/$NAME.pid
