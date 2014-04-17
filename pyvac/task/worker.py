@@ -72,7 +72,7 @@ Request details: %s""" % (req.user.name, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
-            req.flag_error(err)
+            req.flag_error(str(err))
 
         self.session.flush()
         self.session.commit()
@@ -106,7 +106,7 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
-            req.flag_error(err)
+            req.flag_error(str(err))
 
         self.session.flush()
         self.session.commit()
@@ -174,7 +174,7 @@ Request details: %s""" % req.summarymail
             # update request status after sending email
             req.notified = True
         except Exception as err:
-            req.flag_error(err)
+            req.flag_error(str(err))
 
         try:
             # add new entry in caldav
@@ -183,7 +183,7 @@ Request details: %s""" % req.summarymail
                      req.date_to,
                      req.summarycal)
         except Exception as err:
-            req.flag_error(err)
+            req.flag_error(str(err))
 
         self.session.flush()
         self.session.commit()
@@ -211,7 +211,7 @@ Request details: %s""" % (req.reason, req.summarymail)
             # update request status after sending email
             req.notified = True
         except Exception as err:
-            req.flag_error(err)
+            req.flag_error(str(err))
 
         self.session.flush()
         self.session.commit()
