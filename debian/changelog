@@ -1,3 +1,10 @@
+pyvac (0.1.0-14) unstable; urgency=low
+
+  * Flag request in error if error raise when sending mail or adding to
+    cal
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 17 Apr 2014 12:12:32 +0200
+
 pyvac (0.1.0-13) unstable; urgency=low
 
   * Fixes manager name for email when in ldap mode
