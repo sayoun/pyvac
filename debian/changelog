@@ -1,3 +1,10 @@
+pyvac (0.1.0-15) unstable; urgency=low
+
+  * Disable buttons state when request has been approved, update mail
+    subject and footer
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 17 Apr 2014 14:57:08 +0200
+
 pyvac (0.1.0-14) unstable; urgency=low
 
   * Flag request in error if error raise when sending mail or adding to
