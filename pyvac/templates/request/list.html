@@ -38,27 +38,29 @@
             {% endif %}
             <td>{{ req.days }}</td>
             <td>{{ req.type }}</td>
-            <td id="td_req_status_{{ req.id }}">{{ req.status }}</td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}&nbsp;{{ req.message }}{% endif %}</td>
             <td id="td_req_buttons_{{ req.id }}">
-              {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
-                <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
-                {% if pyvac.user.is_admin %}
-                    {% if req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
-                {% else %}
-                    {% if req.status == 'ACCEPTED_MANAGER' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
-                {% endif %}
-                >
-                    ACCEPT
-                </a>
-                <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-small"
-                {% if req.status == 'DENIED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
-                    DENY
-                </a>
-              {% else %}
-              <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
-              {% if req.status == 'CANCELED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
-                CANCEL
-              </a>
+              {% if req.status != 'ERROR' %}
+                  {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
+                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
+                    {% if pyvac.user.is_admin %}
+                        {% if req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
+                    {% else %}
+                        {% if req.status == 'ACCEPTED_MANAGER' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
+                    {% endif %}
+                    >
+                        ACCEPT
+                    </a>
+                    <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-small"
+                    {% if req.status == 'DENIED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
+                        DENY
+                    </a>
+                  {% else %}
+                  <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                  {% if req.status == 'CANCELED' or req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}>
+                    CANCEL
+                  </a>
+                  {% endif %}
               {% endif %}
             </td>
             <td>{{ req.notified }}</td>
