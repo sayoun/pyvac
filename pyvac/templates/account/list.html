@@ -13,6 +13,7 @@
       <tr>
         <th>{% trans %}Login{% endtrans %}</th>
         <th>{% trans %}Name{% endtrans %}</th>
+        <th>{% trans %}Manager{% endtrans %}</th>
         <th>{% trans %}Type{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
       </tr>
@@ -26,6 +27,7 @@
                 </a>
             </td>
             <td>{{ user.name }}</td>
+            <td>{% if user.manager_dn %}{{ user.manager_dn|extract_cn }}{%else%}-{% endif %}</td>
             <td>
                 {% set pipe = joiner(", ") %}
                 {% for g in user.groups %}{{ pipe() }}{{g.name}}{% endfor %}
