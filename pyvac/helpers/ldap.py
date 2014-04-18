@@ -165,18 +165,18 @@ class LdapWrapper(object):
         attrs = {}
         attrs['objectClass'] = ['inetOrgPerson', 'top']
         attrs['employeeType'] = ['Employee']
-        attrs['cn'] = [str(user.login)]
-        attrs['givenName'] = [str(user.firstname)]
-        attrs['sn'] = [str(user.lastname)]
+        attrs['cn'] = [user.login.encode('utf-8')]
+        attrs['givenName'] = [user.firstname.encode('utf-8')]
+        attrs['sn'] = [user.lastname.encode('utf-8')]
         if uid:
-            attrs['uid'] = [str(uid)]
-        attrs['mail'] = [str(user.email)]
+            attrs['uid'] = [uid.encode('utf-8')]
+        attrs['mail'] = [user.email.encode('utf-8')]
         if not unit:
             unit = 'development'
-        attrs['ou'] = [str(unit)]
+        attrs['ou'] = [unit.encode('utf-8')]
 
         attrs['userPassword'] = [hashPassword(password)]
-        attrs['manager'] = [str(user.manager_dn)]
+        attrs['manager'] = [user.manager_dn.encode('utf-8')]
 
         # Convert our dict for the add-function using modlist-module
         ldif = modlist.addModlist(attrs)
@@ -194,16 +194,16 @@ class LdapWrapper(object):
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
         fields = {
-            'mail': [str(user.email)],
-            'givenName': [str(user.firstname)],
-            'sn': [str(user.lastname)],
-            'manager': [str(user.manager_dn)],
+            'mail': [user.email.encode('utf-8')],
+            'givenName': [user.firstname.encode('utf-8')],
+            'sn': [user.lastname.encode('utf-8')],
+            'manager': [user.manager_dn.encode('utf-8')],
         }
         if password:
             fields['userPassword'] = password
 
         if unit:
-            fields['ou'] = [str(unit)]
+            fields['ou'] = [unit.encode('utf-8')]
 
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
