@@ -228,6 +228,8 @@ class LdapWrapper(object):
         # Convert place-holders for modify-operation using modlist-module
         ldif = modlist.modifyModlist(old, new)
         if ldif:
+            # rebind with system dn
+            self._bind(self.system_DN, self.system_password)
             log.info('sending for dn %r: %r' % (dn, ldif))
             # Do the actual modification if needed
             self._conn.modify_s(dn, ldif)
@@ -236,10 +238,27 @@ class LdapWrapper(object):
         """ Delete user from ldap """
         log.info('deleting user %s from ldap' % user_dn)
 
-        # rebind with system dn
-        self._bind(self.system_DN, self.system_password)
-        # Do the actual synchronous add-operation to the ldapserver
-        self._conn.delete_s(user_dn)
+        # retrieve current user information
+        required = ['employeeType']
+        item = 'cn=*%s*' % self._extract_cn(user_dn)
+        res = self._search(self._filter % item, required)
+        USER_DN, entry = res[0]
+
+        old = {
+            'employeeType': entry['employeeType'],
+        }
+        new = {
+            'employeeType': 'Inactive',
+        }
+
+        # Convert place-holders for modify-operation using modlist-module
+        ldif = modlist.modifyModlist(old, new)
+        if ldif:
+            # rebind with system dn
+            self._bind(self.system_DN, self.system_password)
+            log.info('sending for dn %r: %r' % (user_dn, ldif))
+            # Do the actual modification if needed
+            self._conn.modify_s(user_dn, ldif)
 
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
