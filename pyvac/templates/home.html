@@ -115,7 +115,8 @@ function DateDiff(date1, date2) {
           //cur = dt.getTime();
           if ( prv == -1 || prv == cur ) {
              prv = cur;
-             $('#alternate').val( dateText );
+             $('#alternate').val( dateText+' - '+dateText  );
+             $('#days').val( 1 );
           } else {
              dd = DateDiff(prv, cur);
              t = dd % 7;
