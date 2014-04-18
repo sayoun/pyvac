@@ -118,7 +118,7 @@
                 <label class="control-label">{% trans %}organisational unit:{% endtrans %}</label>
                 <div class="controls">
                 <select name="unit">
-                {% for unit in units %}
+                {% for unit in units|sort %}
                     <option  value="{{ unit }}" {% if unit in ldap_user.ou %}selected="selected"{% endif %}>{{ unit|extract_cn }}</option>
                 {% endfor %}
                  </select>
@@ -129,7 +129,7 @@
                 <label class="control-label">{% trans %}manager:{% endtrans %}</label>
                 <div class="controls">
                 <select name="user.manager_dn">
-                {% for m in managers %}
+                {% for m in managers|sort %}
                     {% if m != user.dn %}
                     <option  value="{{ m }}" {% if ldap_user.manager_dn == m %}selected="selected"{% endif %}>{{ m|extract_cn }}</option>
                     {% endif %}
