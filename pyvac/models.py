@@ -271,6 +271,19 @@ class User(Base):
                 user.dn = user_data['dn'].decode('utf-8')
                 user.role = group
 
+                # handle update of groups if it has changed
+                exists = []
+                group_ids = [Group.by_name(session, group).id]
+
+                for ugroup in user.groups:
+                    exists.append(ugroup.id)
+                    if ugroup.id not in group_ids:
+                        user.groups.remove(ugroup)
+
+                for group_id in group_ids:
+                    if group_id not in exists:
+                        user.groups.append(Group.by_id(session, group_id))
+
             return user
 
     @classmethod
@@ -288,7 +301,7 @@ class User(Base):
                     dn=data['dn'].decode('utf-8'),
                     role=group,
                     )
-        # in user group
+        # put in correct group
         user.groups.append(Group.by_name(session, group))
         session.add(user)
         session.flush()
