@@ -64,18 +64,14 @@ class List(View):
     def render(self):
 
         req_list = {'requests': []}
+        requests = []
         if self.user.is_admin:
-            conflicts = {}
             requests = Request.all_for_admin(self.session)
-            for req in requests:
-                req.conflict = [req2.summary for req2 in Request.in_conflict(self.session, req)]
-                if req.conflict:
-                    conflicts[req.id] = '\n'.join(req.conflict)
-            req_list['requests'] = requests
-            req_list['conflicts'] = conflicts
         elif self.user.is_super:
-            conflicts = {}
             requests = Request.by_manager(self.session, self.user)
+
+        if requests:
+            conflicts = {}
             for req in requests:
                 req.conflict = [req2.summary for req2 in Request.in_conflict(self.session, req)]
                 if req.conflict:
