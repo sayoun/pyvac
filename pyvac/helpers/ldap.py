@@ -12,7 +12,7 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 import ldap
-from ldap import dn, modlist
+from ldap import dn, modlist, SERVER_DOWN
 
 log = logging.getLogger(__file__)
 
@@ -23,6 +23,7 @@ class UnknownLdapUser(Exception):
 
 class LdapWrapper(object):
     """ Simple ldap class wrapper"""
+    _url = None
     _conn = None
     _base = None
     _filter = None
@@ -31,7 +32,7 @@ class LdapWrapper(object):
         with open(filename) as fdesc:
             conf = yaml.load(fdesc, YAMLLoader)
 
-        url = conf['ldap_url']
+        self._url = conf['ldap_url']
         self._base = conf['basedn']
         self._filter = conf['search_filter']
 
@@ -49,7 +50,7 @@ class LdapWrapper(object):
 
         self.team_dn = conf['team_dn']
 
-        self._conn = ldap.initialize(url)
+        self._conn = ldap.initialize(self._url)
         self._bind(self.system_DN, self.system_password)
 
         log.info('Ldap wrapper initialized')
@@ -61,7 +62,11 @@ class LdapWrapper(object):
         so we must cast password to utf-8
         """
         log.debug('binding with dn: %s' % dn)
-        self._conn.simple_bind_s(dn, password.encode('utf-8'))
+        try:
+            self._conn.simple_bind_s(dn, password.encode('utf-8'))
+        except SERVER_DOWN:
+            self._conn = ldap.initialize(self._url)
+            self._conn.simple_bind_s(dn, password.encode('utf-8'))
 
     def _search(self, what, retrieve):
         # rebind with system dn
