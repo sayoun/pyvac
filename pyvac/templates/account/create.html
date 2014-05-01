@@ -86,6 +86,17 @@
                 </div>
             </div>
 
+            <div class="control-group">
+                <label class="control-label">{% trans %}role:{% endtrans %}</label>
+                <div class="controls">
+                <select name="user.role">
+                {% for r in ['user', 'manager', 'admin'] %}
+                    <option  value="{{ r }}" {% if r == user.role %}selected="selected"{% endif %}>{{ r }}</option>
+                {% endfor %}
+                 </select>
+                </div>
+            </div>
+
                 {% if user.role != 'admin' %}
                 <div class="control-group">
                     <label class="control-label">{% trans %}manager:{% endtrans %}</label>
