@@ -130,7 +130,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         month = 3
         requests = Request.get_by_month(self.session, month)
-        self.assertEqual(len(requests), 4)
+        self.assertEqual(len(requests), 1)
 
     def test_summary(self):
         from pyvac.models import Request

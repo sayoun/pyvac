@@ -59,7 +59,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import List
         view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'requests', 'pyvac']))
+                         set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(len(view[u'requests']), 1)
         self.assertIsInstance(view[u'requests'][0], Request)
 
@@ -162,10 +162,7 @@ class RequestTestCase(case.ViewTestCase):
         view = Export(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'exported', 'pyvac']))
-        exported = [u'#,user,from,to,number,type',
-                    u'1,John Doe,10/04/2014,14/04/2014,5,CP',
-                    u'2,John Doe,24/04/2014,28/04/2014,5,RTT',
-                    u'3,Jane Doe,10/04/2014,21/04/2014,10,CP']
+        exported = [u'#,user,from,to,number,type']
         self.assertEqual(view[u'exported'].split('\n'), exported)
 
     def test_post_send_no_param_ko(self):
