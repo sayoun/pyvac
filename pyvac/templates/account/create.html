@@ -22,19 +22,19 @@
         <div class="control-group">
             <label class="control-label" for="inputFirstname">{% trans %}Firstname:{% endtrans %}</label>
             <div class="controls">
-               <input type="text" name="user.firstname" id="inputFirstname" value="{{user.firstname|default('', true)}}"/>
+               <input type="text" name="user.firstname" id="inputFirstname" value="{{user.firstname|default('', true)}}" required="required"/>
             </div>
         </div>
         <div class="control-group">
             <label class="control-label" for="inputLastname">{% trans %}Lastname:{% endtrans %}</label>
             <div class="controls">
-               <input type="text" name="user.lastname" id="inputLastname" value="{{user.lastname|default('', true)}}"/>
+               <input type="text" name="user.lastname" id="inputLastname" value="{{user.lastname|default('', true)}}" required="required"/>
             </div>
         </div>
         <div class="control-group">
             <label class="control-label" for="inputEmail">{% trans %}Email:{% endtrans %}</label>
             <div class="controls">
-               <input type="text" name="user.email" id="inputEmail" value="{{user.email|default('', true)}}"/>
+               <input type="text" name="user.email" id="inputEmail" value="{{user.email|default('', true)}}" required="required"/>
             </div>
         </div>
 
