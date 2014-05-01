@@ -63,7 +63,7 @@ class List(View):
     """
     def render(self):
 
-        req_list = {'requests': []}
+        req_list = {'requests': [], 'conflicts': {}}
         requests = []
         if self.user.is_admin:
             requests = Request.all_for_admin(self.session)
