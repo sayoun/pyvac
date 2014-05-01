@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pyvac.models import (create_engine, dispose_engine, DBSession,
                           Group,
-                          User, Request,
+                          User, Request, VacationType,
                           )
 from pyvac.bin.install import populate
 from .conf import settings
@@ -17,6 +17,9 @@ def setUpModule():
     user_group = Group.by_name(session, u'user')
     manager_group = Group.by_name(session, u'manager')
     common_password = u'changeme'
+
+    cp_vacation = VacationType.by_name(session, u'CP')
+    rtt_vacation = VacationType.by_name(session, u'RTT')
 
     manager1 = User(login=u'manager1',
                     password=common_password,
@@ -63,7 +66,7 @@ def setUpModule():
     req1 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
-                   type=u'CP',
+                   vacation_type=cp_vacation,
                    status=u'PENDING',
                    user=user1,
                    notified=False,)
@@ -74,7 +77,7 @@ def setUpModule():
     req2 = Request(date_from=date_from,
                    date_to=date_to,
                    days=10,
-                   type=u'CP',
+                   vacation_type=cp_vacation,
                    status=u'PENDING',
                    user=user2,
                    notified=False,)
@@ -85,7 +88,7 @@ def setUpModule():
     req3 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
-                   type=u'RTT',
+                   vacation_type=rtt_vacation,
                    status=u'ACCEPTED_MANAGER',
                    user=user1,
                    notified=True,)
@@ -96,7 +99,7 @@ def setUpModule():
     req4 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
-                   type=u'RTT',
+                   vacation_type=rtt_vacation,
                    status=u'CANCELED',
                    user=user1,
                    notified=True,)

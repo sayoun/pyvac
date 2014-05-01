@@ -7,7 +7,7 @@ from .base import View
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 
-from pyvac.models import Request
+from pyvac.models import Request, VacationType
 # from pyvac.helpers.i18n import trans as _
 
 log = logging.getLogger(__name__)
@@ -27,7 +27,9 @@ class Send(View):
             date_from = datetime.strptime(dates[0], '%d/%m/%Y')
             date_to = datetime.strptime(dates[1], '%d/%m/%Y')
             days = int(self.request.params.get('days'))
-            type = self.request.params.get('type')
+
+            vac_type = VacationType.by_name(self.session,
+                                            self.request.params.get('type'))
 
             if days <= 0:
                 msg = 'Invalid value for days.'
@@ -37,7 +39,7 @@ class Send(View):
             request = Request(date_from=date_from,
                               date_to=date_to,
                               days=days,
-                              type=type,
+                              vacation_type=vac_type,
                               status=u'PENDING',
                               user=self.user,
                               notified=False,
@@ -73,14 +75,17 @@ class List(View):
         if requests:
             conflicts = {}
             for req in requests:
-                req.conflict = [req2.summary for req2 in Request.in_conflict(self.session, req)]
+                req.conflict = [req2.summary for req2 in
+                                Request.in_conflict(self.session, req)]
                 if req.conflict:
                     conflicts[req.id] = '\n'.join(req.conflict)
             req_list['requests'] = requests
             req_list['conflicts'] = conflicts
 
         # always add our requests
-        req_list['requests'].extend(Request.by_user(self.session, self.user))
+        for req in Request.by_user(self.session, self.user):
+            if req not in req_list['requests']:
+                req_list['requests'].append(req)
 
         return req_list
 

@@ -78,20 +78,21 @@ class View(ViewBase):
 
             if self.user:
                 # if logged, retrieve total requests count for header
-                requests_count = 0
+                req_list = {'requests': []}
+                requests = []
                 if self.user.is_admin:
-                    requests_count = Request.all_for_admin(self.session,
-                                                           count=True)
+                    requests = Request.all_for_admin(self.session)
                 elif self.user.is_super:
-                    requests_count = Request.by_manager(self.session,
-                                                        self.user,
-                                                        count=True)
-                requests_count_self = Request.by_user(self.session,
-                                                      self.user,
-                                                      count=True)
+                    requests = Request.by_manager(self.session, self.user)
 
-                global_['pyvac']['requests_count'] = (requests_count +
-                                                      requests_count_self)
+                req_list['requests'] = requests
+
+                # always add our requests
+                for req in Request.by_user(self.session, self.user):
+                    if req not in req_list['requests']:
+                        req_list['requests'].append(req)
+
+                global_['pyvac']['requests_count'] = len(req_list)
 
             response.update(global_)
 

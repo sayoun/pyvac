@@ -6,7 +6,7 @@ import sys
 from pyramid.paster import get_appsettings, setup_logging
 
 from pyvac.helpers.sqla import create_engine, dispose_engine
-from pyvac.models import DBSession, Base, Permission, Group, User
+from pyvac.models import DBSession, Base, Permission, Group, User, VacationType
 
 
 def usage(argv):
@@ -42,6 +42,11 @@ def populate(engine):
     user_group = Group(name=u'user')
     user_group.permissions.append(user_perm)
     session.add(user_group)
+
+    vactype1 = VacationType(name=u'CP')
+    session.add(vactype1)
+    vactype2 = VacationType(name=u'RTT')
+    session.add(vactype2)
 
     common_password = u'changeme'
 

@@ -320,6 +320,20 @@ class User(Base):
             return ldap.get_hr_by_country(self.country)
 
 
+class VacationType(Base):
+    """
+    Describe allowed type of vacation to request
+    """
+    name = Column(Unicode(255), nullable=False)
+
+    @classmethod
+    def by_name(cls, session, name):
+        """
+        Get a vacation type from a given name.
+        """
+        return cls.first(session, where=(cls.name == name,))
+
+
 class Request(Base):
     """
     Describe a user request for vacation.
@@ -328,10 +342,10 @@ class Request(Base):
     date_from = Column(DateTime, nullable=False)
     date_to = Column(DateTime, nullable=False)
     days = Column(Float(precision=1), nullable=False)
-    choose_type = set(['CP', 'RTT', 'Day off'])
 
-    type = Column(Enum(*choose_type, name='enum_request_type'),
-                  nullable=False, default='CP')
+    vacation_type_id = Column('vacation_type_id', ForeignKey(VacationType.id),
+                              nullable=False)
+    vacation_type = relationship(VacationType, backref='requests')
 
     status = Column(Enum('PENDING',
                     'ACCEPTED_MANAGER',
@@ -475,6 +489,13 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @property
+    def type(self):
+        """
+        Get name of chosen vacation type.
+        """
+        return self.vacation_type.name
+
+    @property
     def summary(self):
         """
         Get a short string representation of a request, for tooltip.
@@ -516,3 +537,17 @@ class Request(Base):
                  self.date_to.strftime('%d/%m/%Y'),
                  self.days,
                  self.type))
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and hasattr(self, 'id')
+            and hasattr(other, 'id')
+            and self.id == other.id)
+
+    def __ne__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and hasattr(self, 'id')
+            and hasattr(other, 'id')
+            and self.id != other.id)
