@@ -69,6 +69,20 @@ user__group = Table('user__group', Base.metadata,
                     )
 
 
+class Countries(Base):
+    """
+    Describe allowed countries for user
+    """
+    name = Column(Unicode(255), nullable=False)
+
+    @classmethod
+    def by_name(cls, session, name):
+        """
+        Get a country from a given name.
+        """
+        return cls.first(session, where=(cls.name == name,))
+
+
 class User(Base):
     """
     Describe a user.
@@ -96,11 +110,8 @@ class User(Base):
     ldap_user = Column(Boolean, nullable=False, default=False)
     dn = Column(Unicode(255), nullable=False, default=u'')
 
-    choose_country = set(['fr', 'us', 'lu', 'cn'])
-
-    country = Column(Enum(*choose_country, name='enum_user_country'),
-                     nullable=False,
-                     default='fr')
+    country_id = Column('country_id', ForeignKey(Countries.id))
+    _country = relationship(Countries, backref='users')
 
     @property
     def name(self):
@@ -222,7 +233,8 @@ class User(Base):
         Get user with role admin for a specific country
         """
         return cls.first(session,
-                         where=(cls.country == country,
+                         join=(cls._country),
+                         where=(Countries.name == country,
                                 cls.role == 'admin'),
                          order_by=cls.id)
 
@@ -247,7 +259,6 @@ class User(Base):
         if user_data is not None:
             login = unicode(user_data['login'])
             user = User.by_login(session, login)
-
             # check what type of user it is
             group = u'user'
             # if it's a manager members should have him associated as such
@@ -291,11 +302,13 @@ class User(Base):
         """
         Create a new user in database using ldap data information
         """
+        country = Countries.by_name(session, data['country'].decode('utf-8'))
+
         user = User(login=data['login'].decode('utf-8'),
                     email=data['email'].decode('utf-8'),
                     firstname=data['firstname'].decode('utf-8'),
                     lastname=data['lastname'].decode('utf-8'),
-                    country=data['country'].decode('utf-8'),
+                    _country=country,
                     manager_dn=data['manager_dn'].decode('utf-8'),
                     ldap_user=True,
                     dn=data['dn'].decode('utf-8'),
@@ -318,6 +331,13 @@ class User(Base):
             # retrieve from ldap
             ldap = LdapCache()
             return ldap.get_hr_by_country(self.country)
+
+    @property
+    def country(self):
+        """
+        Get name of associated country.
+        """
+        return self._country.name
 
 
 class VacationType(Base):

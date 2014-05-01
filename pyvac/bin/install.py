@@ -6,8 +6,9 @@ import sys
 from pyramid.paster import get_appsettings, setup_logging
 
 from pyvac.helpers.sqla import create_engine, dispose_engine
-from pyvac.models import DBSession, Base, Permission, Group, User, VacationType
-
+from pyvac.models import (
+    DBSession, Base, Permission, Group, User, VacationType, Countries,
+)
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
@@ -48,6 +49,9 @@ def populate(engine):
     vactype2 = VacationType(name=u'RTT')
     session.add(vactype2)
 
+    fr_country = Countries(name=u'fr')
+    session.add(fr_country)
+
     common_password = u'changeme'
 
     admin = User(login=u'admin',
@@ -56,7 +60,7 @@ def populate(engine):
                  firstname=u'The',
                  lastname=u'Administrator',
                  role=u'admin',
-                 country=u'fr')
+                 _country=fr_country)
     admin.groups.append(admin_group)
     session.add(admin)
 

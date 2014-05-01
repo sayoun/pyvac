@@ -5,7 +5,7 @@ from pyramid.settings import asbool
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group
+from pyvac.models import User, Group, Countries
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import LdapCache, hashPassword, randomstring
 
@@ -53,7 +53,8 @@ class AccountMixin:
                 view['ldap_user'] = {}
             view['managers'] = ldap.list_manager()
             view['units'] = ldap.list_ou()
-            view['countries'] = User.choose_country
+            view['countries'] = Countries.all(self.session,
+                                              order_by=Countries.name)
             # generate a random password for the user, he must change it later
             password = randomstring()
             log.info('temporary password generated: %s' % password)
@@ -79,6 +80,15 @@ class AccountMixin:
                 if group_id not in exists:
                     account.groups.append(Group.by_id(self.session, group_id))
 
+    def set_country(self, account):
+        r = self.request
+        if 'user.country' in r.params:
+            _ct = r.params['user.country']
+        else:
+            _ct = u'fr'
+        country = Countries.by_name(self.session, _ct)
+        account._country = country
+
 
 class Create(AccountMixin, CreateView):
     """
@@ -87,9 +97,15 @@ class Create(AccountMixin, CreateView):
 
     def save_model(self, account):
         super(Create, self).save_model(account)
+        self.set_country(account)
         self.append_groups(account)
 
-        if account.ldap_user:
+        settings = self.request.registry.settings
+        ldap = False
+        if 'pyvac.use_ldap' in settings:
+            ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        if ldap:
             # create in ldap
             r = self.request
             ldap = LdapCache()
@@ -128,6 +144,7 @@ class Edit(AccountMixin, EditView):
 
     def save_model(self, account):
         super(Edit, self).update_model(account)
+        self.set_country(account)
         self.append_groups(account)
 
         if account.ldap_user:

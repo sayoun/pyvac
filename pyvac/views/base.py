@@ -92,7 +92,7 @@ class View(ViewBase):
                     if req not in req_list['requests']:
                         req_list['requests'].append(req)
 
-                global_['pyvac']['requests_count'] = len(req_list)
+                global_['pyvac']['requests_count'] = len(req_list['requests'])
 
             response.update(global_)
 

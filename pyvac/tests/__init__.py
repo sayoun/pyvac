@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pyvac.models import (create_engine, dispose_engine, DBSession,
                           Group,
-                          User, Request, VacationType,
+                          User, Request, VacationType, Countries,
                           )
 from pyvac.bin.install import populate
 from .conf import settings
@@ -21,12 +21,15 @@ def setUpModule():
     cp_vacation = VacationType.by_name(session, u'CP')
     rtt_vacation = VacationType.by_name(session, u'RTT')
 
+    fr_country = Countries.by_name(session, u'fr')
+
     manager1 = User(login=u'manager1',
                     password=common_password,
                     email=u'manager1@example.net',
                     firstname=u'First',
                     lastname=u'Manager',
                     role=u'manager',
+                    _country=fr_country,
                     )
     manager1.groups.append(manager_group)
     session.add(manager1)
@@ -37,6 +40,7 @@ def setUpModule():
                     firstname=u'Second',
                     lastname=u'Manager',
                     role=u'manager',
+                    _country=fr_country,
                     )
     manager1.groups.append(manager_group)
     session.add(manager2)
@@ -47,6 +51,7 @@ def setUpModule():
                  manager=manager1,
                  firstname=u'John',
                  lastname=u'Doe',
+                 _country=fr_country,
                  )
     user1.groups.append(user_group)
     session.add(user1)
@@ -57,6 +62,7 @@ def setUpModule():
                  manager=manager2,
                  firstname=u'Jane',
                  lastname=u'Doe',
+                 _country=fr_country,
                  )
     user2.groups.append(user_group)
     session.add(user2)

@@ -6,9 +6,11 @@ class AccountTestCase(case.UnauthenticatedViewTestCase):
     def setUp(self):
         super(AccountTestCase, self).setUp()
         import uuid
-        from pyvac.models import User, Group
+        from pyvac.models import User, Group, Countries
+        fr_country = Countries.by_name(self.session, u'fr')
         self.account_login = unicode(uuid.uuid4())
-        u = User(login=self.account_login, password=u'secret')
+        u = User(login=self.account_login, password=u'secret',
+                 _country=fr_country)
         u.groups.append(Group.by_name(self.session, u'user'))
         self.session.add(u)
         self.session.flush()
