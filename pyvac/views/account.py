@@ -39,6 +39,9 @@ class AccountMixin:
         if 'pyvac.use_ldap' in settings:
             ldap = asbool(settings.get('pyvac.use_ldap'))
 
+        if view['errors']:
+            self.request.session.flash('error;%s' % ','.join(view['errors']))
+
         view['groups'] = Group.all(self.session, order_by=Group.name)
         view['managers'] = User.by_role(self.session, 'manager')
 
@@ -105,6 +108,16 @@ class Create(AccountMixin, CreateView):
         if 'user.password' in r.params:
             if r.params['user.password'] != r.params['confirm_password']:
                 errors.append(_('passwords do not match'))
+
+        if 'user.login' not in r.params:
+            if 'user.ldap_user' in r.params and r.params['user.ldap_user']:
+                # generate login for ldap user
+                login = '%s.%s' % (r.params['user.firstname'],
+                                   r.params['user.lastname'])
+                model.login = login
+            else:
+                errors.append(_('login is required'))
+
         return len(errors) == 0
 
 

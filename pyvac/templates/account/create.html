@@ -13,8 +13,9 @@
             <label class="control-label" for="inputLogin">{% trans %}Login:{% endtrans %}</label>
             <div class="controls">
                <input type="text" name="user.login" id="inputLogin" value="{{user.login|default('', true)}}"
-               {% if user.ldap_user %}
+               {% if user.ldap_user or use_ldap %}
                disabled="disabled"
+               placeholder="firstname.lastname"
                {% endif %}
                />
             </div>
