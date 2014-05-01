@@ -104,7 +104,11 @@ def includeme(config):
     # Forbidden
     config.add_view(u'pyvac.views.base.forbidden_view',
                     context=Forbidden)
+    # Internal error
+    config.add_view(u'pyvac.views.base.exception_view',
+                    context=Exception)
 
+    # Request submit
     config.add_route('request_send', u'/pyvac/request_send',
                      request_method=u'POST')
     config.add_view(u'pyvac.views.request.Send',

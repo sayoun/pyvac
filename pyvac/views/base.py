@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+import traceback
 
+from webob import Response
 from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
@@ -224,3 +226,10 @@ class DeleteView(RedirectView):
 
 def forbidden_view(request):
     return HTTPFound(location=route_url('login', request))
+
+
+def exception_view(context, request):
+    log.error("The error was: %s" % context, exc_info=(context))
+    body = """Oops ! An internal error has occured, maybe this can help ?<br/>
+            <pre>%s</pre>""" % traceback.format_exc()
+    return Response(status_int=500, body=body)
