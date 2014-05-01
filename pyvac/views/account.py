@@ -147,7 +147,12 @@ class Edit(AccountMixin, EditView):
         self.set_country(account)
         self.append_groups(account)
 
-        if account.ldap_user:
+        settings = self.request.registry.settings
+        ldap = False
+        if 'pyvac.use_ldap' in settings:
+            ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        if ldap:
             # update in ldap
             r = self.request
             password = None
