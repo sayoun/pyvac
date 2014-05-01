@@ -2,7 +2,7 @@
 
     {% block body %}
 <div id="users-contain">
-  <legend>Users 
+  <legend>Users
   <a href="{{ route_url('create_account') }}">
       {% trans %}[+]{% endtrans %}
   </a>
@@ -27,7 +27,16 @@
                 </a>
             </td>
             <td>{{ user.name }}</td>
-            <td>{% if user.manager_dn %}{{ user.manager_dn|extract_cn }}{%else%}-{% endif %}</td>
+            <td>{% if user.manager_dn %}
+                  {{ user.manager_dn|extract_cn }}
+                {%else%}
+                  {% if user.manager %}
+                    {{ user.manager.name }}
+                  {%else%}
+                    -
+                  {% endif %}
+                {% endif %}
+            </td>
             <td>
                 {% set pipe = joiner(", ") %}
                 {% for g in user.groups %}{{ pipe() }}{{g.name}}{% endfor %}
