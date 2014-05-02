@@ -119,6 +119,9 @@ class Accept(View):
 
         if self.user.is_admin:
             req.update_status('APPROVED_ADMIN')
+            # save who performed this action
+            req.last_action_user_id = self.user.id
+
             task_name = 'worker_approved'
             settings = self.request.registry.settings
             with open(settings['pyvac.celery.yaml']) as fdesc:
@@ -126,6 +129,8 @@ class Accept(View):
             data['caldav.url'] = Conf.get('caldav').get('url')
         else:
             req.update_status('ACCEPTED_MANAGER')
+            # save who performed this action
+            req.last_action_user_id = self.user.id
             task_name = 'worker_accepted'
 
         self.session.flush()
@@ -155,6 +160,8 @@ class Refuse(View):
 
         req.reason = reason
         req.update_status('DENIED')
+        # save who performed this action
+        req.last_action_user_id = self.user.id
         self.session.flush()
 
         # call celery task directly, do not wait for polling
