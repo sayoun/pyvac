@@ -62,7 +62,7 @@ def includeme(config):
 
     settings = config.registry.settings
     if 'pyvac.celery.yaml' in settings:
-        configure(settings['pyvac.celery.yaml'], init_celery=False)
+        configure(settings['pyvac.celery.yaml'])
 
     if 'pyvac.use_ldap' in settings:
         ldap = asbool(settings['pyvac.use_ldap'])
