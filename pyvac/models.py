@@ -382,7 +382,7 @@ class Request(Base):
     # for future use
     label = Column(UnicodeText())
     # actor who performed last action on request
-    actor_id = Column(Integer, nullable=True)
+    last_action_user_id = Column(Integer, nullable=True)
 
     notified = Column(Boolean, default=False)
     user_id = Column('user_id', ForeignKey(User.id))
