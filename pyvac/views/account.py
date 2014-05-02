@@ -5,7 +5,7 @@ from pyramid.settings import asbool
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group, Countries
+from pyvac.models import User, Group, Countries, Request
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import LdapCache, hashPassword, randomstring
 
@@ -198,6 +198,11 @@ class Delete(AccountMixin, DeleteView):
     """
 
     def delete(self, account):
+        # cancel all associated requests for this user
+        requests = Request.by_user(self.session, account)
+        for req in requests:
+            req.update_status('CANCELED')
+
         super(Delete, self).delete(account)
         if account.ldap_user:
             # delete in ldap
