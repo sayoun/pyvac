@@ -10,6 +10,12 @@ from pyramid.url import route_url
 from pyvac.models import Request, VacationType
 # from pyvac.helpers.i18n import trans as _
 
+import yaml
+try:
+    from yaml import CSafeLoader as YAMLLoader
+except ImportError:
+    from yaml import SafeLoader as YAMLLoader
+
 log = logging.getLogger(__name__)
 
 
@@ -50,6 +56,13 @@ class Send(View):
             if request:
                 msg = 'Request sent to your manager.'
                 self.request.session.flash('info;%s' % msg)
+                # call celery task directly, do not wait for polling
+                from celery.registry import tasks
+                from celery.task import subtask
+                req_task = tasks['worker_pending']
+                data = {'req_id': request.id}
+                subtask(req_task).delay(data=data)
+
         except Exception as exc:
             log.error(exc)
             msg = ('An error has occured while processing this request: %r'
@@ -102,12 +115,28 @@ class Accept(View):
         if not req:
             return ''
 
+        data = {'req_id': req.id}
+
         if self.user.is_admin:
             req.update_status('APPROVED_ADMIN')
+            task_name = 'worker_approved'
+            settings = self.request.registry.settings
+            with open(settings['pyvac.celery.yaml']) as fdesc:
+                Conf = yaml.load(fdesc, YAMLLoader)
+            data['caldav.url'] = Conf.get('caldav').get('url')
         else:
             req.update_status('ACCEPTED_MANAGER')
+            task_name = 'worker_accepted'
 
         self.session.flush()
+
+        # call celery task directly, do not wait for polling
+        from celery.registry import tasks
+        from celery.task import subtask
+        req_task = tasks[task_name]
+
+        subtask(req_task).delay(data=data)
+
         return req.status
 
 
@@ -127,6 +156,14 @@ class Refuse(View):
         req.reason = reason
         req.update_status('DENIED')
         self.session.flush()
+
+        # call celery task directly, do not wait for polling
+        from celery.registry import tasks
+        from celery.task import subtask
+        req_task = tasks['worker_denied']
+        data = {'req_id': req.id}
+        subtask(req_task).delay(data=data)
+
         return req.status
 
 
