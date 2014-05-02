@@ -571,3 +571,28 @@ class Request(Base):
             and hasattr(self, 'id')
             and hasattr(other, 'id')
             and self.id != other.id)
+
+
+class PasswordRecovery(Base):
+    """
+    Describe password recovery attempts
+    """
+    hash = Column(Unicode(255), nullable=False, unique=True)
+    date_end = Column(DateTime, nullable=False)
+    user_id = Column('user_id', ForeignKey(User.id), nullable=False)
+    user = relationship(User, backref='recovery')
+
+    @classmethod
+    def by_hash(cls, session, hash):
+        """
+        Get a recovery entry from a given hash.
+        """
+        return cls.first(session, where=(cls.hash == hash,))
+
+    @property
+    def expired(self):
+        """
+        Check if a recovery entry have expired.
+        """
+        from datetime import datetime
+        return self.date_end < datetime.now()

@@ -41,7 +41,8 @@ class BaseWorker(Task):
 
     def send_mail(self, sender, target, request, content):
         """ Send a mail """
-        self.smtp.send_mail(sender, target, request, content)
+        subject = 'Request %s' % request.status
+        self.smtp.send_mail(sender, target, subject, content)
 
     def get_admin_mail(self, admin):
         """ Return admin email from ldap dict or model """
@@ -228,3 +229,21 @@ Request details: %s""" % (req.reason, req.summarymail)
 
         self.session.flush()
         transaction.commit()
+
+
+class WorkerMail(BaseWorker):
+
+    name = 'worker_mail'
+
+    def process(self, data):
+        """ simple worker task for sending a mail using internal helper """
+
+        sender = data['sender']
+        target = data['target']
+        subject = data['subject']
+        content = data['content']
+
+        try:
+            self.smtp.send_mail(sender, target, subject, content)
+        except Exception:
+            log.exception('Error while sending mail')

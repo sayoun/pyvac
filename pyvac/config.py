@@ -108,6 +108,17 @@ def includeme(config):
     config.add_view(u'pyvac.views.base.exception_view',
                     context=Exception)
 
+    # Forgot password
+    config.add_route(u'reset_password', u'/reset',)
+    config.add_view(u'pyvac.views.credentials.ResetPassword',
+                    route_name=u'reset_password',
+                    renderer=u'templates/password/reset.html')
+    # Change password
+    config.add_route(u'change_password', u'/password/{passhash}')
+    config.add_view(u'pyvac.views.credentials.ChangePassword',
+                    route_name=u'change_password',
+                    renderer=u'templates/password/change.html')
+
     # Request submit
     config.add_route('request_send', u'/pyvac/request_send',
                      request_method=u'POST')

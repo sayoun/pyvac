@@ -5,10 +5,13 @@
 
     {% block body %}
           <form class="form-signin" action="" method="post" id="login_form">
-            <h2 class="form-signin-heading">Please sign in</h2>
+            <h3 class="form-signin-heading">Please sign in</h3>
             <input name="_csrf" type="hidden" value="{{ csrf_token }}">
-            <input name="login" type="text" class="input-block-level" placeholder="Email address" value="{{ login }}">
+            Login
+            <input name="login" type="text" class="input-block-level" placeholder="Login" value="{{ login }}">
+            Password
             <input name="password" type="password" class="input-block-level" placeholder="Password">
-            <button name="submit" class="btn btn-large btn-primary" type="submit">Sign in</button>
+            <button name="submit" class="btn btn-primary" type="submit">Sign in</button>
+            <a class="btn btn-link" href="{{ route_url('reset_password') }}">Forgot password ?</a>
           </form>
     {% endblock %}
