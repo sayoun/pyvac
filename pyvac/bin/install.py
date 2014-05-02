@@ -51,6 +51,12 @@ def populate(engine):
 
     fr_country = Countries(name=u'fr')
     session.add(fr_country)
+    lu_country = Countries(name=u'lu')
+    session.add(lu_country)
+    us_country = Countries(name=u'us')
+    session.add(us_country)
+    zh_country = Countries(name=u'zh')
+    session.add(zh_country)
 
     common_password = u'changeme'
 
