@@ -9,7 +9,7 @@ import transaction
 from dateutil.relativedelta import relativedelta
 from celery.task import Task, subtask
 
-from pyvac.models import DBSession, Request
+from pyvac.models import DBSession, Request, User
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.mail import SmtpCache
 
@@ -205,14 +205,15 @@ class WorkerDenied(BaseWorker):
     name = 'worker_denied'
 
     def process(self, data):
-        """ denied by XXX
+        """ denied by last_action_user_id
         send mail to user
         """
         req = Request.by_id(self.session, data['req_id'])
 
-        admin = req.user.get_admin(self.session)
+        # retrieve user who performed last action
+        action_user = User.by_id(self.session, req.last_action_user_id)
         # send mail to user
-        src = self.get_admin_mail(admin)
+        src = action_user.email
         dst = req.user.email
         content = """You request has been refused for the following reason: %s
 Request details: %s""" % (req.reason, req.summarymail)
