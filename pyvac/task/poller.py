@@ -45,30 +45,12 @@ class Poller(Task):
             self.log.info('number of requests for %s: %d' %
                           (status, len(requests)))
 
-        req_pending = Request.by_status(session, 'PENDING')
-        self.log.info('number of PENDING requests: %d' % len(req_pending))
-
-        req_accepted = Request.by_status(session, 'ACCEPTED_MANAGER')
-        self.log.info('number of ACCEPTED_MANAGER requests: %d' %
-                      len(req_accepted))
-
         req_accepted_notified = Request.by_status(session, 'ACCEPTED_MANAGER',
                                                   notified=True)
         self.log.info('number of ACCEPTED_NOTIFIED requests: %d' %
                       len(req_accepted_notified))
 
-        req_denied = Request.by_status(session, 'DENIED')
-        self.log.info('number of DENIED requests: %d' % len(req_denied))
-
-        req_approved = Request.by_status(session, 'APPROVED_ADMIN')
-        self.log.info('number of APPROVED_ADMIN requests: %d' %
-                      len(req_approved))
-
         req_list = []
-        req_list.extend(req_pending)
-        req_list.extend(req_accepted)
-        req_list.extend(req_denied)
-        req_list.extend(req_approved)
         req_list.extend(req_accepted_notified)
 
         for req in req_list:
