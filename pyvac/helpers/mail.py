@@ -32,7 +32,7 @@ class SmtpWrapper(object):
 
         log.info('Smtp wrapper initialized')
 
-    def send_mail(self, sender, target, request, content):
+    def send_mail(self, sender, target, subject, content):
         """ Send a mail through smtp using given parameters """
 
         content = """%s
@@ -42,7 +42,7 @@ Send by Pyvac: http://%s/
 
         msg = MIMEText(content)
 
-        msg['Subject'] = '[Pyvac] Request %s' % request.status
+        msg['Subject'] = '[Pyvac] %s' % subject
         msg['From'] = sender
         msg['To'] = target
 
