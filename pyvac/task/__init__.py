@@ -22,5 +22,6 @@ def configure_workers(sender=None, conf=None, **kwargs):
     # XXX Register the database
     create_engine('pyvac', conf.get('databases').get('pyvac'),
                   scoped=True)
-    LdapCache.configure(conf.get('ldap').get('conf'))
+    if conf.get('ldap'):
+        LdapCache.configure(conf.get('ldap').get('conf'))
     SmtpCache.configure(conf.get('smtp'))
