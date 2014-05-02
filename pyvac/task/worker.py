@@ -4,6 +4,7 @@ import yaml
 
 from datetime import datetime
 import logging
+import transaction
 
 from dateutil.relativedelta import relativedelta
 from celery.task import Task, subtask
@@ -18,9 +19,6 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 log = logging.getLogger(__name__)
-
-with open(sys.argv[1]) as fdesc:
-    Conf = yaml.load(fdesc, YAMLLoader)
 
 
 class BaseWorker(Task):
@@ -76,7 +74,7 @@ Request details: %s""" % (req.user.name, req.summarymail)
             req.flag_error(str(err))
 
         self.session.flush()
-        self.session.commit()
+        transaction.commit()
 
 
 class WorkerAccepted(BaseWorker):
@@ -111,7 +109,7 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
             req.flag_error(str(err))
 
         self.session.flush()
-        self.session.commit()
+        transaction.commit()
 
 
 class WorkerAcceptedNotified(BaseWorker):
@@ -132,7 +130,7 @@ class WorkerAcceptedNotified(BaseWorker):
             # update request status after sending email
             req.update_status('APPROVED_ADMIN')
             self.session.flush()
-            self.session.commit()
+            transaction.commit()
 
             data['autoaccept'] = True
             async_result = subtask(WorkerApproved).delay(data=data)
@@ -181,8 +179,16 @@ Request details: %s""" % req.summarymail
             req.flag_error(str(err))
 
         try:
+            if 'caldav.url' in data:
+                caldav_url = data['caldav.url']
+            else:
+                conf_file = sys.argv[1]
+                with open(conf_file) as fdesc:
+                    Conf = yaml.load(fdesc, YAMLLoader)
+                caldav_url = Conf.get('caldav').get('url')
+
             # add new entry in caldav
-            addToCal(Conf.get('caldav').get('url'),
+            addToCal(caldav_url,
                      req.date_from,
                      req.date_to,
                      req.summarycal)
@@ -191,7 +197,7 @@ Request details: %s""" % req.summarymail
             req.flag_error(str(err))
 
         self.session.flush()
-        self.session.commit()
+        transaction.commit()
 
 
 class WorkerDenied(BaseWorker):
@@ -220,4 +226,4 @@ Request details: %s""" % (req.reason, req.summarymail)
             req.flag_error(str(err))
 
         self.session.flush()
-        self.session.commit()
+        transaction.commit()
