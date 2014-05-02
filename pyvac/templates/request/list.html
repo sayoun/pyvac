@@ -47,7 +47,7 @@
             {% endif %}
             <td>{{ req.days }}</td>
             <td>{{ req.type }}</td>
-            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}&nbsp;{{ req.message }}{% endif %}</td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
             <td id="td_req_buttons_{{ req.id }}">
               {% if req.status != 'ERROR' %}
                   {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
@@ -70,6 +70,8 @@
                     CANCEL
                   </a>
                   {% endif %}
+              {% else %}
+              -
               {% endif %}
             </td>
             <td>{{ req.notified }}</td>
