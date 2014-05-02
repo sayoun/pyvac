@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block body %}
+<form action="" method="post" id="changePasswordForm" class="form-horizontal">
+
+    <fieldset>
+        <legend>Password update</legend>
+        <input type="hidden" name="user_id" value="{{user.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">{% trans %}password:{% endtrans %}</label>
+            <div class="controls">
+                <input type="password" name="user.password" id="inputPassword" value=""/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputConfirmPassword">{% trans %}confirm password:{% endtrans %}</label>
+            <div class="controls">
+                <input type="password" name="confirm_password" id="inputConfirmPassword" value=""/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" class="btn">Submit</button>
+            </div>
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}

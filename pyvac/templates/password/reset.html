@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block navbar %}
+{% endblock %}
+
+    {% block body %}
+          <form class="form-signin" action="" method="post" id="reset_password_form">
+            <h3 class="form-signin-heading">Forgot password</h3>
+            Email
+            <input name="email" type="text" class="input-block-level" placeholder="Email" value="{{ email }}">
+            <button name="submit" class="btn btn-primary" type="submit">Submit</button>
+          </form>
+    {% endblock %}
