@@ -181,7 +181,7 @@ class Edit(AccountMixin, EditView):
                                        r.params['current_password'], ldap):
                 errors.append(_(u'current password is not correct'))
             elif r.params['user.password'] == r.params['current_password']:
-                errors.append(_(u'password is inchanged'))
+                errors.append(_(u'password is unchanged'))
 
             if r.params['user.password'] != r.params['confirm_password']:
                 errors.append(_(u'passwords do not match'))
