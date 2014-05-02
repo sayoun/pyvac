@@ -118,9 +118,9 @@
             <div class="control-group">
                 <label class="control-label">{% trans %}country:{% endtrans %}</label>
                 <div class="controls">
-                <select name="user.country">
+                <select name="set_country">
                 {% for c in countries %}
-                    <option  value="{{ c }}" {% if c == "fr" %}selected="selected"{% endif %}>{{ c }}</option>
+                    <option  value="{{ c.name }}" {% if c.name == "fr" %}selected="selected"{% endif %}>{{ c.name }}</option>
                 {% endfor %}
                  </select>
                 </div>

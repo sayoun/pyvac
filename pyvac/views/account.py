@@ -82,8 +82,8 @@ class AccountMixin:
 
     def set_country(self, account):
         r = self.request
-        if 'user.country' in r.params:
-            _ct = r.params['user.country']
+        if 'set_country' in r.params:
+            _ct = r.params['set_country']
         else:
             _ct = u'fr'
         country = Countries.by_name(self.session, _ct)
