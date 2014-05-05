@@ -42,9 +42,9 @@
         {% block password %}
         {% if use_ldap and has_permission('admin_view') and view_name == 'create' %}
             <div class="control-group">
-                <label class="control-label" for="inputPassword">{% trans %}password:{% endtrans %}</label>
+                <label class="control-label" for="inputPasswordLdap">{% trans %}password:{% endtrans %}</label>
                 <div class="controls">
-                    <input type="text" name="ldappassword" id="inputPassword" value="{{ password }}"/>
+                    <input type="text" name="ldappassword" id="inputPasswordLdap" value="{{ password }}"/>
                 </div>
             </div>
         {% else %}
@@ -59,7 +59,8 @@
             <div class="control-group">
                 <label class="control-label" for="inputPassword">{% trans %}password:{% endtrans %}</label>
                 <div class="controls">
-                    <input type="password" name="user.password" id="inputPassword" value=""/>
+                    <input type="password" name="user.password" id="inputPassword" value="" data-display="passIndicator1"/>
+                    <span id="passIndicator1"></span>
                 </div>
             </div>
             <div class="control-group">
@@ -162,4 +163,37 @@
 
 </form>
 
+{% endblock %}
+
+
+{% block js %}
+<script src="{{ static_url('pyvac:static/js/jquery-pstrength/pStrength.jquery.js') }}"></script>
+<script>
+
+$(document).ready(function(){
+
+    _passwordIsOk = false;
+
+    $('#createUserForm').submit(function(){
+        return _passwordIsOk;
+    });
+
+    $('#inputPassword').pStrength({
+        'bind': 'keyup change',
+        'changeBackground' : true,
+        'backgrounds'     : [['#fff', '#000'], ['#cc3333', '#FFF'], ['#cc6666', '#FFF'], ['#ff9999', '#FFF'],
+                            ['#e0941c', '#000'], ['#e8a53a', '#000'], ['#eab259', '#000'], ['#efd09e', '#000'],
+                            ['#ccffcc', '#000'], ['#66cc66', '#FFF'], ['#339933', '#fff'], ['#006600', '#FFF'], ['#105610', '#FFF']],
+        'passwordValidFrom': 60, // 60%
+        'onPasswordStrengthChanged' : function(passwordStrength, strengthPercentage) {
+            _passwordIsOk = false;
+            $('#passIndicator1').html('Strength is ' + strengthPercentage + '%');
+        },
+        'onValidatePassword': function(strengthPercentage) {
+            $('#passIndicator1').html('OK! (Strength is '+ strengthPercentage + '%)');
+            _passwordIsOk = true;
+        }
+    });
+});
+</script>
 {% endblock %}
