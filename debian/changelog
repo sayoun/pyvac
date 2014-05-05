@@ -1,3 +1,9 @@
+pyvac (0.1.0-22) unstable; urgency=low
+
+  * Add synchronize user method and enhance user list view
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 05 May 2014 11:19:46 +0200
+
 pyvac (0.1.0-21) unstable; urgency=low
 
   * Fixes bug with country in user form for ldap
