@@ -23,8 +23,22 @@ class List(View):
     """
     def render(self):
 
+        settings = self.request.registry.settings
+        use_ldap = False
+        if 'pyvac.use_ldap' in settings:
+            use_ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        user_attr = {}
+        if use_ldap:
+            # synchronise user groups/roles
+            User.sync_ldap_info(self.session)
+            ldap = LdapCache()
+            user_attr = ldap.get_users_units()
+
         return {u'user_count': User.find(self.session, count=True),
                 u'users': User.find(self.session, order_by=[User.dn]),
+                'use_ldap': use_ldap,
+                'ldap_info': user_attr,
                 }
 
 
@@ -47,8 +61,9 @@ class AccountMixin:
 
         if ldap:
             ldap = LdapCache()
-            if self.get_model().login:
-                view['ldap_user'] = ldap.search_user_by_login(self.get_model().login)
+            login = self.get_model().login
+            if login:
+                view['ldap_user'] = ldap.search_user_by_login(login)
             else:
                 view['ldap_user'] = {}
             view['managers'] = ldap.list_manager()

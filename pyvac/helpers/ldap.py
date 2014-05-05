@@ -306,6 +306,35 @@ class LdapWrapper(object):
         # only return unique entries
         return sorted(managers)
 
+    def list_admin(self):
+        """ Retrieve available admins dn """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = None
+        item = '(member=*)'
+        res = self._search_admin(item, required)
+        USER_DN, entry = res[0]
+        managers = entry['member']
+        # only return unique entries
+        return sorted(managers)
+
+    def get_users_units(self):
+        """ Retrieve ou for all users """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = ['ou']
+        item = 'cn=*'
+        res = self._search(item, required)
+        users_units = {}
+        for USER_DN, entry in res:
+            if USER_DN not in users_units:
+                users_units[USER_DN] = {}
+            if 'ou' in entry:
+                users_units[USER_DN]['ou'] = entry['ou'][0]
+        return users_units
+
 
 class LdapCache(object):
     """ Ldap cache class singleton """

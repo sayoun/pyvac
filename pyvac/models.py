@@ -321,6 +321,37 @@ class User(Base):
 
         return user
 
+    @classmethod
+    def sync_ldap_info(cls, session):
+        """
+        Resynchronize ldap information in database, for changes in role/units
+        """
+        ldap = LdapCache()
+        managers = ldap.list_manager()
+        admins = ldap.list_admin()
+        for user in User.find(session, order_by=[User.dn]):
+            group = u'user'
+            # if it's a manager members should have him associated as such
+            if user.dn in managers:
+                group = u'manager'
+            # if it's an admin he should be in admin group
+            if user.dn in admins:
+                group = u'admin'
+
+            user.role = group
+            # handle update of groups if it has changed
+            exists = []
+            group_ids = [Group.by_name(session, group).id]
+
+            for ugroup in user.groups:
+                exists.append(ugroup.id)
+                if ugroup.id not in group_ids:
+                    user.groups.remove(ugroup)
+
+            for group_id in group_ids:
+                if group_id not in exists:
+                    user.groups.append(Group.by_id(session, group_id))
+
     def get_admin(self, session):
         """
         Get admin for country of user

@@ -14,6 +14,10 @@
         <th>{% trans %}Login{% endtrans %}</th>
         <th>{% trans %}Name{% endtrans %}</th>
         <th>{% trans %}Manager{% endtrans %}</th>
+        {% if use_ldap and has_permission('admin_view') %}
+        <th>{% trans %}Country{% endtrans %}</th>
+        <th>{% trans %}Unit{% endtrans %}</th>
+        {% endif %}
         <th>{% trans %}Type{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
       </tr>
@@ -37,6 +41,16 @@
                   {% endif %}
                 {% endif %}
             </td>
+            {% if use_ldap and has_permission('admin_view') %}
+            <td>
+                {{ user.country }}
+            </td>
+            <td>
+                {% if ldap_info.get(user.dn, {}).get('ou') %}
+                    {{ ldap_info.get(user.dn, {}).get('ou', '')|extract_cn }}
+                {% endif %}
+            </td>
+            {% endif %}
             <td>
                 {% set pipe = joiner(", ") %}
                 {% for g in user.groups %}{{ pipe() }}{{g.name}}{% endfor %}
