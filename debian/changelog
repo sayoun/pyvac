@@ -1,3 +1,9 @@
+pyvac (0.1.0-24) unstable; urgency=low
+
+  * Use jquery-pstrength for password change when editing user/profile
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 05 May 2014 16:07:21 +0200
+
 pyvac (0.1.0-23) unstable; urgency=low
 
   * Use jquery-pstrength for password change form when reseting
