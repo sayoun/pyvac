@@ -120,7 +120,7 @@
                 <div class="controls">
                 <select name="set_country">
                 {% for c in countries %}
-                    <option  value="{{ c.name }}" {% if c.name == "fr" %}selected="selected"{% endif %}>{{ c.name }}</option>
+                    <option  value="{{ c.name }}" {% if c.name == user.country %}selected="selected"{% endif %}>{{ c.name }}</option>
                 {% endfor %}
                  </select>
                 </div>
