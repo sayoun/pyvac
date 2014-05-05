@@ -51,24 +51,30 @@ Getting Started
     cd <directory containing this file>
 
 Install package in venv
+
     $venv/bin/python setup.py develop
 
 Initialize database
+
     $venv/bin/pyvac_install development.ini
 
 Optionnal: Import ldap users if using ldap
+
     $venv/bin/pyvac_import development.ini
 
 Start the website
+
     $venv/bin/pserve development.ini
 
 Start celery worker process
+
     $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -Q pyvac_work
 
 Start celery poller process
+
     $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
 
-Finally to be ready to use:
+### Finally to be ready to use:
 
 - log in using admin account (admin/changeme)
 - go to profile page and change password and email
