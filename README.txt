@@ -67,3 +67,10 @@ Start celery worker process
 
 Start celery poller process
 >>> $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
+
+Finally to be ready to use:
+
+- log in using admin account (admin/changeme)
+- go to profile page and change password and email
+- create user/managers
+
