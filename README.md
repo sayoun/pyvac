@@ -14,7 +14,7 @@ After HR validation, the request will be automatically added to the caldav calen
 
 Each step in the workflow is notified by email to whom his concerned.
 
-* Request a new leave as a simple user:
+### Request a new leave as a simple user:
 
 - login/open the application
 - select desired period on the calendar, by clicking on starting and ending date
@@ -23,7 +23,7 @@ Each step in the workflow is notified by email to whom his concerned.
 
 -> an email is send to the user manager to notify him of a new pending request
 
-* Handling a leave request as a manager
+### Handling a leave request as a manager
 
 - login/open the application
 - go to request list page
@@ -33,7 +33,7 @@ Each step in the workflow is notified by email to whom his concerned.
 -> an email is send to the user to notify him of his manager validation
 -> an email is send to the HR admin to notify him of a new pending request validated by a manager
 
-* Handling a leave request as HR admin
+### Handling a leave request as HR admin
 
 - login/open the application
 - go to request list page
@@ -48,25 +48,25 @@ Each step in the workflow is notified by email to whom his concerned.
 Getting Started
 ---------------
 
->>> cd <directory containing this file>
+    cd <directory containing this file>
 
 Install package in venv
->>> $venv/bin/python setup.py develop
+    $venv/bin/python setup.py develop
 
 Initialize database
->>> $venv/bin/pyvac_install development.ini
+    $venv/bin/pyvac_install development.ini
 
 Optionnal: Import ldap users if using ldap
->>> $venv/bin/pyvac_import development.ini
+    $venv/bin/pyvac_import development.ini
 
 Start the website
->>> $venv/bin/pserve development.ini
+    $venv/bin/pserve development.ini
 
 Start celery worker process
->>> $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -Q pyvac_work
+    $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -Q pyvac_work
 
 Start celery poller process
->>> $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
+    $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
 
 Finally to be ready to use:
 
