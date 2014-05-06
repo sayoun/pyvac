@@ -108,7 +108,10 @@ class ResetPassword(View):
 
 we send you this mail because you requested a password reset, to proceed please click the link below:
 %s
-""" % route_url('change_password', self.request, passhash=passhash),
+
+Reminder, your login is: %s
+
+""" % (route_url('change_password', self.request, passhash=passhash), user.login)
                 }
 
                 subtask(req_task).delay(data=data)
