@@ -1,3 +1,9 @@
+pyvac (0.1.0-29) unstable; urgency=low
+
+  * Update mail content for password retrieval: added login information
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 06 May 2014 14:02:39 +0200
+
 pyvac (0.1.0-28) unstable; urgency=low
 
   * Fixes login generation bug with spaces in names, when creating ldap
