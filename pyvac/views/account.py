@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import logging
 
 from pyramid.settings import asbool
@@ -142,9 +143,11 @@ class Create(AccountMixin, CreateView):
 
         if 'user.login' not in r.params:
             if 'user.ldap_user' in r.params and r.params['user.ldap_user']:
+                r_space = re.compile(r'\s+')
                 # generate login for ldap user
-                login = '%s.%s' % (r.params['user.firstname'],
-                                   r.params['user.lastname'])
+                login = '%s.%s' % (r.params['user.firstname'].strip(),
+                                   r.params['user.lastname'].strip())
+                login = r_space.sub('', login)
                 model.login = login
             else:
                 errors.append(_('login is required'))
