@@ -172,7 +172,7 @@
 
 $(document).ready(function(){
 
-    _passwordIsOk = true;
+    _passwordIsOk = false;
 
     $('#createUserForm').submit(function(){
         return _passwordIsOk;
@@ -186,8 +186,14 @@ $(document).ready(function(){
                             ['#ccffcc', '#000'], ['#66cc66', '#FFF'], ['#339933', '#fff'], ['#006600', '#FFF'], ['#105610', '#FFF']],
         'passwordValidFrom': 60, // 60%
         'onPasswordStrengthChanged' : function(passwordStrength, strengthPercentage) {
-            _passwordIsOk = false;
-            $('#passIndicator1').html('Strength is ' + strengthPercentage + '%');
+            if ($('#inputPassword').val() != '')
+            {
+                _passwordIsOk = false;
+                $('#passIndicator1').html('Strength is ' + strengthPercentage + '%');
+            }
+            else {
+                _passwordIsOk = true;
+            }
         },
         'onValidatePassword': function(strengthPercentage) {
             $('#passIndicator1').html('OK! (Strength is '+ strengthPercentage + '%)');
