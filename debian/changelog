@@ -1,3 +1,9 @@
+pyvac (0.1.0-26) unstable; urgency=low
+
+  * Fixes again password strenght and edit form
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 06 May 2014 12:24:42 +0200
+
 pyvac (0.1.0-25) unstable; urgency=low
 
   * Fixes a bug when editing account and password strenght check when
