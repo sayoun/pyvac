@@ -145,8 +145,9 @@ class Create(AccountMixin, CreateView):
             if 'user.ldap_user' in r.params and r.params['user.ldap_user']:
                 r_space = re.compile(r'\s+')
                 # generate login for ldap user
-                login = '%s.%s' % (r.params['user.firstname'].strip(),
-                                   r.params['user.lastname'].strip())
+                login = '%s.%s' % (r.params['user.firstname'].strip().lower(),
+                                   r.params['user.lastname'].strip().lower())
+                # remove all spaces
                 login = r_space.sub('', login)
                 model.login = login
             else:
