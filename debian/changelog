@@ -1,3 +1,10 @@
+pyvac (0.1.0-25) unstable; urgency=low
+
+  * Fixes a bug when editing account and password strenght check when
+    empty field
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 06 May 2014 12:04:58 +0200
+
 pyvac (0.1.0-24) unstable; urgency=low
 
   * Use jquery-pstrength for password change when editing user/profile
