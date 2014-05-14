@@ -561,8 +561,8 @@ class Request(Base):
         """
         Get a short string representation of a request, for calendar summary.
         """
-        return ('%s - %d %s' %
-                (self.user.name, self.days, self.type))
+        return ('%s - %.1f %s%s' %
+                (self.user.name, self.days, self.type, ' %s' % self.label))
 
     @property
     def summarycsv(self):
@@ -570,7 +570,7 @@ class Request(Base):
         Get a string representation in csv format of a request.
         """
         # name, datefrom, dateto, number of days, type of days
-        return ('%s,%s,%s,%d,%s' %
+        return ('%s,%s,%s,%.1f,%s' %
                 (self.user.name,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
