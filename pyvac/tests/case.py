@@ -12,6 +12,8 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
 # from pyramid.authorization import ACLAuthorizationPolicy
 
+from mock import patch
+
 from pyvac.models import DBSession
 
 
@@ -39,6 +41,14 @@ class DummyRequest(testing.DummyRequest):
 
 class UnauthenticatedViewTestCase(TestCase):
 
+    mocks = []
+
+    def __init__(self, methodName='runTest'):
+        super(UnauthenticatedViewTestCase, self).__init__(methodName)
+        # pylint: disable=W0142
+        self.mocks = [patch(*mock_args) for mock_args in self.mocks]
+        self.maxDiff = None
+
     def setUp(self):
         from pyvac.config import includeme
         from .conf import settings
@@ -50,11 +60,17 @@ class UnauthenticatedViewTestCase(TestCase):
         self.session = DBSession()
         transaction.begin()
 
+        for dummy in self.mocks:
+            dummy.start()
+
     def tearDown(self):
         super(UnauthenticatedViewTestCase, self).tearDown()
         self.session.flush()
         transaction.commit()
         testing.tearDown()
+
+        for dummy in reversed(self.mocks):
+            dummy.stop()
 
     def create_request(self, params=None, environ=None, matchdict=None,
                        headers=None, path='/', cookies=None, post=None, **kw):

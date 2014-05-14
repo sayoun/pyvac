@@ -1,7 +1,14 @@
 from pyvac.tests import case
+from pyvac.tests.mocks.tasks import DummyTasks
+from pyvac.tests.mocks.celery import subtask
 
 
 class RequestTestCase(case.ViewTestCase):
+
+    mocks = [
+        ('celery.registry.tasks', DummyTasks()),
+        ('celery.task.subtask', subtask),
+    ]
 
     def setUp(self):
         super(RequestTestCase, self).setUp()

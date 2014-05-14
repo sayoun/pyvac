@@ -29,7 +29,8 @@ class AccountTestCase(case.ViewTestCase):
         from pyvac.views.account import List
         view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set(['pyvac', 'user_count', 'users']))
+                         set(['pyvac', 'user_count', 'users',
+                              'use_ldap', 'ldap_info']))
         self.assertEqual(view['user_count'], 6)
         self.assertEqual(len(view['users']), 6)
         self.assertIsInstance(view['users'][0], User)
@@ -122,6 +123,26 @@ class AccountTestCase(case.ViewTestCase):
         self.session.flush()
         user = User.by_id(self.session, self.account_id)
         self.assertEqual(user.login, u'dummy_edited')
+        self.assertEqual([g.id for g in user.groups], [1])
+
+    def test_post_edit_first_last_names_ok(self):
+        from pyvac.views.account import Edit
+        from pyvac.models import User
+        view = Edit(self.create_request({'form.submitted': '1',
+                                         'user.login': u'dummy_edited',
+                                         'user.firstname': u'foo',
+                                         'user.lastname': u'bar',
+                                         'user.email': u'me@me.me',
+                                         'groups': [u'1']
+                                         },
+                                        matchdict={'user_id': self.account_id
+                                                   }))()
+        self.assertIsRedirect(view)
+        self.session.flush()
+        user = User.by_id(self.session, self.account_id)
+        self.assertEqual(user.login, u'dummy_edited')
+        self.assertEqual(user.firstname, u'foo')
+        self.assertEqual(user.lastname, u'bar')
         self.assertEqual([g.id for g in user.groups], [1])
 
     def test_get_delete_ok(self):
