@@ -40,7 +40,7 @@ class SmtpWrapper(object):
 Send by Pyvac: http://%s/
 """ % (content, self.hostname)
 
-        msg = MIMEText(content)
+        msg = MIMEText(content.encode('utf-8'), 'plain', 'utf-8')
 
         msg['Subject'] = '[Pyvac] %s' % subject
         msg['From'] = sender
