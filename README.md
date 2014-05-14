@@ -19,6 +19,7 @@ Each step in the workflow is notified by email to whom his concerned.
 - login/open the application
 - select desired period on the calendar, by clicking on starting and ending date
 - select type of leave CP or RTT
+- select breakdown AM/PM if needed, this is only enabled when requesting a single date
 - click submit
 
 -> an email is send to the user manager to notify him of a new pending request
