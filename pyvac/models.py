@@ -561,8 +561,9 @@ class Request(Base):
         """
         Get a short string representation of a request, for calendar summary.
         """
+        label = ' %s' % self.label if self.label else ''
         return ('%s - %.1f %s%s' %
-                (self.user.name, self.days, self.type, ' %s' % self.label))
+                (self.user.name, self.days, self.type, label))
 
     @property
     def summarycsv(self):
@@ -582,13 +583,14 @@ class Request(Base):
         """
         Get a short string representation of a request, for mail summary.
         """
+        label = ' %s' % self.label if self.label else ''
         return ('%s: %s - %s (%.1f %s%s)' %
                 (self.user.name,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
                  self.days,
                  self.type,
-                 ' %s' % self.label))
+                 label))
 
     def __eq__(self, other):
         return (
