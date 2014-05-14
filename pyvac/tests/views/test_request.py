@@ -201,6 +201,21 @@ class RequestTestCase(case.ViewTestCase):
         view = Send(self.create_request({'days': 4,
                                          'date_from': '05/05/2014 - 10/05/2014',
                                          'type': 'CP',
+                                         'breakdown': 'FULL',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
+    def test_post_send_half_day_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        view = Send(self.create_request({'days': 0.5,
+                                         'date_from': '05/05/2014 - 05/05/2014',
+                                         'type': 'CP',
+                                         'breakdown': 'AM',
                                          }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)

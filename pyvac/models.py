@@ -582,12 +582,13 @@ class Request(Base):
         """
         Get a short string representation of a request, for mail summary.
         """
-        return ('%s: %s - %s (%d %s)' %
+        return ('%s: %s - %s (%.1f %s%s)' %
                 (self.user.name,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
                  self.days,
-                 self.type))
+                 self.type,
+                 ' %s' % self.label))
 
     def __eq__(self, other):
         return (

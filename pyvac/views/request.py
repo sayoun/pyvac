@@ -29,10 +29,23 @@ class Send(View):
                 self.request.session.flash('error;%s' % msg)
                 return HTTPFound(location=route_url('home', self.request))
 
+            days = float(self.request.params.get('days'))
+
+            # label field is used when requesting half day
+            label = u''
+            breakdown = self.request.params.get('breakdown')
+            if breakdown != 'FULL':
+                # handle half day
+                if not (0 < days < 1):
+                    msg = 'AM/PM option must be used only when requesting a single day.'
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                else:
+                    label = unicode(breakdown)
+
             dates = self.request.params.get('date_from').split(' - ')
             date_from = datetime.strptime(dates[0], '%d/%m/%Y')
             date_to = datetime.strptime(dates[1], '%d/%m/%Y')
-            days = int(self.request.params.get('days'))
 
             vac_type = VacationType.by_name(self.session,
                                             self.request.params.get('type'))
@@ -49,6 +62,7 @@ class Send(View):
                               status=u'PENDING',
                               user=self.user,
                               notified=False,
+                              label=label,
                               )
             self.session.add(request)
             self.session.flush()

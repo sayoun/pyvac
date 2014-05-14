@@ -88,7 +88,7 @@ class RequestTestCase(ModelTestCase):
     def test_by_status(self):
         from pyvac.models import Request
         requests = Request.by_status(self.session, u'PENDING')
-        self.assertEqual(len(requests), 3)
+        self.assertEqual(len(requests), 4)
         # take the first
         request = requests[0]
         self.assertIsInstance(request, Request)
@@ -117,7 +117,7 @@ class RequestTestCase(ModelTestCase):
     def test_all_for_admin(self):
         from pyvac.models import Request
         nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 4)
+        self.assertEqual(nb_requests, 5)
 
     def test_in_conflict(self):
         from pyvac.models import Request
@@ -130,7 +130,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         month = 3
         requests = Request.get_by_month(self.session, month)
-        self.assertEqual(len(requests), 1)
+        self.assertEqual(len(requests), 2)
 
     def test_summary(self):
         from pyvac.models import Request
