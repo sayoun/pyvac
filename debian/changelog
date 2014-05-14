@@ -1,3 +1,9 @@
+pyvac (0.1.0-32) unstable; urgency=low
+
+  * Add support for half day requests.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 14 May 2014 14:54:39 +0200
+
 pyvac (0.1.0-31) unstable; urgency=low
 
   * Use UTF-8 encoding when sending mail.
