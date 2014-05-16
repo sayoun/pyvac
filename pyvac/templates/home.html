@@ -43,13 +43,6 @@
         </div>
 
         <div class="control-group">
-            <span class="control-label">Total</span>
-            <div class="controls">
-                <input type="number" name="days" id="days" value="{{days|default('0', true)}}" class="input-xsmini" placeholder="0" pattern="[0-9]+([\.|,][0-9])?" step="0.5" required="required" min="0"/>
-            </div>
-        </div>
-
-        <div class="control-group">
             <div class="controls">
                 <button name="form.submitted" type="submit" class="btn">Submit</button>
             </div>
@@ -103,7 +96,6 @@ function DateDiff(date1, date2) {
       showWeek: false,
       firstDay: 1,
       minDate: 0,
-      // altField: "#alternate",
 
     beforeShowDay: function ( date ) {
         /* do not select weekend days */
@@ -131,19 +123,8 @@ function DateDiff(date1, date2) {
           if ( prv == -1 || prv == cur ) {
              prv = cur;
              $('#alternate').val( dateText+' - '+dateText  );
-             $('#days').val( 1 );
-
-            if ($('#days').val() == 1) {
-                console.log('enable am/pm');
-                $('#breakdownAM').prop('disabled', false);
-                $('#breakdownPM').prop('disabled', false);
-            }
-            else {
-                console.log('disable am/pm');
-                $("#breakdownFULL").prop("checked", true);
-                $('#breakdownAM').prop('disabled', true);
-                $('#breakdownPM').prop('disabled', true);
-            }
+             $('#breakdownAM').prop('disabled', false);
+             $('#breakdownPM').prop('disabled', false);
           } else {
              dd = DateDiff(prv, cur);
              t = dd % 7;
@@ -166,9 +147,8 @@ function DateDiff(date1, date2) {
              d2 = $.datepicker.formatDate( 'dd/mm/yy', new Date(Math.max(prv.getTime(), cur.getTime())), {} );
              $('#alternate').val( d1+' - '+d2 );
              days = realdiff + last_include;
-             $('#days').val( realdiff + last_include );
 
-            if ($('#days').val() == 1) {
+            if (days == 1) {
                 $('#breakdownAM').prop('disabled', false);
                 $('#breakdownPM').prop('disabled', false);
             }
@@ -183,21 +163,6 @@ function DateDiff(date1, date2) {
     });
   });
 
-    $(document).ready(function() {
-        $('input[type=radio][name=breakdown]').change(function() {
-            if (this.value != 'FULL') {
-                // check if we have only selected 1 day
-                total_day = $('#days').val();
-                if (total_day == 1) {
-                    // set half a day as value
-                    $('#days').val( 0.5 );
-                }
-            }
-            else {
-                $('#days').val( 1 );
-            }
-        });
-    });
   </script>
 
 

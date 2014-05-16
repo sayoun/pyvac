@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .base import View
 
@@ -19,6 +19,11 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days + 1)):
+        yield start_date + timedelta(n)
+
+
 class Send(View):
 
     def render(self):
@@ -29,11 +34,12 @@ class Send(View):
                 self.request.session.flash('error;%s' % msg)
                 return HTTPFound(location=route_url('home', self.request))
 
-            days = float(self.request.params.get('days'))
-
             dates = self.request.params.get('date_from').split(' - ')
             date_from = datetime.strptime(dates[0], '%d/%m/%Y')
             date_to = datetime.strptime(dates[1], '%d/%m/%Y')
+
+            days = float(len([d for d in daterange(date_from, date_to)
+                              if d.isoweekday() not in [6, 7]]))
 
             days_diff = (date_to - date_from).days
             if days_diff < 0:
@@ -60,11 +66,12 @@ class Send(View):
             breakdown = self.request.params.get('breakdown')
             if breakdown != 'FULL':
                 # handle half day
-                if not (0 < days < 1):
+                if (days > 1):
                     msg = 'AM/PM option must be used only when requesting a single day.'
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
                 else:
+                    days = 0.5
                     label = unicode(breakdown)
 
             request = Request(date_from=date_from,
