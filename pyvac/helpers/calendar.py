@@ -1,5 +1,6 @@
 import logging
 import caldav
+from dateutil.relativedelta import relativedelta
 
 log = logging.getLogger(__file__)
 
@@ -26,7 +27,7 @@ END:VCALENDAR
 
     vcal_entry = vcal_entry % (summary,
                                date_from.strftime('%Y%m%d'),
-                               date_end.strftime('%Y%m%d'))
+                               (date_end + relativedelta(days=1)).strftime('%Y%m%d'))
     calendar = calendars[0]
     log.info('Using calendar %r' % calendar)
     log.info('Using entry: %s' % vcal_entry)
