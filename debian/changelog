@@ -1,3 +1,9 @@
+pyvac (0.1.0-39) unstable; urgency=low
+
+  * Add checks when submitting a request for valid format period
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 16 May 2014 15:49:13 +0200
+
 pyvac (0.1.0-38) unstable; urgency=low
 
   * Fixes date end when creating caldav entry, always add 1 day to date
