@@ -1,3 +1,10 @@
+pyvac (0.1.0-37) unstable; urgency=low
+
+  * Fixes a javascript bug with firefox when using action buttons on
+    request page.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 16 May 2014 14:31:18 +0200
+
 pyvac (0.1.0-36) unstable; urgency=low
 
   * Use mail signature from configuration
