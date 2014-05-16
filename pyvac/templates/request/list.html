@@ -112,8 +112,6 @@
     {% endif %}
 
     ajax_refuse_request = function() {
-          /* stop form from submitting normally */
-          event.preventDefault();
           // retrieve reason from textarea
           var reason = $('textarea#reasonrefuse').val();
 
@@ -144,9 +142,6 @@
     };
 
     ajax_request = function() {
-
-          /* stop form from submitting normally */
-          event.preventDefault();
 
           if ($(this).attr('disabled') == 'disabled'){
             return;
