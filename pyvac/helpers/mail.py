@@ -1,4 +1,3 @@
-import socket
 # Import smtplib for the actual sending function
 import smtplib
 # Import the email modules we'll need
@@ -21,7 +20,7 @@ class SmtpWrapper(object):
 
     def __init__(self, config):
 
-        self.hostname = socket.gethostname()
+        self.signature = config['signature']
         self.host = config['host']
         self.port = config.get('port', 25)
         self.starttls = config['starttls']
@@ -37,8 +36,8 @@ class SmtpWrapper(object):
 
         content = """%s
 
-Send by Pyvac: http://%s/
-""" % (content, self.hostname)
+%s
+""" % (content, self.signature)
 
         msg = MIMEText(content.encode('utf-8'), 'plain', 'utf-8')
 
