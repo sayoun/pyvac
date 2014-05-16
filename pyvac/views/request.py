@@ -31,6 +31,30 @@ class Send(View):
 
             days = float(self.request.params.get('days'))
 
+            dates = self.request.params.get('date_from').split(' - ')
+            date_from = datetime.strptime(dates[0], '%d/%m/%Y')
+            date_to = datetime.strptime(dates[1], '%d/%m/%Y')
+
+            days_diff = (date_to - date_from).days
+            if days_diff < 0:
+                msg = 'Invalid format for period.'
+                self.request.session.flash('error;%s' % msg)
+                return HTTPFound(location=route_url('home', self.request))
+
+            if (date_to == date_from) and days > 1:
+                # same day, asking only for one or less day duration
+                msg = 'Invalid value for days.'
+                self.request.session.flash('error;%s' % msg)
+                return HTTPFound(location=route_url('home', self.request))
+
+            if days <= 0:
+                msg = 'Invalid value for days.'
+                self.request.session.flash('error;%s' % msg)
+                return HTTPFound(location=route_url('home', self.request))
+
+            vac_type = VacationType.by_name(self.session,
+                                            self.request.params.get('type'))
+
             # label field is used when requesting half day
             label = u''
             breakdown = self.request.params.get('breakdown')
@@ -42,18 +66,6 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
                 else:
                     label = unicode(breakdown)
-
-            dates = self.request.params.get('date_from').split(' - ')
-            date_from = datetime.strptime(dates[0], '%d/%m/%Y')
-            date_to = datetime.strptime(dates[1], '%d/%m/%Y')
-
-            vac_type = VacationType.by_name(self.session,
-                                            self.request.params.get('type'))
-
-            if days <= 0:
-                msg = 'Invalid value for days.'
-                self.request.session.flash('error;%s' % msg)
-                return HTTPFound(location=route_url('home', self.request))
 
             request = Request(date_from=date_from,
                               date_to=date_to,

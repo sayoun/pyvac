@@ -192,6 +192,16 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
+    def test_post_send_wrong_period_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        view = Send(self.create_request({'date_from': '15/05/2014 - 10/05/2014'}))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+
     def test_post_send_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
