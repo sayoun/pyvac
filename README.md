@@ -18,7 +18,7 @@ Each step in the workflow is notified by email to whom his concerned.
 
 - login/open the application
 - select desired period on the calendar, by clicking on starting and ending date
-- select type of leave CP or RTT
+- select type of leave: **CP** (*Congés Payés*, paid time off) or **RTT** (*Réduction du Temps de Travail*, unpaid time off)
 - select breakdown AM/PM if needed, this is only enabled when requesting a single date
 - click submit
 
