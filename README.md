@@ -1,48 +1,48 @@
 Pyvac
 =====
 
-Pyvac purpose is to allow Human Resources (HR) to handle leave calendar of employee and manage internal ldap of employee.
+Pyvac's purpose is to allow Human Resources (HR) to handle an employee leave calendar and manage internal employee ldap.
 
 It's a full web application written in Python, using Pyramid as HTTP framework and Celery as backend framework.
 
 Workflow
 --------
 
-A leave request needs a double validation, one by user manager and one by HR administrator, to be fully processed and valid.
-Both manager and HR admin can deny a request but must provide a reason.
+A leave request requires double validation (both by the user's manager and by the HR administrator) to be fully processed and validated.
+Either a manager or HR admin can deny a request but must provide a reason.
 After HR validation, the request will be automatically added to the caldav calendar.
 
-Each step in the workflow is notified by email to whom his concerned.
+Each step in the workflow generates a notification email to affected parties.
 
-### Request a new leave as a simple user:
+### Request a new leave as a normal user:
 
-- login/open the application
-- select desired period on the calendar, by clicking on starting and ending date
-- select type of leave CP or RTT
-- select breakdown AM/PM if needed, this is only enabled when requesting a single date
+- log in/open the application
+- select desired period on the calendar, by clicking on start and end date
+- select type of leave: **CP** (*Congés Payés*, paid time off) or **RTT** (*Réduction du Temps de Travail*, unpaid time off)
+- select AM/PM if needed (only enabled when requesting a single date)
 - click submit
 
--> an email is send to the user manager to notify him of a new pending request
+-> an email is sent to the user's manager to notify them of a new pending request
 
 ### Handling a leave request as a manager
 
-- login/open the application
+- log in/open the application
 - go to request list page
-- check if there is a conflict between user requests for some overlapping periods
+- check for conflicting user requests due to overlapping time-off requests
 - click on accept or deny button, provide a reason if denied
 
--> an email is send to the user to notify him of his manager validation
--> an email is send to the HR admin to notify him of a new pending request validated by a manager
+-> an email is sent to the user to notify them of their manager's validation
+-> an email is sent to the HR admin to notify them of a new pending request that has been validated by a manager
 
 ### Handling a leave request as HR admin
 
-- login/open the application
+- log in/open the application
 - go to request list page
-- check if there is a conflict between user requests for some overlapping periods
+- check for conflicting user requests due to overlapping time-off requests
 - click on accept or deny button, provide a reason if denied
 
--> an email is send to the user to notify him of HR validation
--> an email is send to the manager to notify him of HR validation
+-> an email is sent to the user to notify them of HR's validation
+-> an email is sent to the manager to notify them of HR's validation
 -> a new entry is added to caldav for this leave request
 
 
@@ -59,7 +59,7 @@ Initialize database
 
     $venv/bin/pyvac_install development.ini
 
-Optionnal: Import ldap users if using ldap
+Optional: Import ldap users if using ldap
 
     $venv/bin/pyvac_import development.ini
 
@@ -75,9 +75,9 @@ Start celery poller process
 
     $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
 
-### Finally to be ready to use:
+### Finally, to be ready to use:
 
-- log in using admin account (admin/changeme)
+- log in using admin account (default credentials: admin/changeme)
 - go to profile page and change password and email
-- create user/managers
+- create users/managers
 
