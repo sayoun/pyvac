@@ -1,3 +1,10 @@
+pyvac (0.1.0-42) unstable; urgency=low
+
+  * Add new configuration entry pyvac.force_scheme to allow forcing a
+    scheme when redirecting view
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 19 May 2014 16:16:49 +0200
+
 pyvac (0.1.0-41) unstable; urgency=low
 
   * Capitalize user name and remove firstname/lastname field from
