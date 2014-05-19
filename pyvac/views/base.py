@@ -108,6 +108,11 @@ class RedirectView(View):
         return self.redirect()
 
     def redirect(self):
+        settings = self.request.registry.settings
+        if 'pyvac.force_scheme' in settings:
+            scheme = settings.get('pyvac.force_scheme')
+            self.redirect_kwargs['_scheme'] = scheme
+
         return HTTPFound(location=route_url(self.redirect_route, self.request,
                                             **self.redirect_kwargs))
 
@@ -208,7 +213,6 @@ class DeleteView(RedirectView):
     model = None
     matchdict_key = None
     redirect_route = None
-    redirect_kwargs = {}
 
     def delete(self, model):
         self.session.delete(model)

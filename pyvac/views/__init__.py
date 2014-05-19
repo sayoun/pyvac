@@ -10,7 +10,6 @@ class Index(RedirectView):
 class Home(RedirectView):
 
     redirect_route = u'login'
-    # redirect_kwargs = {}
 
     def render(self):
         if not self.user:
