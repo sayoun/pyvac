@@ -115,7 +115,7 @@ class User(Base):
 
     @property
     def name(self):
-        return u'%s %s' % (self.firstname, self.lastname)\
+        return u'%s %s' % (self.firstname.capitalize(), self.lastname.capitalize())\
             if self.firstname and self.lastname else self.login
 
     def _get_password(self):
