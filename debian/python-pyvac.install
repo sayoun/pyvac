@@ -1,4 +1,3 @@
 conf/ldap.yaml.tmpl etc/gandi/pyvac/
 conf/pyvac.yaml.tmpl etc/gandi/pyvac/
 conf/pyvac.gunicorn.tmpl etc/gunicorn.d/
-production.ini /etc/gandi/pyvac/
