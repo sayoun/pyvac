@@ -30,7 +30,8 @@ def main(argv=sys.argv):
     config = Configurator(settings=settings)
     config.end()
 
-    from pyvac.models import Base, Permission, Group, User, Request
+    from pyvac.models import (Base, Permission, Group, User, Request,
+                              Countries, VacationType, PasswordRecovery)
 
     session = DBSession()
     try:
