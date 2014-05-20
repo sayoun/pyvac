@@ -1,3 +1,9 @@
+pyvac (0.1.0-44) unstable; urgency=low
+
+  * Vacation types are now filtered by country
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 20 May 2014 16:14:25 +0200
+
 pyvac (0.1.0-43) unstable; urgency=low
 
   * Cosmetic changes
