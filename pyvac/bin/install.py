@@ -58,6 +58,15 @@ def populate(engine):
     zh_country = Countries(name=u'zh')
     session.add(zh_country)
 
+    # CP is available for everyone
+    vactype1.countries.append(fr_country)
+    vactype1.countries.append(lu_country)
+    vactype1.countries.append(us_country)
+    vactype1.countries.append(zh_country)
+
+    # RTT only available for france
+    vactype2.countries.append(fr_country)
+
     common_password = u'changeme'
 
     admin = User(login=u'admin',

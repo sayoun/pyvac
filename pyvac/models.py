@@ -371,11 +371,20 @@ class User(Base):
         return self._country.name
 
 
+vacation_type__country = Table('vacation_type__country', Base.metadata,
+                               Column('vacation_type_id', Integer, ForeignKey('vacation_type.id')),
+                               Column('country_id', Integer, ForeignKey('countries.id'))
+                               )
+
+
 class VacationType(Base):
     """
     Describe allowed type of vacation to request
     """
     name = Column(Unicode(255), nullable=False)
+
+    countries = relationship(Countries, secondary=vacation_type__country,
+                             lazy='joined', backref='vacation_type')
 
     @classmethod
     def by_name(cls, session, name):
@@ -383,6 +392,15 @@ class VacationType(Base):
         Get a vacation type from a given name.
         """
         return cls.first(session, where=(cls.name == name,))
+
+    @classmethod
+    def by_country(cls, session, country):
+        """
+        Get vacation type from a given country.
+        """
+        ctry = Countries.by_name(session, country)
+        return cls.find(session, where=(cls.countries.contains(ctry),),
+                        order_by=cls.id)
 
 
 class Request(Base):

@@ -149,3 +149,15 @@ class RequestTestCase(ModelTestCase):
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
         self.assertEqual(req.summarycsv, u'John Doe,10/04/2014,14/04/2014,5.0,CP')
+
+
+class VacationTypeTestCase(ModelTestCase):
+
+    def test_by_country_ok(self):
+        from pyvac.models import User, VacationType
+        manager3 = User.by_login(self.session, u'manager3')
+        vac_types = VacationType.by_country(self.session, manager3.country)
+        self.assertEqual(len(vac_types), 1)
+        # take the first
+        vac_type = vac_types.pop()
+        self.assertIsInstance(vac_type, VacationType)

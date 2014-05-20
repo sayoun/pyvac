@@ -22,6 +22,7 @@ def setUpModule():
     rtt_vacation = VacationType.by_name(session, u'RTT')
 
     fr_country = Countries.by_name(session, u'fr')
+    us_country = Countries.by_name(session, u'us')
 
     manager1 = User(login=u'manager1',
                     password=common_password,
@@ -44,6 +45,17 @@ def setUpModule():
                     )
     manager1.groups.append(manager_group)
     session.add(manager2)
+
+    manager_us = User(login=u'manager3',
+                      password=common_password,
+                      email=u'manager3@example.net',
+                      firstname=u'Third',
+                      lastname=u'Manager',
+                      role=u'manager',
+                      _country=us_country,
+                      )
+    manager_us.groups.append(manager_group)
+    session.add(manager_us)
 
     user1 = User(login=u'jdoe',
                  password=common_password,
