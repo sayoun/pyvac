@@ -17,6 +17,7 @@ from .helpers.sqla import (Database, SessionFactory, ModelError,
                            )
 
 from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.i18n import translate as _
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -562,7 +563,7 @@ class Request(Base):
         """
         Get name of chosen vacation type.
         """
-        return self.vacation_type.name
+        return _(self.vacation_type.name, self.user.country)
 
     @property
     def summary(self):
