@@ -1,3 +1,11 @@
+pyvac (0.1.0-47) unstable; urgency=low
+
+  * Filter requests only for admin country Retrieve admnin for user
+    depending on user country Show conflicts only for user with same
+    manager
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 21 May 2014 16:14:59 +0200
+
 pyvac (0.1.0-46) unstable; urgency=low
 
   * Fixes exported requests for csv, use i18n for vacation type
