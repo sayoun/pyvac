@@ -269,16 +269,17 @@ class LdapWrapper(object):
         """ Get hr mail of country for a user_dn"""
         what = '(member=*)'
         results = self._search_admin(what, None)
-        for USER_DN, entry in results:
-            item = self._extract_country(entry['member'][0])
-            if item == country:
-                # found valid hr user for this country
-                login = self._extract_cn(entry['member'][0])
-                user_data = self.search_user_by_login(login)
-                return user_data
+        for USER_DN, res_entry in results:
+            for entry in res_entry['member']:
+                item = self._extract_country(entry)
+                if item == country:
+                    # found valid hr user for this country
+                    login = self._extract_cn(entry)
+                    user_data = self.search_user_by_login(login)
+                    return user_data
 
         # security if no admin per country found, take the last one
-        login = self._extract_cn(entry['member'][0])
+        login = self._extract_cn(entry)
         user_data = self.search_user_by_login(login)
         return user_data
 
