@@ -47,7 +47,6 @@ def add_localizer(event):
 
 
 def translate(string, country):
-    print 'calling translate for string %s and country %s' % (string, country)
     # hack to use en locale for us country
     if country == 'us':
         country = 'en'
