@@ -73,7 +73,7 @@ class AccountMixin:
                                               order_by=Countries.name)
             # generate a random password for the user, he must change it later
             password = randomstring()
-            log.info('temporary password generated: %s' % password)
+            log.debug('temporary password generated: %s' % password)
             view['password'] = password
             view['view_name'] = self.__class__.__name__.lower()
             view['myself'] = (self.user.id == self.get_model().id)

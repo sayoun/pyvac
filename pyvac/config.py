@@ -20,6 +20,7 @@ except ImportError:
     from logutils.dictconfig import dictConfig
 
 from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.i18n import locale_negotiator
 
 
 def configure(filename='conf/pyvac.yaml', init_celery=True, default_app=None):
@@ -75,7 +76,8 @@ def includeme(config):
     # helpers
     config.add_subscriber(add_urlhelpers, IBeforeRender)
     # i18n
-    # config.add_translation_dirs('locale/')
+    config.add_translation_dirs('locale/')
+    config.set_locale_negotiator(locale_negotiator)
 
     # Javascript + Media
     config.add_static_view('static', 'static', cache_max_age=3600)

@@ -15,7 +15,9 @@ class Home(RedirectView):
         if not self.user:
             return self.redirect()
 
-        ret_dict = {'types': [vac.name for vac in
+        _ = self.request.translate
+
+        ret_dict = {'types': [_(vac.name) for vac in
                               VacationType.by_country(self.session,
                                                       self.user.country)
                               ]}

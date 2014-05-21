@@ -2,6 +2,8 @@
 from pyramid.config import Configurator
 from pyramid.authorization import ACLAuthorizationPolicy as ACLPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.interfaces import IBeforeRender
+from pyramid.events import NewRequest
 
 from .security import groupfinder, RootFactory
 
@@ -34,6 +36,11 @@ def main(global_config, **settings):
                           authentication_policy=authn_policy,
                           authorization_policy=authz_policy,
                           session_factory=session_factory)
+
+    config.add_subscriber('pyvac.helpers.i18n.add_renderer_globals',
+                          IBeforeRender)
+    config.add_subscriber('pyvac.helpers.i18n.add_localizer', NewRequest)
+
     config.end()
 
     return config.make_wsgi_app()
