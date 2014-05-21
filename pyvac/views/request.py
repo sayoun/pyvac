@@ -234,7 +234,8 @@ class Export(View):
 
         exported = {}
         if self.user.is_admin:
-            requests = Request.get_by_month(self.session)
+            country = self.user.country
+            requests = Request.get_by_month(self.session, country)
             data = []
             header = '%s,%s,%s,%s,%s,%s' % ('#', 'user', 'from', 'to', 'number', 'type')
             data.append(header)

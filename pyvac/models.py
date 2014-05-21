@@ -543,7 +543,7 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
-    def get_by_month(cls, session, month=0):
+    def get_by_month(cls, session, country, month=0):
         """
         Get all requests for a given month.
         """
@@ -568,9 +568,13 @@ class Request(Base):
                                                    microsecond=0)
                            + relativedelta(months=1))
 
+        country_id = Countries.by_name(session, country).id
+
         return cls.find(session,
+                        join=(cls.user),
                         where=(and_(cls.date_from >= first_month_date,
                                     cls.date_to <= last_month_date),
+                               User.country_id == country_id,
                                cls.status == 'APPROVED_ADMIN',),
                         order_by=cls.user_id)
 
