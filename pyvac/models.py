@@ -513,6 +513,7 @@ class Request(Base):
         Get all requests conflicting on dates with given request.
         """
         return cls.find(session,
+                        join=(cls.user),
                         where=(or_(and_(cls.date_from >= req.date_from,
                                         cls.date_to <= req.date_to),
                                and_(cls.date_from <= req.date_from,
@@ -522,6 +523,7 @@ class Request(Base):
                                and_(cls.date_from <= req.date_to,
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
+                               User.manager_dn == req.user.manager_dn,
                                cls.id != req.id),
                         count=count,
                         order_by=cls.user_id)
