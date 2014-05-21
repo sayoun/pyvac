@@ -1,11 +1,16 @@
 # Import smtplib for the actual sending function
 import smtplib
 # Import the email modules we'll need
+import email
+import email.charset
 from email.mime.text import MIMEText
 from email.utils import formatdate
 import logging
 
 log = logging.getLogger(__name__)
+
+# Init email module properties, we prefer quoted-printable encoded fields
+email.charset.add_charset('utf-8', email.charset.QP, email.charset.QP, 'utf-8')
 
 
 class SmtpWrapper(object):
