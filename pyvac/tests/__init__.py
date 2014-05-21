@@ -123,6 +123,17 @@ def setUpModule():
                    notified=True,)
     session.add(req4)
 
+    date_from = datetime.strptime('24/04/2014', '%d/%m/%Y')
+    date_to = datetime.strptime('28/04/2014', '%d/%m/%Y')
+    req5 = Request(date_from=date_from,
+                   date_to=date_to,
+                   days=5,
+                   vacation_type=rtt_vacation,
+                   status=u'APPROVED_ADMIN',
+                   user=manager_us,
+                   notified=True,)
+    session.add(req5)
+
     session.commit()
 
 

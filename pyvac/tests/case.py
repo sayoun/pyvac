@@ -38,6 +38,11 @@ class DummyRequest(testing.DummyRequest):
     client_addr = u'127.0.0.8'
     matched_route = DummyRoute
 
+    def auto_translate(string, country):
+        return string
+
+    translate = auto_translate
+
 
 class UnauthenticatedViewTestCase(TestCase):
 
