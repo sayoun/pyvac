@@ -554,7 +554,7 @@ class Request(Base):
         return cls.find(session,
                         where=(and_(cls.date_from >= first_month_date,
                                     cls.date_to <= last_month_date),
-                               cls.status != 'CANCELED',),
+                               cls.status == 'APPROVED_ADMIN',),
                         order_by=cls.user_id)
 
     @property
