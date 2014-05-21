@@ -2,6 +2,7 @@
 import smtplib
 # Import the email modules we'll need
 from email.mime.text import MIMEText
+from email.utils import formatdate
 import logging
 
 log = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class SmtpWrapper(object):
         msg['Subject'] = '[Pyvac] %s' % subject
         msg['From'] = sender
         msg['To'] = target
+        msg['Date'] = formatdate()
 
         conn = smtplib.SMTP(self.host, self.port)
         if self.starttls:
