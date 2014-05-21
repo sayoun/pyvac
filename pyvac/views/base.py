@@ -81,7 +81,9 @@ class View(ViewBase):
                 req_list = {'requests': []}
                 requests = []
                 if self.user.is_admin:
-                    requests = Request.all_for_admin(self.session)
+                    country = self.user.country
+                    requests = Request.all_for_admin_per_country(self.session,
+                                                                 country)
                 elif self.user.is_super:
                     requests = Request.by_manager(self.session, self.user)
 

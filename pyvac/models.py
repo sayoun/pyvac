@@ -508,6 +508,20 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
+    def all_for_admin_per_country(cls, session, country, count=None):
+        """
+        Get all requests manageable by admin per country.
+        """
+        country_id = Countries.by_name(session, country).id
+        return cls.find(session,
+                        join=(cls.user),
+                        where=(cls.status != 'CANCELED',
+                               User.country_id == country_id,
+                               ),
+                        count=count,
+                        order_by=cls.user_id)
+
+    @classmethod
     def in_conflict(cls, session, req, count=None):
         """
         Get all requests conflicting on dates with given request.

@@ -270,14 +270,17 @@ class LdapWrapper(object):
         what = '(member=*)'
         results = self._search_admin(what, None)
         for USER_DN, entry in results:
-            # item = self._extract_country(entry['member'])
-            # XXX: for now return on the first HR found
-            # if item == country:
-            # found valid hr user for this country
-            # take the first member of this group
-            login = self._extract_cn(entry['member'][0])
-            user_data = self.search_user_by_login(login)
-            return user_data
+            item = self._extract_country(entry['member'][0])
+            if item == country:
+                # found valid hr user for this country
+                login = self._extract_cn(entry['member'][0])
+                user_data = self.search_user_by_login(login)
+                return user_data
+
+        # security if no admin per country found, take the last one
+        login = self._extract_cn(entry['member'][0])
+        user_data = self.search_user_by_login(login)
+        return user_data
 
     def list_ou(self):
         """ Retrieve available organisational units """
