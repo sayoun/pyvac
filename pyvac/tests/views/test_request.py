@@ -212,7 +212,7 @@ class RequestTestCase(case.ViewTestCase):
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 4,
                                          'date_from': '05/05/2014 - 10/05/2014',
-                                         'type': 'CP',
+                                         'type': '1',
                                          'breakdown': 'FULL',
                                          }))()
         self.assertIsRedirect(view)
@@ -226,7 +226,7 @@ class RequestTestCase(case.ViewTestCase):
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 0.5,
                                          'date_from': '05/05/2014 - 05/05/2014',
-                                         'type': 'CP',
+                                         'type': '1',
                                          'breakdown': 'AM',
                                          }))()
         self.assertIsRedirect(view)

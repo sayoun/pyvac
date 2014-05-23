@@ -17,10 +17,13 @@ class Home(RedirectView):
 
         _ = self.request.translate
 
-        ret_dict = {'types': [_(vac.name) for vac in
-                              VacationType.by_country(self.session,
-                                                      self.user.country)
-                              ]}
+        ret_dict = {'types': []}
+
+        vacation_types = VacationType.by_country(self.session,
+                                                 self.user.country)
+        for vac in vacation_types:
+            ret_dict['types'].append({'name': _(vac.name), 'id': vac.id})
+
         if self.request.matched_route:
             matched_route = self.request.matched_route.name
             ret_dict.update({'matched_route': matched_route,

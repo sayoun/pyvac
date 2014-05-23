@@ -58,8 +58,8 @@ class Send(View):
                 self.request.session.flash('error;%s' % msg)
                 return HTTPFound(location=route_url('home', self.request))
 
-            vac_type = VacationType.by_name(self.session,
-                                            self.request.params.get('type'))
+            vac_type = VacationType.by_id(self.session,
+                                          int(self.request.params.get('type')))
 
             # label field is used when requesting half day
             label = u''

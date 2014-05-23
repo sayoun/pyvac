@@ -21,7 +21,7 @@
             <div class="controls">
             {% for type in types %}
                 <label class="radio inline">
-                  <input type="radio" name="type" id="type{{ type }}" value="{{ type }}" {% if loop.first %}checked=""{% endif %}>{{ type }}
+                  <input type="radio" name="type" id="type{{ type }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}>{{ type['name'] }}
                 </label>
             {% endfor %}
             </div>
