@@ -117,6 +117,13 @@ class List(View):
             country = self.user.country
             requests = Request.all_for_admin_per_country(self.session,
                                                          country)
+            # check if admin user is also a manager, in this case merge all
+            # requests
+            requests_manager = Request.by_manager(self.session, self.user)
+            # avoid duplicate entries
+            req_to_add = [req for req in requests_manager
+                          if req not in requests]
+            requests.extend(req_to_add)
         elif self.user.is_super:
             requests = Request.by_manager(self.session, self.user)
 
