@@ -1,3 +1,10 @@
+pyvac (0.1.0-51) unstable; urgency=low
+
+  * Admin request list view now also display manager requests if admin
+    is also a manager.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 03 Jun 2014 09:55:21 +0200
+
 pyvac (0.1.0-50) unstable; urgency=low
 
   * Use vacation_type id instead of name to fixes a bug with translated
