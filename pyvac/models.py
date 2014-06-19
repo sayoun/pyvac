@@ -571,8 +571,12 @@ class Request(Base):
 
         return cls.find(session,
                         join=(cls.user),
-                        where=(and_(cls.date_from >= first_month_date,
-                                    cls.date_to <= last_month_date),
+                        where=(or_(and_(cls.date_from >= first_month_date,
+                                        cls.date_to <= last_month_date),
+                               and_(cls.date_from <= first_month_date,
+                                    cls.date_to >= first_month_date),
+                               and_(cls.date_from <= last_month_date,
+                                    cls.date_to >= last_month_date)),
                                User.country_id == country_id,
                                cls.status == 'APPROVED_ADMIN',),
                         order_by=cls.user_id)
