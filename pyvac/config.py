@@ -186,3 +186,10 @@ def includeme(config):
                     route_name=u'export_request',
                     renderer=u'templates/request/export.html',
                     permission=u'admin_view')
+
+    config.add_route(u'request_export', u'/pyvac/exported',
+                     request_method=u'POST')
+    config.add_view(u'pyvac.views.request.Exported',
+                    route_name=u'request_export',
+                    renderer=u'templates/request/exported.html',
+                    permission=u'admin_view')

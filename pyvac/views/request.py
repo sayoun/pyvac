@@ -235,6 +235,17 @@ class Cancel(View):
 
 class Export(View):
     """
+    Display form to export requests
+    """
+    def render(self):
+        import calendar
+        from datetime import datetime
+        months = calendar.month_name
+        return {'months': months[1:], 'current_month': datetime.now().month}
+
+
+class Exported(View):
+    """
     Export all requests of a month to csv
     """
     def render(self):
@@ -242,7 +253,8 @@ class Export(View):
         exported = {}
         if self.user.is_admin:
             country = self.user.country
-            requests = Request.get_by_month(self.session, country)
+            month = int(self.request.params.get('month'))
+            requests = Request.get_by_month(self.session, country, month=month)
             data = []
             header = '%s,%s,%s,%s,%s,%s' % ('#', 'user', 'from', 'to', 'number', 'type')
             data.append(header)

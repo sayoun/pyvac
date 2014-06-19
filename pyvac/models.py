@@ -548,10 +548,10 @@ class Request(Base):
         Get all requests for a given month.
         """
         from datetime import datetime
-        from dateutil.relativedelta import relativedelta
         from calendar import monthrange
 
         date = datetime.now()
+        date = date.replace(month=month)
         # retrieve first day of the previous month
         # first_month_day = date.replace(day=1) - relativedelta(months=1)
         first_month_day = date.replace(day=1)
@@ -565,8 +565,7 @@ class Request(Base):
         # set time at 23:59:59 for this date
         last_month_date = (first_month_day.replace(day=last_month_day, hour=23,
                                                    minute=59, second=59,
-                                                   microsecond=0)
-                           + relativedelta(months=1))
+                                                   microsecond=0))
 
         country_id = Countries.by_name(session, country).id
 
