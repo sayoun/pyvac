@@ -17,7 +17,7 @@ class Home(RedirectView):
 
         _ = self.request.translate
 
-        ret_dict = {'types': []}
+        ret_dict = {'types': [], 'holidays': []}
 
         vacation_types = VacationType.by_country(self.session,
                                                  self.user.country)

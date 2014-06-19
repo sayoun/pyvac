@@ -60,6 +60,8 @@
   $(function() {
     var cur = -1, prv = -1, days = 0;
 
+    var holidays = {{ holidays }};
+
     $.datepicker.regional['fr'] = {
         closeText: 'Fermer',
         prevText: 'Précédent',
@@ -99,18 +101,33 @@ function DateDiff(date1, date2) {
 
     beforeShowDay: function ( date ) {
         /* do not select weekend days */
+        var date_class = ''
+        if (holidays.indexOf(date.getTime()) != -1) {
+          date_class = 'date-range-holiday';
+        }
         var day = date.getDay();
         var isWeekend = (day == 6) || (day == 0);
         if (isWeekend)
         {
-            return [false, ''];
+            return [false, date_class];
         }
 
         if ( prv == -1 && prv == cur ) {
-            return [true, false];
+            return [true, date_class];
         }
 
-          return [true, ( (date.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date.getTime() <= Math.max(prv.getTime(), cur.getTime())) ? 'date-range-selected' : '')];
+        if (date.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date.getTime() <= Math.max(prv.getTime(), cur.getTime()))
+        {
+            if (date_class == 'date-range-holiday')
+            {
+                date_class = 'date-range-selected-holiday';
+            }
+            else
+            {
+                date_class = 'date-range-selected';
+            }
+        }
+        return [true, date_class];
        },
 
     onSelect: function ( dateText, inst ) {

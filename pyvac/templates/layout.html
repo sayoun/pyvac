@@ -10,7 +10,7 @@
     <!-- Le styles -->
     <link href="{{ static_url('pyvac:static/css/bootstrap.css') }}" rel="stylesheet">
     <link href="{{ static_url('pyvac:static/css/jquery-ui.css') }}" rel="stylesheet"/>
-    <link href="{{ static_url('pyvac:static/themes/smoothness/jquery-ui.css') }}" rel="stylesheet"/>
+    <link href="{{ static_url('pyvac:static/themes/pyvac-theme/jquery-ui-1.10.4.custom.css') }}" rel="stylesheet"/>
     <link href="{{ static_url('pyvac:static/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet"/>
 
     <link href="{{ static_url('pyvac:static/css/bootstrap-responsive.css') }}" rel="stylesheet">
@@ -90,6 +90,20 @@
       .date-range-selected > .ui-state-default {
         background: none;
         background-color: lightsteelblue;
+      }
+
+      .date-range-holiday > .ui-state-active,
+      .date-range-holiday > .ui-state-default {
+        background: none;
+        background-color: #c4003f;
+        color: #ffffff;
+      }
+
+      .date-range-selected-holiday > .ui-state-active,
+      .date-range-selected-holiday > .ui-state-default {
+        background: none;
+        background-color: darkmagenta;
+        color: #fff;
       }
 
       div.tooltip-inner {
