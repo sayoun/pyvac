@@ -6,7 +6,6 @@ from datetime import datetime
 import logging
 import transaction
 
-from dateutil.relativedelta import relativedelta
 from celery.task import Task, subtask
 
 from pyvac.models import DBSession, Request, User
@@ -122,9 +121,9 @@ class WorkerAcceptedNotified(BaseWorker):
         auto flag as accepted by HR
         """
         req = Request.by_id(self.session, data['req_id'])
-        delta = (req.created_at + relativedelta(days=3)) - datetime.now()
-        # after Request.created_at + 3 days, auto accept it by HR
-        if delta.days > 3:
+        delta = datetime.now() - req.date_updated
+        # after Request.date_updated + 3 days, auto accept it by HR
+        if delta.days >= 3:
             # auto accept it as HR
             self.log.info('3 days passed, auto accept it by HR')
 
