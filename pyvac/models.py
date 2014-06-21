@@ -6,7 +6,7 @@ import cryptacular.bcrypt
 
 from sqlalchemy import (Table, Column, ForeignKey, Index, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
-                        UnicodeText)
+                        UnicodeText, func)
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import relationship, synonym
 from sqlalchemy.ext.declarative import declared_attr
@@ -412,6 +412,8 @@ class Request(Base):
     date_from = Column(DateTime, nullable=False)
     date_to = Column(DateTime, nullable=False)
     days = Column(Float(precision=1), nullable=False)
+
+    date_updated = Column(DateTime, default=func.now(), onupdate=func.now())
 
     vacation_type_id = Column('vacation_type_id', ForeignKey(VacationType.id),
                               nullable=False)
