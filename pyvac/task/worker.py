@@ -121,6 +121,10 @@ class WorkerAcceptedNotified(BaseWorker):
         auto flag as accepted by HR
         """
         req = Request.by_id(self.session, data['req_id'])
+        # after new field was added, it may not be set yet
+        if not req.date_updated:
+            return
+
         delta = datetime.now() - req.date_updated
         # after Request.date_updated + 3 days, auto accept it by HR
         if delta.days >= 3:
