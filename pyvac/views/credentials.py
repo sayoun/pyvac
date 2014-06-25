@@ -48,8 +48,8 @@ class Login(View):
                     user = User.by_credentials(self.session, login,
                                                password, ldap)
                     if user is not None:
-                        log.info('login %r succeed' % login)
-                        headers = remember(self.request, login)
+                        log.info('login %r succeed' % user.login)
+                        headers = remember(self.request, user.login)
                         return HTTPFound(location=came_from,
                                          headers=headers)
                     else:
