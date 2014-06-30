@@ -5,7 +5,7 @@
   <legend>Requests</legend>
 </div>
 
-  <table id="requests" class="table table-bordered table-condensed table-striped table-hover">
+  <table id="requests" class="table table-bordered table-condensed table-striped table-hover tablesorter">
     <thead>
       <tr>
         <th>{% trans %}User{% endtrans %}</th>
@@ -26,9 +26,9 @@
     <tbody>
       {% for req in requests %}
       <tr id="tr_req_{{ req.id }}">
-            <td>{{ req.user.name }}</td>
+            <td data-celltype="user">{{ req.user.name }}</td>
             {% if pyvac.user.is_super %}
-            <td>{% if req.user.manager_dn %}
+            <td data-celltype="manager">{% if req.user.manager_dn %}
                   {{ req.user.manager_dn|extract_cn }}
                 {%else%}
                   {% if req.user.manager %}
@@ -39,16 +39,16 @@
                 {% endif %}
             </td>
             {% endif %}
-            <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
+            <td data-celltype="period">{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
             {% if pyvac.user.is_super %}
-            <td>{% if req.conflict%}
+            <td data-celltype="conflict">{% if req.conflict%}
             <a id="td_conflict_req_{{ req.id }}" href="#" data-toggle="tooltip" title="" data-original-title="{{conflicts[req.id]}}"><span class="badge-important badge">{{ req.conflict|count }}</span></a>
             {% else %}<span class="badge">{{ req.conflict|count }}</span>{% endif %}</td>
             {% endif %}
-            <td>{{ req.days }}</td>
-            <td>{{ req.type }}</td>
-            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
-            <td id="td_req_buttons_{{ req.id }}">
+            <td data-celltype="days">{{ req.days }}</td>
+            <td data-celltype="type">{{ req.type }}</td>
+            <td id="td_req_status_{{ req.id }}" data-celltype="status">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
+            <td id="td_req_buttons_{{ req.id }}" data-celltype="buttons">
               {% if req.status != 'ERROR' %}
                   {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
                     <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
@@ -74,7 +74,7 @@
               -
               {% endif %}
             </td>
-            <td>{{ req.notified }}</td>
+            <td data-celltype="notif">{{ req.notified }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -196,6 +196,27 @@
 
     $( 'button[id="btnrefuse"]' )
       .click(ajax_refuse_request);
+
+    $(document).ready(function()
+        {
+            $("#requests").tablesorter({
+                theme : 'blue',
+
+                textExtraction: function(node) {
+                    var celltype = $(node).data('celltype');
+                    if (celltype == "period") {
+                        var value = $(node).text().split(' ')[0];
+                        return value;
+                    }
+                    if (celltype == "user") {
+                        var value = $(node).text().split(' ', 2)[1];
+                        return value;
+                    }
+                    return $(node).text();
+                },
+            });
+        }
+    );
 
 </script>
 
