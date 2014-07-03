@@ -1,3 +1,9 @@
+pyvac (0.1.0-56) unstable; urgency=low
+
+  * Admin can now cancel user requests when already accepted/approved
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 03 Jul 2014 16:16:11 +0200
+
 pyvac (0.1.0-55) unstable; urgency=low
 
   * Update javascript lib to fixes sorting for request list view.
