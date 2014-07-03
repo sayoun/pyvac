@@ -1,3 +1,9 @@
+pyvac (0.1.0-55) unstable; urgency=low
+
+  * Update javascript lib to fixes sorting for request list view.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 03 Jul 2014 10:36:24 +0200
+
 pyvac (0.1.0-54) unstable; urgency=low
 
   * Add javascript sorting to request list view.
