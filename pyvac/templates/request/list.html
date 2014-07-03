@@ -64,6 +64,12 @@
                     {% if req.status in ['DENIED', 'APPROVED_ADMIN'] %}disabled="disabled"{% endif %}>
                         DENY
                     </a>
+                    {% if pyvac.user.is_admin and (req.user_id != pyvac.user.id) %}
+                      <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                      {% if req.status in ['CANCELED', 'DENIED'] %}disabled="disabled"{% endif %}>
+                        CANCEL
+                      </a>
+                    {% endif %}
                   {% else %}
                   <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
                   {% if req.status in ['CANCELED', 'APPROVED_ADMIN','DENIED'] %}disabled="disabled"{% endif %}>
