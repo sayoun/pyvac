@@ -229,6 +229,8 @@ class Cancel(View):
             return ''
 
         req.update_status('CANCELED')
+        # save who performed this action
+        req.last_action_user_id = self.user.id
         self.session.flush()
         return req.status
 
