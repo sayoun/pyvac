@@ -164,13 +164,22 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
-    def test_get_export_ok(self):
+    def test_get_export_choice_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)
         from pyvac.views.request import Export
         view = Export(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'exported', 'pyvac']))
+                         set(['months', 'current_month', 'pyvac']))
+        self.assertEqual(len(view[u'months']), 12)
+
+    def test_get_exported_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.views.request import Exported
+        view = Exported(self.create_request({'month': 6}))()
+        self.assertEqual(set(view.keys()),
+                         set(['exported', 'pyvac']))
         exported = [u'#,user,from,to,number,type']
         self.assertEqual(view[u'exported'].split('\n'), exported)
 
