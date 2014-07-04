@@ -1,3 +1,9 @@
+pyvac (0.1.0-58) unstable; urgency=low
+
+  * Fixes bug with saving ics url entry in request
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 04 Jul 2014 14:10:59 +0200
+
 pyvac (0.1.0-57) unstable; urgency=low
 
   * Save ics url entry in request when added to calendar
