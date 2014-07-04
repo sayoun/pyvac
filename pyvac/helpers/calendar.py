@@ -37,3 +37,16 @@ END:VCALENDAR
 
     url_obj = event.url
     return str(url_obj)
+
+
+def delFromCal(url, ics):
+    """ Delete entry in calendar"""
+
+    if not url:
+        return False
+
+    client = caldav.DAVClient(url)
+    log.info('Deleting entry %r' % ics)
+    client.delete(ics)
+
+    return True

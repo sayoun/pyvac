@@ -9,6 +9,7 @@ from pyramid.url import route_url
 
 from pyvac.models import Request, VacationType
 # from pyvac.helpers.i18n import trans as _
+from pyvac.helpers.calendar import delFromCal
 
 import yaml
 try:
@@ -218,7 +219,7 @@ class Refuse(View):
 
 class Cancel(View):
     """
-    Cancel a request
+    Cancel a request and remove entry from calendar if needed.
     """
 
     def render(self):
@@ -228,9 +229,18 @@ class Cancel(View):
         if not req:
             return ''
 
+        # delete from calendar
+        if req.status == 'APPROVED_ADMIN' and req.ics_url:
+            settings = self.request.registry.settings
+            with open(settings['pyvac.celery.yaml']) as fdesc:
+                Conf = yaml.load(fdesc, YAMLLoader)
+            caldav_url = Conf.get('caldav').get('url')
+            delFromCal(caldav_url, req.ics_url)
+
         req.update_status('CANCELED')
         # save who performed this action
         req.last_action_user_id = self.user.id
+
         self.session.flush()
         return req.status
 

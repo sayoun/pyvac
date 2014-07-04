@@ -1,3 +1,10 @@
+pyvac (0.1.0-59) unstable; urgency=low
+
+  * Cancelling an APPROVED_ADMIN request will also remove entry from
+    calendar
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 04 Jul 2014 16:30:33 +0200
+
 pyvac (0.1.0-58) unstable; urgency=low
 
   * Fixes bug with saving ics url entry in request
