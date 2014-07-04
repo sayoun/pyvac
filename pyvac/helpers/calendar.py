@@ -35,4 +35,4 @@ END:VCALENDAR
     event = caldav.Event(client, data=vcal_entry, parent=calendar).save()
     log.info('Event %s created' % event)
 
-    return True
+    return event.url

@@ -1,3 +1,9 @@
+pyvac (0.1.0-57) unstable; urgency=low
+
+  * Save ics url entry in request when added to calendar
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 04 Jul 2014 10:16:23 +0200
+
 pyvac (0.1.0-56) unstable; urgency=low
 
   * Admin can now cancel user requests when already accepted/approved

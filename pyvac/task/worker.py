@@ -192,10 +192,12 @@ Request details: %s""" % req.summarymail
                 caldav_url = Conf.get('caldav').get('url')
 
             # add new entry in caldav
-            addToCal(caldav_url,
-                     req.date_from,
-                     req.date_to,
-                     req.summarycal)
+            ics_url = addToCal(caldav_url,
+                               req.date_from,
+                               req.date_to,
+                               req.summarycal)
+            # save ics url in request
+            req.ics_url = ics_url
         except Exception as err:
             log.exception('Error while adding to calendar')
             req.flag_error(str(err))

@@ -435,6 +435,8 @@ class Request(Base):
     label = Column(UnicodeText())
     # actor who performed last action on request
     last_action_user_id = Column(Integer, nullable=True)
+    # store caldav ics url
+    ics_url = Column(UnicodeText())
 
     notified = Column(Boolean, default=False)
     user_id = Column('user_id', ForeignKey(User.id))
