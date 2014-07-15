@@ -43,7 +43,7 @@ def setUpModule():
                     role=u'manager',
                     _country=fr_country,
                     )
-    manager1.groups.append(manager_group)
+    manager2.groups.append(manager_group)
     session.add(manager2)
 
     manager_us = User(login=u'manager3',

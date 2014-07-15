@@ -160,7 +160,13 @@ class Accept(View):
 
         data = {'req_id': req.id}
 
-        if self.user.is_admin:
+        only_manager = False
+        # we should handle the case where the admin is also a user manager
+        if (self.user.ldap_user and (req.user.manager_dn == self.user.dn)
+                and (req.status == 'PENDING')):
+            only_manager = True
+
+        if self.user.is_admin and not only_manager:
             req.update_status('APPROVED_ADMIN')
             # save who performed this action
             req.last_action_user_id = self.user.id

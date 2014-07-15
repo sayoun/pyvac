@@ -1,3 +1,10 @@
+pyvac (0.1.0-60) unstable; urgency=low
+
+  * Check if admin is also a manager when accepting a request to not
+    override status.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 15 Jul 2014 10:53:13 +0200
+
 pyvac (0.1.0-59) unstable; urgency=low
 
   * Cancelling an APPROVED_ADMIN request will also remove entry from
