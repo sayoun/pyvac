@@ -274,7 +274,8 @@ class Exported(View):
             month = int(self.request.params.get('month'))
             requests = Request.get_by_month(self.session, country, month=month)
             data = []
-            header = '%s,%s,%s,%s,%s,%s' % ('#', 'user', 'from', 'to', 'number', 'type')
+            header = '%s,%s,%s,%s,%s,%s,%s' % ('#', 'lastname', 'firstname',
+                                               'from', 'to', 'number', 'type')
             data.append(header)
             for idx, req in enumerate(requests, start=1):
                 data.append('%d,%s' % (idx, req.summarycsv))

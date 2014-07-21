@@ -180,7 +180,7 @@ class RequestTestCase(case.ViewTestCase):
         view = Exported(self.create_request({'month': 6}))()
         self.assertEqual(set(view.keys()),
                          set(['exported', 'pyvac']))
-        exported = [u'#,user,from,to,number,type']
+        exported = [u'#,lastname,firstname,from,to,number,type']
         self.assertEqual(view[u'exported'].split('\n'), exported)
 
     def test_post_send_no_param_ko(self):

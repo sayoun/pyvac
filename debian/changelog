@@ -1,3 +1,9 @@
+pyvac (0.1.0-61) unstable; urgency=low
+
+  * Update CSV format for data export.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 21 Jul 2014 14:53:50 +0200
+
 pyvac (0.1.0-60) unstable; urgency=low
 
   * Check if admin is also a manager when accepting a request to not

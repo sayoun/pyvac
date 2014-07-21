@@ -149,7 +149,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.summarycsv, u'John Doe,10/04/2014,14/04/2014,5.0,CP')
+        self.assertEqual(req.summarycsv, u'Doe,John,10/04/2014,14/04/2014,5.0,CP')
 
 
 class VacationTypeTestCase(ModelTestCase):
