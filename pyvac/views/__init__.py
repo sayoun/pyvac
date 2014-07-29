@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .base import RedirectView
-from pyvac.models import VacationType
+from pyvac.models import VacationType, User
 
 
 class Index(RedirectView):
@@ -17,12 +17,15 @@ class Home(RedirectView):
 
         _ = self.request.translate
 
-        ret_dict = {'types': [], 'holidays': []}
+        ret_dict = {'types': [], 'holidays': [], 'sudo_users': []}
 
         vacation_types = VacationType.by_country(self.session,
                                                  self.user.country)
         for vac in vacation_types:
             ret_dict['types'].append({'name': _(vac.name), 'id': vac.id})
+
+        if self.user.is_admin:
+            ret_dict['sudo_users'] = User.for_admin(self.session, self.user)
 
         if self.request.matched_route:
             matched_route = self.request.matched_route.name

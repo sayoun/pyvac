@@ -7,7 +7,7 @@ from .base import View
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 
-from pyvac.models import Request, VacationType
+from pyvac.models import Request, VacationType, User
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 
@@ -75,12 +75,21 @@ class Send(View):
                     days = 0.5
                     label = unicode(breakdown)
 
+            # create the request
+            target_user = self.user
+            if self.user.is_admin:
+                sudo_user_id = int(self.request.params.get('sudo_user'))
+                if sudo_user_id != -1:
+                    user = User.by_id(self.session, sudo_user_id)
+                    if user:
+                        target_user = user
+
             request = Request(date_from=date_from,
                               date_to=date_to,
                               days=days,
                               vacation_type=vac_type,
                               status=u'PENDING',
-                              user=self.user,
+                              user=target_user,
                               notified=False,
                               label=label,
                               )

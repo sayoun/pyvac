@@ -240,3 +240,57 @@ class RequestTestCase(case.ViewTestCase):
                                          }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
+    def test_post_send_sudo_default_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        view = Send(self.create_request({'days': 4,
+                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'type': '1',
+                                         'breakdown': 'FULL',
+                                         'sudo_user': '-1',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        admin_user = User.by_login(self.session, 'admin')
+        self.assertEqual(last_req.user_id, admin_user.id)
+
+    def test_post_send_sudo_other_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        view = Send(self.create_request({'days': 4,
+                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'type': '1',
+                                         'breakdown': 'FULL',
+                                         'sudo_user': '2',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        target_user = User.by_login(self.session, 'manager1')
+        self.assertEqual(last_req.user_id, target_user.id)
+
+    def test_post_send_sudo_unknown_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        view = Send(self.create_request({'days': 4,
+                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'type': '1',
+                                         'breakdown': 'FULL',
+                                         'sudo_user': '200',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        admin_user = User.by_login(self.session, 'admin')
+        self.assertEqual(last_req.user_id, admin_user.id)

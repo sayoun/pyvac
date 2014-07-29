@@ -42,6 +42,27 @@
             </div>
         </div>
 
+        {% if pyvac.user.is_admin %}
+        <div class="control-group">
+            <span class="control-label">Sudo</span>
+            <div class="controls">
+            <select name="sudo_user">
+                <option value="-1">--- NO ---</option>
+
+            {% for u in sudo_users|sort %}
+                <option value="{{ u.id }}">
+                {% if u.ldap_user %}
+                    {{ u.dn|extract_cn }}
+                {% else %}
+                    {{ u.name }}
+                {% endif %}
+                </option>
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="control-group">
             <div class="controls">
                 <button name="form.submitted" type="submit" class="btn">Submit</button>

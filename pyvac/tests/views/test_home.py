@@ -16,7 +16,7 @@ class HomeTestCase(case.ViewTestCase):
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays']))
+                              u'pyvac', u'holidays', u'sudo_users']))
         self.assertEqual(len(view[u'types']), 2)
 
     def test_render_country_ok(self):
@@ -26,5 +26,5 @@ class HomeTestCase(case.ViewTestCase):
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays']))
+                              u'pyvac', u'holidays', u'sudo_users']))
         self.assertEqual(len(view[u'types']), 1)

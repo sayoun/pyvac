@@ -371,6 +371,16 @@ class User(Base):
         """
         return self._country.name
 
+    @classmethod
+    def for_admin(cls, session, admin):
+        """
+        Get all users for an admin regarding his country
+        """
+        return cls.find(session,
+                        where=(cls.country_id == admin.country_id,
+                               cls.id != admin.id),
+                        order_by=cls.lastname)
+
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('vacation_type_id', Integer, ForeignKey('vacation_type.id')),
