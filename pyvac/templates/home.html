@@ -118,7 +118,7 @@ function DateDiff(date1, date2) {
       dateFormat: 'dd/mm/yy',
       showWeek: false,
       firstDay: 1,
-      minDate: 0,
+      minDate: {% if pyvac.user.is_admin %}-3{% else %}0{% endif %},
 
     beforeShowDay: function ( date ) {
         /* do not select weekend days */
