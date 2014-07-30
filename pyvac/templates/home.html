@@ -49,7 +49,7 @@
             <select name="sudo_user">
                 <option value="-1">--- NO ---</option>
 
-            {% for u in sudo_users|sort %}
+            {% for u in sudo_users|sort(attribute='lastname') %}
                 <option value="{{ u.id }}">
                 {% if u.ldap_user %}
                     {{ u.dn|extract_cn }}
