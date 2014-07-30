@@ -259,6 +259,7 @@ class RequestTestCase(case.ViewTestCase):
         admin_user = User.by_login(self.session, 'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
+        self.assertFalse(last_req.notified)
 
     def test_post_send_sudo_other_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
@@ -278,6 +279,7 @@ class RequestTestCase(case.ViewTestCase):
         target_user = User.by_login(self.session, 'manager1')
         self.assertEqual(last_req.user_id, target_user.id)
         self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+        self.assertTrue(last_req.notified)
 
     def test_post_send_sudo_unknown_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
@@ -297,3 +299,4 @@ class RequestTestCase(case.ViewTestCase):
         admin_user = User.by_login(self.session, 'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
+        self.assertFalse(last_req.notified)

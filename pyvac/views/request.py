@@ -79,6 +79,7 @@ class Send(View):
             # default values
             target_status = u'PENDING'
             target_user = self.user
+            target_notified = False
 
             sudo_use = False
             if self.user.is_admin:
@@ -89,6 +90,7 @@ class Send(View):
                         sudo_use = True
                         target_user = user
                         target_status = u'APPROVED_ADMIN'
+                        target_notified = True
 
             request = Request(date_from=date_from,
                               date_to=date_to,
@@ -96,7 +98,7 @@ class Send(View):
                               vacation_type=vac_type,
                               status=target_status,
                               user=target_user,
-                              notified=False,
+                              notified=target_notified,
                               label=label,
                               )
             self.session.add(request)
