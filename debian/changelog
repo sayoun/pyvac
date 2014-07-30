@@ -1,3 +1,10 @@
+pyvac (0.1.0-62) unstable; urgency=low
+
+  * Add sudo option for admin on homepage to allow them to add a
+    vacation request in the past for another user.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 30 Jul 2014 12:12:00 +0200
+
 pyvac (0.1.0-61) unstable; urgency=low
 
   * Update CSV format for data export.
