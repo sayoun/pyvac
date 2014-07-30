@@ -76,19 +76,25 @@ class Send(View):
                     label = unicode(breakdown)
 
             # create the request
+            # default values
+            target_status = u'PENDING'
             target_user = self.user
+
+            sudo_use = False
             if self.user.is_admin:
                 sudo_user_id = int(self.request.params.get('sudo_user'))
                 if sudo_user_id != -1:
                     user = User.by_id(self.session, sudo_user_id)
                     if user:
+                        sudo_use = True
                         target_user = user
+                        target_status = u'APPROVED_ADMIN'
 
             request = Request(date_from=date_from,
                               date_to=date_to,
                               days=days,
                               vacation_type=vac_type,
-                              status=u'PENDING',
+                              status=target_status,
                               user=target_user,
                               notified=False,
                               label=label,
@@ -96,7 +102,7 @@ class Send(View):
             self.session.add(request)
             self.session.flush()
 
-            if request:
+            if request and not sudo_use:
                 msg = 'Request sent to your manager.'
                 self.request.session.flash('info;%s' % msg)
                 # call celery task directly, do not wait for polling

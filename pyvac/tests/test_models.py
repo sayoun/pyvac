@@ -88,7 +88,7 @@ class RequestTestCase(ModelTestCase):
     def test_by_status(self):
         from pyvac.models import Request
         requests = Request.by_status(self.session, u'PENDING')
-        self.assertEqual(len(requests), 7)
+        self.assertEqual(len(requests), 6)
         # take the first
         request = requests[0]
         self.assertIsInstance(request, Request)
