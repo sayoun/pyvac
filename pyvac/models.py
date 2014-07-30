@@ -378,7 +378,9 @@ class User(Base):
         """
         return cls.find(session,
                         where=(cls.country_id == admin.country_id,
-                               cls.id != admin.id),
+                               cls.id != admin.id,
+                               cls.ldap_user == admin.ldap_user,
+                               ),
                         order_by=cls.lastname)
 
 
