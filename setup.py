@@ -65,6 +65,7 @@ setup(name='pyvac',
       pyvac_shell = pyvac.bin.shell:main
       pyvac_celeryd = pyvac.bin.celerycmd:celeryd
       pyvac_import = pyvac.bin.importldap:main
+      pyvac_replay = pyvac.bin.replay:main
       """,
       paster_plugins=['pyramid'],
       data_files=data_files,
