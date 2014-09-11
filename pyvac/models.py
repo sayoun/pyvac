@@ -4,12 +4,11 @@ import re
 import logging
 import cryptacular.bcrypt
 
-from sqlalchemy import (Table, Column, ForeignKey, Index, Enum,
+from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
                         UnicodeText, func)
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import relationship, synonym
-from sqlalchemy.ext.declarative import declared_attr
 
 from .helpers.sqla import (Database, SessionFactory, ModelError,
                            create_engine as create_engine_base,
@@ -594,6 +593,20 @@ class Request(Base):
                                and_(cls.date_from <= last_month_date,
                                     cls.date_to >= last_month_date)),
                                User.country_id == country_id,
+                               cls.status == 'APPROVED_ADMIN',),
+                        order_by=cls.user_id)
+
+    @classmethod
+    def get_today(cls, session):
+        """
+        Get all requests valid for current day
+        """
+        from datetime import datetime
+        date = datetime.now().date()
+        return cls.find(session,
+                        join=(cls.user),
+                        where=(cls.date_from <= date,
+                               cls.date_to >= date,
                                cls.status == 'APPROVED_ADMIN',),
                         order_by=cls.user_id)
 
