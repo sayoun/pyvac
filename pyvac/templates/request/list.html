@@ -71,6 +71,11 @@
                       </a>
                     {% endif %}
                   {% else %}
+                  {% if pyvac.user.is_admin and (req.user_id == pyvac.user.id) and (req.status == 'ACCEPTED_MANAGER') %}
+                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small">
+                        ACCEPT
+                    </a>
+                  {% endif %}
                   <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
                   {% if req.status in ['CANCELED', 'APPROVED_ADMIN','DENIED'] %}disabled="disabled"{% endif %}>
                     CANCEL
