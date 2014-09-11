@@ -32,6 +32,8 @@ requires = [
     'caldav',
     'icalendar',
     'python-ldap',
+
+    'psycopg2',
 ]
 
 if sys.version_info[:2] < (2, 7):
