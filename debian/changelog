@@ -1,3 +1,11 @@
+pyvac (1.0.0-1) unstable; urgency=medium
+
+  * Allow admins to accept their requests only if it has been validated
+    by their manager first.
+  * Bump release version.
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 11 Sep 2014 18:48:51 +0200
+
 pyvac (0.1.0-62) unstable; urgency=low
 
   * Add sudo option for admin on homepage to allow them to add a
