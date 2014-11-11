@@ -1,0 +1,261 @@
+<html lang="en">
+<head>
+<style>
+.flex-container {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  /*border: 1px solid silver;*/
+  -ms-box-orient: horizontal;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -moz-flex;
+  display: -webkit-flex;
+  display: flex;
+}
+
+.nowrap  {
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+}
+
+.wrap    {
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+.wrap div {
+  /*background: #11aaaa;*/
+}
+
+.flex-item {
+  border: 1px solid silver;
+
+  /*background: tomato;*/
+  padding: 5px;
+  width: 500px;
+  height: 200px;
+  margin: 5px;
+
+  line-height: 10px;
+  /*color: white;*/
+  /*font-weight: bold;*/
+  font-size: 16px;
+  /*font-size: 1em;*/
+  text-align: right;
+}
+
+.off {
+  background: #777;
+}
+
+.div-item-thumb {
+  /*background: tomato;*/
+  /*padding: 5px;*/
+  width: 200px;
+  height: 200px;
+  /*margin: 10px;*/
+  overflow: hidden;
+
+  line-height: 10px;
+  /*color: white;*/
+  /*font-weight: bold;*/
+  font-size: 16px;
+  /*font-size: 1em;*/
+  text-align: right;
+}
+
+.div-item {
+  /*background: tomato;*/
+  /*padding: 5px;*/
+  width: 300px;
+  height: 200px;
+  /*margin: 10px;*/
+/*  overflow: hidden;
+*/
+  line-height: 10px;
+  /*color: white;*/
+  /*font-weight: bold;*/
+  font-size: 15px;
+  font-size-adjust: 0.4;
+  /*font-size: 1em;*/
+  text-align: left;
+  /*word-wrap: break-word;*/
+}
+.thumb {
+  /*height: 135px;*/
+  /*width: 135px;*/
+  /*height: 100%;*/
+  /*width: 100%;*/
+  max-width: 200px;
+  max-height: 200px;
+}
+
+#left {
+  float:left;
+  /*width:100px;*/
+}
+
+#right {
+  float:right;
+  width:100px;
+}
+
+</style>
+</head>
+<body>
+<div>
+  <form class="form-inline">
+      <div>
+          <span id="counter">Showing X members</span>
+      </div>
+      <div>
+          <div>
+            <span>BU:</span>
+            <label class="checkbox">
+              <input id="filter-bu" type="checkbox" checked="checked" value="fr">FR
+            </label>
+            <label class="checkbox">
+              <input id="filter-bu" type="checkbox" checked="checked" value="lu">LU
+            </label>
+            <label class="checkbox">
+              <input id="filter-bu" type="checkbox" checked="checked" value="us">US
+            </label>
+            <label class="checkbox">
+              <input id="filter-bu" type="checkbox" checked="checked" value="zh">ZH
+            </label>
+          </div>
+          <div>
+            <span>Status:</span>
+            <label class="radio">
+              <input id="filter-status" name="filter-status" type="radio" checked="checked" value="all">All
+            </label>
+            <label class="radio">
+              <input id="filter-status" name="filter-status" type="radio" value="on">On
+            </label>
+            <label class="radio">
+              <input id="filter-status" name="filter-status" type="radio" value="off">Off
+            </label>
+          </div>
+          <div>
+              <span>Team:</span>
+              <select id="teams" name="teams">
+                  <option value="all">all</option>
+              {% for team in data['teams']|sort %}
+                  <option value="{{ team }}">{{ team }}</option>
+              {% endfor %}
+              </select>
+          </div>
+      </div>
+  </form>
+</div>
+<div class="flex-container wrap">
+  {% for user in data['users'] %}
+  <div class="flex-item flex-container nowrap{% if user.vacation %} off{% endif %}" bu-attr="{{ user.bu }}" status-attr="{{ user.status }}" team-attr="{{ user.teams }}">
+    <div class="div-item">
+      <p>Name: {{ user.name }}</p>
+      <p>Email: {{ user.email }}</p>
+      <p>BU: {{ user.bu }}</p>
+      <p>Nickname: <b>{{ user.nickname }}</b></p>
+      <p>Teams: {{ user.teams }}</p>
+      <p>Status: {% if user.vacation %}{{user.vacation}}{%else%}{{user.status}}{% endif %}</p>
+    </div>
+    <div class="div-item-thumb">
+      {% if user.photo %}
+      <img class="thumb" alt="{{ user.name }}" src="data:image/jpeg;base64,{{ user.photo }}" />
+      {% else %}&nbsp;
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="{{ static_url('pyvac:static/js/jquery-latest.js') }}"></script>
+<script>
+    $(document).ready(function()
+        {
+
+            function refresh_member_counter() {
+                cpt = $('div.flex-item:visible').length;
+                $('#counter').html('Showing '+ cpt + ' members');
+            }
+
+            function refresh_view(status, team)
+            {
+                $('input[id="filter-bu"]').each(function(index) {
+                  if ($(this)[0].checked)
+                  {
+                    bu = $(this)[0].value;
+
+                    base = 'div.flex-item'
+                    bu_selector = '[bu-attr="'+bu+'"]'
+                    if (team != "all")
+                    {
+                        team_selector = '[team-attr*="'+team+'"]';
+                    }
+                    else {
+                        team_selector = '[team-attr]';
+                    }
+                    if (status != "all")
+                    {
+                        status_selector = '[status-attr="'+status+'"]';
+                    }
+                    else
+                    {
+                        status_selector = '[status-attr]';
+                    }
+                    selector = base + bu_selector + team_selector + status_selector
+                    $(selector).toggle(true);
+                    not_selector = base + bu_selector + ':not(' + team_selector + status_selector + ')'
+                    $(not_selector).toggle(false);
+
+                  }
+                });
+            }
+
+            $('input[id="filter-bu"]').change(function(){
+                var self = this;
+                bu = self.value;
+                team = $('#teams').val();
+                if (team != "all")
+                {
+                    team_selector = '[team-attr*="'+team+'"]';
+                }
+                else {
+                    team_selector = '';
+                }
+                status = $('input[id="filter-status"]:checked').val();
+                if (status != "all")
+                {
+                    status_selector = '[status-attr="'+status+'"]';
+                }
+                else
+                {
+                    status_selector = '[status-attr]';
+                }
+                $('div.flex-item[bu-attr="'+bu+'"]' + team_selector + status_selector).toggle(self.checked);
+                refresh_member_counter();
+            }).change();
+
+            $('input[id="filter-status"]').change(function(){
+                var self = this;
+                status = self.value;
+                team = $('#teams').val();
+                refresh_view(status, team);
+                refresh_member_counter();
+            });
+
+            $('#teams').change(function(){
+                var self = this;
+                team = self.value;
+                status = $('input[id="filter-status"]:checked').val();
+                refresh_view(status, team);
+                refresh_member_counter();
+            });
+
+            refresh_member_counter();
+        }
+    );
+</script>
+</body>
+</html>

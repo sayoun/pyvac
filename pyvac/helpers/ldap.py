@@ -187,6 +187,9 @@ class LdapWrapper(object):
         if 'jpegPhoto' in entry:
             data['jpegPhoto'] = entry['jpegPhoto'].pop()
 
+        if 'mobile' in entry:
+            data['mobile'] = entry['mobile'].pop()
+
         # save user dn
         data['dn'] = user_dn
         data['country'] = self._extract_country(user_dn)
@@ -441,6 +444,21 @@ class LdapWrapper(object):
         login = self._extract_cn(entry)
         user_data = self.search_user_by_login(login)
         return user_data
+
+    def list_users(self):
+        """ Retrieve users informations """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = None
+        item = '&(mail=*)(|(c:dn:=zh)(c:dn:=fr)(c:dn:=lu)(c:dn:=us))'
+        res = self._conn.search_s('%s' % self._base,
+                                  ldap.SCOPE_SUBTREE,
+                                  self._filter % item, required)
+        users = {}
+        for USER_DN, entry in res:
+            users[USER_DN] = self.parse_ldap_entry(USER_DN, entry)
+        return users
 
     def list_ou(self):
         """ Retrieve available organisational units """

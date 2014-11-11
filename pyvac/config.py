@@ -220,6 +220,12 @@ def includeme(config):
                     renderer=u'templates/account/delete.html',
                     permission=u'admin_view')
 
+    # who's who
+    config.add_route(u'whoswho', u'/who',)
+    config.add_view(u'pyvac.views.account.Whoswho',
+                    route_name=u'whoswho',
+                    renderer=u'templates/whoswho.html')
+
     config.add_route(u'export_request', u'/pyvac/export')
     config.add_view(u'pyvac.views.request.Export',
                     route_name=u'export_request',

@@ -10,7 +10,7 @@ from pyramid.url import route_url
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group, Countries, Pool, UserPool
+from pyvac.models import User, Group, Countries, Pool, UserPool, Request
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
     LdapCache, hashPassword, randomstring, UnknownLdapUser,
@@ -461,6 +461,83 @@ class Delete(AccountMixin, DeleteView):
                 log.info('User %s seems already deleted in ldap' % account.dn)
 
 
+class Whoswho(View):
+
+    ignore_users = []
+
+    def render(self):
+
+        duration = 1
+
+        def fmt_req_type(req):
+            label = ' %s' % req.label if req.label else ''
+            if duration and req.days > 1:
+                label = '%s (until %s)' % (label,
+                                           req.date_to.strftime('%d/%m/%Y'))
+            return '%s%s' % (req.type, label)
+
+        order_by = (User.country_id.asc(), User.id)
+        users = User.find(self.session, order_by=order_by)
+
+        users = [user for user in users
+                 if user.login not in self.ignore_users]
+
+        requests = Request.get_active(self.session)
+        data_off = dict([(req.user.login, fmt_req_type(req))
+                         for req in requests])
+
+        data = {
+            'users': [],
+        }
+
+        users_teams = {}
+        settings = self.request.registry.settings
+        use_ldap = False
+        if 'pyvac.use_ldap' in settings:
+            use_ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        if use_ldap:
+            ldap_users = {}
+            # synchronise user groups/roles
+            # User.sync_ldap_info(self.session)
+            ldap = LdapCache()
+            ldap_users = ldap.list_users()
+
+            # discard users which should be deleted
+            users = [user for user in users
+                     if user.dn in ldap_users]
+
+            teams = ldap.list_teams()
+            data['teams'] = teams.keys()
+            for team, members in teams.iteritems():
+                for member in members:
+                    users_teams.setdefault(member, []).append(team)
+
+        for user in users:
+            uteams = users_teams.get(user.dn, [])
+            item = {
+                'name': user.name,
+                'email': user.email,
+                'bu': user.country,
+                'nickname': user.nickname or '-',
+                'teams': ', '.join(uteams) if uteams else '-',
+            }
+            item['vacation'] = data_off.get(user.login)
+            item['status'] = 'off' if item['vacation'] else 'on'
+            if use_ldap:
+                ldap_user = ldap_users[user.dn]
+                jpeg = ldap_user.get('jpegPhoto')
+                photo = None
+                if jpeg:
+                    photo = base64.b64encode(jpeg)
+                item['photo'] = photo
+                item['mobile'] = ldap_user.get('mobile')
+
+            data['users'].append(item)
+
+        return {'data': data}
+
+
 def includeme(config):
     """
     Pyramid includeme file for the :class:`pyramid.config.Configurator`
@@ -470,4 +547,5 @@ def includeme(config):
     if 'pyvac.export_pool.ignore_users' in settings:
         ignore_users = settings['pyvac.export_pool.ignore_users']
         ListPool.ignore_users = ignore_users
+        Whoswho.ignore_users = ignore_users
         log.info('Loaded ListPool ignore_users: %s' % ListPool.ignore_users)
