@@ -115,7 +115,8 @@ class User(Base):
 
     @property
     def name(self):
-        return u'%s %s' % (self.firstname.capitalize(), self.lastname.capitalize())\
+        return u'%s %s' % (self.firstname.capitalize(),
+                           self.lastname.capitalize())\
             if self.firstname and self.lastname else self.login
 
     def _get_password(self):
@@ -384,8 +385,10 @@ class User(Base):
 
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
-                               Column('vacation_type_id', Integer, ForeignKey('vacation_type.id')),
-                               Column('country_id', Integer, ForeignKey('countries.id'))
+                               Column('vacation_type_id', Integer,
+                                      ForeignKey('vacation_type.id')),
+                               Column('country_id', Integer,
+                                      ForeignKey('countries.id'))
                                )
 
 
