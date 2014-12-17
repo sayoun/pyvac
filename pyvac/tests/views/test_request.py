@@ -29,7 +29,7 @@ class RequestTestCase(case.ViewTestCase):
             2: u'John Doe: 10/04/2014 - 14/04/2014',
             3: u'Third Manager: 24/04/2014 - 28/04/2014'})
         self.assertEqual(len(view[u'conflicts']), 3)
-        self.assertEqual(len(view[u'requests']), 3)
+        self.assertEqual(len(view[u'requests']), 4)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager1_ok(self):
@@ -44,7 +44,7 @@ class RequestTestCase(case.ViewTestCase):
             1: u'Jane Doe: 10/04/2014 - 21/04/2014',
             3: u'Third Manager: 24/04/2014 - 28/04/2014'})
         self.assertEqual(len(view[u'conflicts']), 2)
-        self.assertEqual(len(view[u'requests']), 2)
+        self.assertEqual(len(view[u'requests']), 3)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager2_ok(self):
@@ -256,7 +256,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        admin_user = User.by_login(self.session, 'admin')
+        admin_user = User.by_login(self.session, u'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)
@@ -276,7 +276,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        target_user = User.by_login(self.session, 'manager1')
+        target_user = User.by_login(self.session, u'manager1')
         self.assertEqual(last_req.user_id, target_user.id)
         self.assertEqual(last_req.status, u'APPROVED_ADMIN')
         self.assertTrue(last_req.notified)
@@ -296,7 +296,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        admin_user = User.by_login(self.session, 'admin')
+        admin_user = User.by_login(self.session, u'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)

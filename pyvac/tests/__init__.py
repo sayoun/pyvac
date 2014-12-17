@@ -87,7 +87,7 @@ def setUpModule():
                    vacation_type=cp_vacation,
                    status=u'PENDING',
                    user=user1,
-                   notified=False,)
+                   notified=False)
     session.add(req1)
 
     date_from = datetime.strptime('10/04/2014', '%d/%m/%Y')
@@ -133,6 +133,18 @@ def setUpModule():
                    user=manager_us,
                    notified=True,)
     session.add(req5)
+
+    date_from = datetime.strptime('24/08/2014', '%d/%m/%Y')
+    date_to = datetime.strptime('24/08/2014', '%d/%m/%Y')
+    req6 = Request(date_from=date_from,
+                   date_to=date_to,
+                   days=0.5,
+                   vacation_type=rtt_vacation,
+                   status=u'APPROVED_ADMIN',
+                   user=user1,
+                   notified=True,
+                   label=u'AM')
+    session.add(req6)
 
     session.commit()
 

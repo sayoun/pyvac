@@ -65,7 +65,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import User, Request
         manager1 = User.by_login(self.session, u'manager1')
         requests = Request.by_manager(self.session, manager1)
-        self.assertEqual(len(requests), 2)
+        self.assertEqual(len(requests), 3)
         # take the first
         request = requests.pop()
         self.assertIsInstance(request, Request)
@@ -74,7 +74,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
         requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 2)
+        self.assertEqual(len(requests), 3)
         # take the first
         request = requests[0]
         self.assertIsInstance(request, Request)
@@ -117,7 +117,7 @@ class RequestTestCase(ModelTestCase):
     def test_all_for_admin(self):
         from pyvac.models import Request
         nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 9)
+        self.assertEqual(nb_requests, 10)
 
     def test_in_conflict(self):
         from pyvac.models import Request
@@ -129,7 +129,7 @@ class RequestTestCase(ModelTestCase):
     def test_get_by_month(self):
         from pyvac.models import Request
         month = 4
-        country = 'fr'
+        country = u'fr'
         requests = Request.get_by_month(self.session, country, month)
         self.assertEqual(len(requests), 0)
 
@@ -149,7 +149,15 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.summarycsv, u'Doe,John,10/04/2014,14/04/2014,5.0,CP')
+        msg = u'Doe,John,10/04/2014,14/04/2014,5.0,CP'
+        self.assertEqual(req.summarycsv, msg)
+
+    def test_summarycsv_label(self):
+        from pyvac.models import Request
+        req = Request.by_id(self.session, 6)
+        self.assertIsInstance(req, Request)
+        msg = u'Doe,John,24/08/2014,24/08/2014,0.5,RTT AM'
+        self.assertEqual(req.summarycsv, msg)
 
 
 class VacationTypeTestCase(ModelTestCase):
