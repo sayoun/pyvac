@@ -502,7 +502,7 @@ class Request(Base):
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED'),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=(cls.user_id, cls.date_from))
 
     @classmethod
     def by_status(cls, session, status, count=None, notified=False):
