@@ -2,6 +2,7 @@
 
 import re
 import logging
+from datetime import datetime, timedelta
 import cryptacular.bcrypt
 
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
@@ -473,11 +474,13 @@ class Request(Base):
         """
         if manager.ldap_user:
             return cls.by_manager_ldap(session, manager, count=count)
-
+        # we only want to display less than 3 months data
+        date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
                         join=(cls.user),
                         where=(User.manager_id == manager.id,
-                               cls.status != 'CANCELED'),
+                               cls.status != 'CANCELED',
+                               cls.date_from >= date_limit,),
                         count=count,
                         order_by=cls.user_id)
 
@@ -486,10 +489,13 @@ class Request(Base):
         """
         Get requests for users under given manager.
         """
+        # we only want to display less than 3 months data
+        date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
                         join=(cls.user),
                         where=(User.manager_dn == manager.dn,
-                               cls.status != 'CANCELED'),
+                               cls.status != 'CANCELED',
+                               cls.date_from >= date_limit,),
                         count=count,
                         order_by=cls.user_id)
 
@@ -498,9 +504,12 @@ class Request(Base):
         """
         Get requests for given user.
         """
+        # we only want to display less than 3 months data
+        date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
                         where=(cls.user_id == user.id,
-                               cls.status != 'CANCELED'),
+                               cls.status != 'CANCELED',
+                               cls.date_from >= date_limit,),
                         count=count,
                         order_by=(cls.user_id, cls.date_from.desc()))
 
@@ -520,8 +529,11 @@ class Request(Base):
         """
         Get all requests manageable by admin.
         """
+        # we only want to display less than 3 months data
+        date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
-                        where=((cls.status != 'CANCELED'),),
+                        where=(cls.status != 'CANCELED',
+                               cls.date_from >= date_limit,),
                         count=count,
                         order_by=cls.user_id)
 
@@ -531,10 +543,13 @@ class Request(Base):
         Get all requests manageable by admin per country.
         """
         country_id = Countries.by_name(session, country).id
+        # we only want to display less than 3 months data
+        date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
                         join=(cls.user),
                         where=(cls.status != 'CANCELED',
                                User.country_id == country_id,
+                               cls.date_from >= date_limit,
                                ),
                         count=count,
                         order_by=cls.user_id)
@@ -565,7 +580,6 @@ class Request(Base):
         """
         Get all requests for a given month.
         """
-        from datetime import datetime
         from calendar import monthrange
 
         date = datetime.now()
