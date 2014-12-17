@@ -25,9 +25,9 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            1: u'Jane Doe: 10/04/2014 - 21/04/2014',
-            2: u'John Doe: 10/04/2014 - 14/04/2014',
-            3: u'Third Manager: 24/04/2014 - 28/04/2014'})
+            1: u'Jane Doe: 10/04/2015 - 21/04/2015',
+            2: u'John Doe: 10/04/2015 - 14/04/2015',
+            3: u'Third Manager: 24/04/2015 - 28/04/2015'})
         self.assertEqual(len(view[u'conflicts']), 3)
         self.assertEqual(len(view[u'requests']), 4)
         self.assertIsInstance(view[u'requests'][0], Request)
@@ -41,8 +41,8 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            1: u'Jane Doe: 10/04/2014 - 21/04/2014',
-            3: u'Third Manager: 24/04/2014 - 28/04/2014'})
+            1: u'Jane Doe: 10/04/2015 - 21/04/2015',
+            3: u'Third Manager: 24/04/2015 - 28/04/2015'})
         self.assertEqual(len(view[u'conflicts']), 2)
         self.assertEqual(len(view[u'requests']), 3)
         self.assertIsInstance(view[u'requests'][0], Request)
@@ -56,7 +56,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            2: u'John Doe: 10/04/2014 - 14/04/2014'})
+            2: u'John Doe: 10/04/2015 - 14/04/2015'})
         self.assertEqual(len(view[u'conflicts']), 1)
         self.assertEqual(len(view[u'requests']), 1)
         self.assertIsInstance(view[u'requests'][0], Request)
@@ -209,7 +209,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'date_from': '15/05/2014 - 10/05/2014'}))()
+        view = Send(self.create_request({'date_from': '15/05/2015 - 10/05/2015'}))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
@@ -220,7 +220,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'date_from': '05/05/2015 - 10/05/2015',
                                          'type': '1',
                                          'breakdown': 'FULL',
                                          }))()
@@ -234,7 +234,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 0.5,
-                                         'date_from': '05/05/2014 - 05/05/2014',
+                                         'date_from': '05/05/2015 - 05/05/2015',
                                          'type': '1',
                                          'breakdown': 'AM',
                                          }))()
@@ -248,7 +248,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'date_from': '05/05/2015 - 10/05/2015',
                                          'type': '1',
                                          'breakdown': 'FULL',
                                          'sudo_user': '-1',
@@ -268,7 +268,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'date_from': '05/05/2015 - 10/05/2015',
                                          'type': '1',
                                          'breakdown': 'FULL',
                                          'sudo_user': '2',
@@ -288,7 +288,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
         view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2014 - 10/05/2014',
+                                         'date_from': '05/05/2015 - 10/05/2015',
                                          'type': '1',
                                          'breakdown': 'FULL',
                                          'sudo_user': '200',

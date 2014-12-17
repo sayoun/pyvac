@@ -76,22 +76,25 @@ class RequestTestCase(ModelTestCase):
         requests = Request.by_user(self.session, user1)
         self.assertEqual(len(requests), 3)
         # take the first
-        request = requests[0]
+        request = requests[-1]
         self.assertIsInstance(request, Request)
         self.assertEqual(request.days, 5)
         self.assertEqual(request.type, u'CP')
         self.assertEqual(request.status, u'PENDING')
         self.assertEqual(request.notified, False)
-        self.assertEqual(request.date_from, datetime(2014, 4, 10, 0, 0))
-        self.assertEqual(request.date_to, datetime(2014, 4, 14, 0, 0))
+        self.assertEqual(request.date_from, datetime(2015, 4, 10, 0, 0))
+        self.assertEqual(request.date_to, datetime(2015, 4, 14, 0, 0))
 
-    def test_by_status(self):
-        from pyvac.models import Request
-        requests = Request.by_status(self.session, u'PENDING')
-        self.assertEqual(len(requests), 6)
-        # take the first
-        request = requests[0]
-        self.assertIsInstance(request, Request)
+    def test_by_user_outdated(self):
+        from pyvac.models import User, Request
+        user1 = User.by_login(self.session, u'jdoe')
+        requests = Request.by_user(self.session, user1)
+        self.assertEqual(len(requests), 3)
+
+        outdated = Request.by_id(self.session, 7)
+        self.assertIsInstance(outdated, Request)
+        self.assertEqual(outdated.user, user1)
+        self.assertFalse(outdated in requests)
 
     def test_by_status_not_notified_ko(self):
         from pyvac.models import Request
@@ -111,8 +114,8 @@ class RequestTestCase(ModelTestCase):
         self.assertEqual(request.type, u'RTT')
         self.assertEqual(request.status, u'ACCEPTED_MANAGER')
         self.assertEqual(request.notified, True)
-        self.assertEqual(request.date_from, datetime(2014, 4, 24, 0, 0))
-        self.assertEqual(request.date_to, datetime(2014, 4, 28, 0, 0))
+        self.assertEqual(request.date_from, datetime(2015, 4, 24, 0, 0))
+        self.assertEqual(request.date_to, datetime(2015, 4, 28, 0, 0))
 
     def test_all_for_admin(self):
         from pyvac.models import Request
@@ -137,7 +140,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.summary, u'John Doe: 10/04/2014 - 14/04/2014')
+        self.assertEqual(req.summary, u'John Doe: 10/04/2015 - 14/04/2015')
 
     def test_summarycal(self):
         from pyvac.models import Request
@@ -149,14 +152,14 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,10/04/2014,14/04/2014,5.0,CP'
+        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_label(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 6)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,24/08/2014,24/08/2014,0.5,RTT AM'
+        msg = u'Doe,John,24/08/2015,24/08/2015,0.5,RTT AM'
         self.assertEqual(req.summarycsv, msg)
 
 

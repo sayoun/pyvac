@@ -79,8 +79,8 @@ def setUpModule():
     user2.groups.append(user_group)
     session.add(user2)
 
-    date_from = datetime.strptime('10/04/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('14/04/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('10/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('14/04/2015', '%d/%m/%Y')
     req1 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
@@ -90,8 +90,8 @@ def setUpModule():
                    notified=False)
     session.add(req1)
 
-    date_from = datetime.strptime('10/04/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('21/04/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('10/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('21/04/2015', '%d/%m/%Y')
     req2 = Request(date_from=date_from,
                    date_to=date_to,
                    days=10,
@@ -101,8 +101,8 @@ def setUpModule():
                    notified=False,)
     session.add(req2)
 
-    date_from = datetime.strptime('24/04/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('28/04/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('24/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('28/04/2015', '%d/%m/%Y')
     req3 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
@@ -112,8 +112,8 @@ def setUpModule():
                    notified=True,)
     session.add(req3)
 
-    date_from = datetime.strptime('24/04/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('28/04/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('24/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('28/04/2015', '%d/%m/%Y')
     req4 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
@@ -123,8 +123,8 @@ def setUpModule():
                    notified=True,)
     session.add(req4)
 
-    date_from = datetime.strptime('24/04/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('28/04/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('24/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('28/04/2015', '%d/%m/%Y')
     req5 = Request(date_from=date_from,
                    date_to=date_to,
                    days=5,
@@ -134,8 +134,8 @@ def setUpModule():
                    notified=True,)
     session.add(req5)
 
-    date_from = datetime.strptime('24/08/2014', '%d/%m/%Y')
-    date_to = datetime.strptime('24/08/2014', '%d/%m/%Y')
+    date_from = datetime.strptime('24/08/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('24/08/2015', '%d/%m/%Y')
     req6 = Request(date_from=date_from,
                    date_to=date_to,
                    days=0.5,
@@ -145,6 +145,18 @@ def setUpModule():
                    notified=True,
                    label=u'AM')
     session.add(req6)
+
+    date_from = datetime.strptime('14/07/2014', '%d/%m/%Y')
+    date_to = datetime.strptime('14/07/2014', '%d/%m/%Y')
+    req7 = Request(date_from=date_from,
+                   date_to=date_to,
+                   days=0.5,
+                   vacation_type=rtt_vacation,
+                   status=u'APPROVED_ADMIN',
+                   user=user1,
+                   notified=True,
+                   label=u'AM')
+    session.add(req7)
 
     session.commit()
 
