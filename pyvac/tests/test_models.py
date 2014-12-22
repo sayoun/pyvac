@@ -152,14 +152,14 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP'
+        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_label(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 6)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,24/08/2015,24/08/2015,0.5,RTT AM'
+        msg = u'Doe,John,24/08/2015,24/08/2015,0.5,RTT,AM'
         self.assertEqual(req.summarycsv, msg)
 
 

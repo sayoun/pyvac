@@ -658,9 +658,9 @@ class Request(Base):
         """
         Get a string representation in csv format of a request.
         """
-        # name, datefrom, dateto, number of days, type of days
-        label = ' %s' % self.label if self.label else ''
-        return ('%s,%s,%s,%s,%.1f,%s%s' %
+        # name, datefrom, dateto, number of days, type of days, label
+        label = '%s' % self.label if self.label else ''
+        return ('%s,%s,%s,%s,%.1f,%s,%s' %
                 (self.user.lastname,
                  self.user.firstname,
                  self.date_from.strftime('%d/%m/%Y'),
