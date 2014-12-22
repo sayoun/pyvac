@@ -1,9 +1,16 @@
+1.1
+---
+
+- Sort user requests per date_from for list view
+- Add label to CVS summary output of a request
+- Only display less than 3 months data on pages, except for export page
+
 1.0
 ---
 
--  working stable version
+- working stable version
 
 0.1
 ---
 
--  Initial version
+- Initial version

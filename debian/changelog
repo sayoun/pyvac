@@ -1,3 +1,11 @@
+pyvac (1.1.0-1) unstable; urgency=medium
+
+  * Sort user requests per date_from for list view
+  * Add label to CVS summary output of a request
+  * Only display less than 3 months data on pages, except for export page
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 22 Dec 2014 17:54:49 +0100
+
 pyvac (1.0.0-1) unstable; urgency=medium
 
   * Allow admins to accept their requests only if it has been validated
