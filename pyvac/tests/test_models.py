@@ -1,4 +1,5 @@
 from datetime import datetime
+from freezegun import freeze_time
 
 from .case import ModelTestCase
 
@@ -57,6 +58,31 @@ class UserTestCase(ModelTestCase):
         admin = User.get_admin_by_country(self.session, u'fr')
         self.assertEqual(admin.name, u'admin')
         self.assertEqual(admin.country, u'fr')
+
+    def test_by_country(self):
+        from pyvac.models import User
+        country_id = 1
+        users = User.by_country(self.session, country_id)
+        self.assertEqual(len(users), 5)
+        country_id = 3
+        users = User.by_country(self.session, country_id)
+        self.assertEqual(len(users), 1)
+
+    def test_get_rtt_usage(self):
+        from pyvac.models import User
+        user = User.by_login(self.session, u'jdoe')
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.login, u'jdoe')
+        self.assertEqual(user.name, u'John Doe')
+        self.assertEqual(user.role, u'user')
+        expected = {'allowed': 10, 'left': 9.0, 'state': 'warning',
+                    'taken': 1.0, 'year': 2014}
+        self.assertEqual(user.get_rtt_usage(self.session), expected)
+        # no RTT for us country
+        user = User.by_login(self.session, u'manager3')
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.country, u'us')
+        self.assertIsNone(user.get_rtt_usage(self.session))
 
 
 class RequestTestCase(ModelTestCase):
@@ -120,7 +146,7 @@ class RequestTestCase(ModelTestCase):
     def test_all_for_admin(self):
         from pyvac.models import Request
         nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 10)
+        self.assertEqual(nb_requests, 12)
 
     def test_in_conflict(self):
         from pyvac.models import Request
@@ -173,3 +199,29 @@ class VacationTypeTestCase(ModelTestCase):
         # take the first
         vac_type = vac_types.pop()
         self.assertIsInstance(vac_type, VacationType)
+
+    def test_by_name_country_no_rtt_ko(self):
+        from pyvac.models import User, VacationType
+        manager3 = User.by_login(self.session, u'manager3')
+        vac = VacationType.by_name_country(self.session, u'RTT',
+                                           manager3.country)
+        self.assertIsNone(vac)
+
+    def test_by_name_country_rtt_ok(self):
+        from pyvac.models import User, VacationType
+        jdoe = User.by_login(self.session, u'jdoe')
+        vac = VacationType.by_name_country(self.session, u'RTT',
+                                           jdoe.country)
+        self.assertEqual(vac, 10)
+
+    def test_sub_classes_ok(self):
+        from pyvac.models import VacationType
+        self.assertEqual(VacationType._vacation_classes.keys(), [u'RTT'])
+
+    def test_sub_classes_rtt_ok(self):
+        from pyvac.models import VacationType
+        sub = VacationType._vacation_classes[u'RTT']
+        self.assertEqual(sub.acquired(), 10)
+        now = datetime.now()
+        with freeze_time(now.replace(month=8)):
+            self.assertEqual(sub.acquired(), 7)

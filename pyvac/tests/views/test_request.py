@@ -300,3 +300,106 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)
+
+    def test_post_send_rtt_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        view = Send(self.create_request({'days': 1,
+                                         'date_from': '05/05/2015 - 05/05/2015',
+                                         'type': '2',
+                                         'breakdown': 'AM',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
+    def test_post_send_rtt_usage_empty_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        def mock_get_rtt_usage(self, session):
+            """ Get rrt usage for a user """
+            return
+
+        orig_get_rtt_usage = User.get_rtt_usage
+        User.get_rtt_usage = mock_get_rtt_usage
+        user = User.by_login(self.session, u'janedoe')
+        rtt_data = user.get_rtt_usage(self.session)
+        self.assertIsNone(rtt_data)
+
+        view = Send(self.create_request({'days': 1,
+                                         'date_from': '05/05/2015 - 05/05/2015',
+                                         'type': '2',
+                                         'breakdown': 'AM',
+                                         }))()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        User.get_rtt_usage = orig_get_rtt_usage
+
+    def test_post_send_rtt_usage_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        def mock_get_rtt_usage(self, session):
+            """ Get rrt usage for a user """
+            return {'allowed': 10, 'left': 0, 'state': 'error',
+                    'taken': 10.0, 'year': 2014}
+
+        orig_get_rtt_usage = User.get_rtt_usage
+        User.get_rtt_usage = mock_get_rtt_usage
+        user = User.by_login(self.session, u'janedoe')
+        rtt_data = user.get_rtt_usage(self.session)
+        self.assertTrue(rtt_data)
+
+        request = self.create_request({'days': 1,
+                                       'date_from': '05/05/2015 - 05/05/2015',
+                                       'type': '2',
+                                       'breakdown': 'AM',
+                                       })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        # no new requests were made
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = ['error;No RTT left to take.']
+        self.assertEqual(request.session.pop_flash(), expected)
+        User.get_rtt_usage = orig_get_rtt_usage
+
+    def test_post_send_rtt_usage_not_enought_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request, User
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        def mock_get_rtt_usage(self, session):
+            """ Get rrt usage for a user """
+            return {'allowed': 10, 'left': 0.5, 'state': 'error',
+                    'taken': 9.5, 'year': 2014}
+
+        orig_get_rtt_usage = User.get_rtt_usage
+        User.get_rtt_usage = mock_get_rtt_usage
+        user = User.by_login(self.session, u'janedoe')
+        rtt_data = user.get_rtt_usage(self.session)
+        self.assertTrue(rtt_data)
+
+        request = self.create_request({'days': 1,
+                                       'date_from': '05/05/2015 - 05/05/2015',
+                                       'type': '2',
+                                       'breakdown': 'FULL',
+                                       })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        # no new requests were made
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = ['error;You only have 0.5 RTT to use.']
+        self.assertEqual(request.session.pop_flash(), expected)
+        User.get_rtt_usage = orig_get_rtt_usage
