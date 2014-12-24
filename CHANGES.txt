@@ -1,3 +1,10 @@
+1.2
+---
+
+- Manage number of RTT vacations for french employees
+  * Display current number of RTT acquired on home page
+  * Check when submitting RTT request if enough RTT are availables
+
 1.1
 ---
 

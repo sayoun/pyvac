@@ -1,3 +1,11 @@
+pyvac (1.2.0-1) unstable; urgency=medium
+
+  * Manage number of RTT vacations for french employees
+    Display current number of RTT acquired on home page
+    Check when submitting RTT request if enough RTT are availables
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 24 Dec 2014 11:45:10 +0100
+
 pyvac (1.1.0-1) unstable; urgency=medium
 
   * Sort user requests per date_from for list view
