@@ -17,6 +17,8 @@ class Home(RedirectView):
 
         _ = self.request.translate
 
+        self.user.rtt = self.user.get_rtt_usage(self.session)
+
         ret_dict = {'types': [], 'holidays': [], 'sudo_users': []}
 
         vacation_types = VacationType.by_country(self.session,
@@ -29,8 +31,9 @@ class Home(RedirectView):
 
         if self.request.matched_route:
             matched_route = self.request.matched_route.name
-            ret_dict.update({'matched_route': matched_route,
-                             'csrf_token': self.request.session.get_csrf_token()})
+            ret_dict.update({
+                'matched_route': matched_route,
+                'csrf_token': self.request.session.get_csrf_token()})
             return ret_dict
 
         ret_dict.update({'csrf_token': self.request.session.get_csrf_token()})
