@@ -68,12 +68,26 @@ class Send(View):
             if breakdown != 'FULL':
                 # handle half day
                 if (days > 1):
-                    msg = 'AM/PM option must be used only when requesting a single day.'
+                    msg = ('AM/PM option must be used only when requesting a '
+                           'single day.')
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
                 else:
                     days = 0.5
                     label = unicode(breakdown)
+
+            # check RTT usage
+            if vac_type.name == u'RTT':
+                rtt_data = self.user.get_rtt_usage(self.session)
+                if rtt_data is not None and rtt_data['left'] <= 0:
+                    msg = 'No RTT left to take.'
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                # check that we have enough RTT to take
+                if rtt_data is not None and days > rtt_data['left']:
+                    msg = 'You only have %s RTT to use.' % rtt_data['left']
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
 
             # create the request
             # default values
