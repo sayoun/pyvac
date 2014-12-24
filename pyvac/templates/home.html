@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
+<div class="span7">
 <form action="{{ route_url('request_send') }}" method="post" id="todoForm" class="form-horizontal">
 
     <fieldset>
@@ -9,7 +10,7 @@
         <input name="_csrf" type="hidden" value="{{ csrf_token }}">
 
         <div class="control-group">
-          <div id="datefrompicker"></div>
+            <div id="datefrompicker"></div>
             <label class="control-label" for="datefrompicker">Period</label>
             <div class="controls">
                <input type="text" name="date_from" id="alternate" value="{{date_from|default('', true)}}" class="input" placeholder="DD/MM/YYYY - DD/MM/YYYY" required="required"/>
@@ -21,7 +22,8 @@
             <div class="controls">
             {% for type in types %}
                 <label class="radio inline">
-                  <input type="radio" name="type" id="type{{ type }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}>{{ type['name'] }}
+                  <input type="radio" name="type" id="type{{ type }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}
+                  {% if type['id'] == 2 and pyvac.user.rtt['left'] <= 0 %}disabled="disabled"{% endif %}>{{ type['name'] }}
                 </label>
             {% endfor %}
             </div>
@@ -71,7 +73,13 @@
     </fieldset>
 
 </form>
-
+</div>
+<div class="span5">
+    <legend>Informations</legend>
+    <ul>
+        <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
+    </ul>
+</div>
 {% endblock %}
 
 
