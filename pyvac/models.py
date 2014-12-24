@@ -230,6 +230,13 @@ class User(Base):
         return cls.find(session, where=((cls.role == role),))
 
     @classmethod
+    def by_country(cls, session, country_id):
+        """
+        Get users for a given country.
+        """
+        return cls.find(session, where=((cls.country_id == country_id),))
+
+    @classmethod
     def get_admin_by_country(cls, session, country):
         """
         Get user with role admin for a specific country
@@ -384,6 +391,28 @@ class User(Base):
                                ),
                         order_by=cls.lastname)
 
+    def get_rtt_usage(self, session):
+        """ Get rrt usage for a user """
+        allowed = VacationType.by_name_country(session, name=u'RTT',
+                                               country=self.country)
+        if allowed is None:
+            return
+        taken = sum([req.days for req in self.requests
+                     if (req.vacation_type.name == u'RTT')
+                     and (req.status == 'APPROVED_ADMIN')])
+        current_year = datetime.now().year
+        left = allowed - taken
+        if left >= 10 or left < 0:
+            state = 'error'
+        elif left >= 5:
+            state = 'warning'
+        else:
+            state = 'success'
+
+        ret = {'allowed': allowed, 'taken': taken, 'left': left,
+               'year': current_year, 'state': state}
+        return ret
+
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('vacation_type_id', Integer,
@@ -391,6 +420,33 @@ vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('country_id', Integer,
                                       ForeignKey('countries.id'))
                                )
+
+
+class BaseVacation(object):
+
+    name = None
+
+    @classmethod
+    def acquired(cls):
+        """ Return acquired vacation this year to current day. """
+        raise NotImplementedError
+
+
+class RTTVacation(BaseVacation):
+
+    name = u'RTT'
+
+    @classmethod
+    def acquired(cls):
+        """ Return acquired vacation this year to current day.
+
+        We acquire one RTT at the start of each month except in august and
+        december.
+        """
+        except_months = [8, 12]
+        today = datetime.now()
+        return len([i for i in xrange(1, today.month + 1)
+                    if i not in except_months])
 
 
 class VacationType(Base):
@@ -401,6 +457,12 @@ class VacationType(Base):
 
     countries = relationship(Countries, secondary=vacation_type__country,
                              lazy='joined', backref='vacation_type')
+
+    _vacation_classes = {}
+
+    # save internal map of loaded module classes
+    for subclass in BaseVacation.__subclasses__():
+        _vacation_classes[subclass.name] = subclass
 
     @classmethod
     def by_name(cls, session, name):
@@ -417,6 +479,17 @@ class VacationType(Base):
         ctry = Countries.by_name(session, country)
         return cls.find(session, where=(cls.countries.contains(ctry),),
                         order_by=cls.id)
+
+    @classmethod
+    def by_name_country(cls, session, name, country):
+        """
+        Return allowed count of vacations per name and country
+        """
+        ctry = Countries.by_name(session, country)
+        vac = cls.first(session, where=(cls.countries.contains(ctry),
+                                        cls.name == name), order_by=cls.id)
+
+        return cls._vacation_classes[vac.name].acquired() if vac else None
 
 
 class Request(Base):
