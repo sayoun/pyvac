@@ -223,5 +223,6 @@ class VacationTypeTestCase(ModelTestCase):
         sub = VacationType._vacation_classes[u'RTT']
         self.assertEqual(sub.acquired(), 10)
         with freeze_time('2014-08-15',
-                         ignore=['celery', 'psycopg2', 'sqlalchemy']):
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
             self.assertEqual(sub.acquired(), 7)
