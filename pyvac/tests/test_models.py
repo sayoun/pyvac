@@ -222,6 +222,6 @@ class VacationTypeTestCase(ModelTestCase):
         from pyvac.models import VacationType
         sub = VacationType._vacation_classes[u'RTT']
         self.assertEqual(sub.acquired(), 10)
-        now = datetime.now()
-        with freeze_time(now.replace(month=8)):
+        with freeze_time('2014-08-15',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy']):
             self.assertEqual(sub.acquired(), 7)
