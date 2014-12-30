@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div class="span7">
+<div class="span{% if pyvac.user.country == 'fr' %}7{%else%}12{% endif %}">
 <form action="{{ route_url('request_send') }}" method="post" id="todoForm" class="form-horizontal">
 
     <fieldset>
@@ -74,12 +74,14 @@
 
 </form>
 </div>
+{% if pyvac.user.country == 'fr' %}
 <div class="span5">
     <legend>Informations</legend>
     <ul>
         <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
     </ul>
 </div>
+{% endif %}
 {% endblock %}
 
 
