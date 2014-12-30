@@ -1,3 +1,8 @@
+1.3
+---
+
+- Only display new Information tab on home page for french employees
+
 1.2
 ---
 
