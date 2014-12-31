@@ -6,6 +6,7 @@ from celery.task import Task, subtask
 
 from pyvac.task.worker import (
     WorkerPending,
+    WorkerPendingNotified,
     WorkerAccepted,
     WorkerAcceptedNotified,
     WorkerDenied,
@@ -23,6 +24,7 @@ class Poller(Task):
 
     worker_tasks = {
         'PENDING': WorkerPending,
+        'PENDING_NOTIFIED': WorkerPendingNotified,
         'ACCEPTED_MANAGER': WorkerAccepted,
         'ACCEPTED_NOTIFIED': WorkerAcceptedNotified,
         'DENIED': WorkerDenied,
@@ -50,8 +52,14 @@ class Poller(Task):
         self.log.info('number of ACCEPTED_NOTIFIED requests: %d' %
                       len(req_accepted_notified))
 
+        req_pending_notified = Request.by_status(session, 'PENDING',
+                                                 notified=True)
+        self.log.info('number of PENDING_NOTIFIED requests: %d' %
+                      len(req_pending_notified))
+
         req_list = []
         req_list.extend(req_accepted_notified)
+        req_list.extend(req_pending_notified)
 
         for req in req_list:
             self.log.info('selecting task for req type %r' % req.status)
@@ -59,6 +67,8 @@ class Poller(Task):
             check_status = req.status
             if req.status == 'ACCEPTED_MANAGER' and req.notified:
                 check_status = 'ACCEPTED_NOTIFIED'
+            if req.status == 'PENDING_NOTIFIED' and req.notified:
+                check_status = 'PENDING_NOTIFIED'
 
             req_task = self.worker_tasks[check_status]
             self.log.info('task selected %r' % req_task.name)

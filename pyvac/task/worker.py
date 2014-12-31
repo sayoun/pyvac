@@ -63,7 +63,11 @@ class WorkerPending(BaseWorker):
         # send mail to manager
         src = req.user.email
         dst = req.user.manager_mail
-        content = """New request from %s
+        if 'reminder' in data:
+            content = """A request from %s is still waiting your approval
+Request details: %s""" % (req.user.name, req.summarymail)
+        else:
+            content = """New request from %s
 Request details: %s""" % (req.user.name, req.summarymail)
         try:
             self.send_mail(sender=src, target=dst, request=req, content=content)
@@ -75,6 +79,32 @@ Request details: %s""" % (req.user.name, req.summarymail)
 
         self.session.flush()
         transaction.commit()
+
+
+class WorkerPendingNotified(BaseWorker):
+
+    name = 'worker_pending_notified'
+
+    def process(self, data):
+        """ submitted by user
+
+        re-send mail to manager if close to requested date_from
+        """
+        req = Request.by_id(self.session, data['req_id'])
+        # after new field was added, it may not be set yet
+        if not req.date_updated:
+            return
+
+        delta_deadline = req.date_from - req.date_updated
+        if delta_deadline.days <= 2:
+            if datetime.now().date() != req.date_updated.date():
+                # resend the mail
+                self.log.info('2 days left before requested date, '
+                              'remind the manager')
+
+                data['reminder'] = True
+                async_result = subtask(WorkerPending).delay(data=data)
+                self.log.info('task scheduled %r' % async_result)
 
 
 class WorkerAccepted(BaseWorker):
