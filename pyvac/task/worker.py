@@ -29,7 +29,8 @@ class BaseWorker(Task):
         self.log = log
         self.session = DBSession()
         self.smtp = SmtpCache()
-        self.log.info('using session %r, %r' % (self.session, id(self.session)))
+        self.log.info('using session %r, %r' %
+                      (self.session, id(self.session)))
 
         req = kwargs.get('data')
         self.log.info('RECEIVED %r' % req)
@@ -70,7 +71,8 @@ Request details: %s""" % (req.user.name, req.summarymail)
             content = """New request from %s
 Request details: %s""" % (req.user.name, req.summarymail)
         try:
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
             # update request status after sending email
             req.notified = True
         except Exception as err:
@@ -123,14 +125,16 @@ class WorkerAccepted(BaseWorker):
         content = """Your request has been accepted by %s. Waiting for HR validation.
 Request details: %s""" % (req.user.manager_name, req.summarymail)
         try:
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
 
             # send mail to HR
             admin = req.user.get_admin(self.session)
             dst = self.get_admin_mail(admin)
             content = """Manager %s has accepted a new request. Waiting for your validation.
 Request details: %s""" % (req.user.manager_name, req.summarymail)
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
 
             # update request status after sending email
             req.notified = True
@@ -193,7 +197,8 @@ Request details: %s""" % req.summarymail
             content = """HR has accepted your request, it has been added to calendar.
 Request details: %s""" % req.summarymail
         try:
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
 
             # send mail to manager
             src = self.get_admin_mail(admin)
@@ -204,7 +209,8 @@ Request details: %s""" % req.summarymail
             else:
                 content = """HR has approved a request you accepted, it has been added to calendar.
 Request details: %s""" % req.summarymail
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
 
             # update request status after sending email
             req.notified = True
@@ -254,7 +260,8 @@ class WorkerDenied(BaseWorker):
         content = """You request has been refused for the following reason: %s
 Request details: %s""" % (req.reason, req.summarymail)
         try:
-            self.send_mail(sender=src, target=dst, request=req, content=content)
+            self.send_mail(sender=src, target=dst, request=req,
+                           content=content)
 
             # update request status after sending email
             req.notified = True
