@@ -1,3 +1,11 @@
+1.4
+---
+
+- Fixes bug with display remaining RTT counter to take which was not
+  filtering by year of usage.
+- Managers should now get a reminder mail when request is still PENDING
+  and there is less than 2 days before requested date.
+
 1.3
 ---
 
