@@ -75,14 +75,32 @@ class UserTestCase(ModelTestCase):
         self.assertEqual(user.login, u'jdoe')
         self.assertEqual(user.name, u'John Doe')
         self.assertEqual(user.role, u'user')
-        expected = {'allowed': 10, 'left': 9.0, 'state': 'warning',
-                    'taken': 1.0, 'year': 2014}
-        self.assertEqual(user.get_rtt_usage(self.session), expected)
+        with freeze_time('2014-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            expected = {'allowed': 10, 'left': 9.5, 'state': 'warning',
+                        'taken': 0.5, 'year': 2014}
+            self.assertEqual(user.get_rtt_usage(self.session), expected)
+            # no RTT for us country
+            user = User.by_login(self.session, u'manager3')
+            self.assertIsInstance(user, User)
+            self.assertEqual(user.country, u'us')
+            self.assertIsNone(user.get_rtt_usage(self.session))
+
+    def test_get_rtt_taken_year(self):
+        from pyvac.models import User
+        user = User.by_login(self.session, u'jdoe')
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.login, u'jdoe')
+        self.assertEqual(user.name, u'John Doe')
+        self.assertEqual(user.role, u'user')
+
+        self.assertEqual(user.get_rtt_taken_year(self.session, 2014), 0.5)
         # no RTT for us country
         user = User.by_login(self.session, u'manager3')
         self.assertIsInstance(user, User)
         self.assertEqual(user.country, u'us')
-        self.assertIsNone(user.get_rtt_usage(self.session))
+        self.assertEqual(user.get_rtt_taken_year(self.session, 2014), 0)
 
 
 class RequestTestCase(ModelTestCase):
@@ -210,9 +228,12 @@ class VacationTypeTestCase(ModelTestCase):
     def test_by_name_country_rtt_ok(self):
         from pyvac.models import User, VacationType
         jdoe = User.by_login(self.session, u'jdoe')
-        vac = VacationType.by_name_country(self.session, u'RTT',
-                                           jdoe.country)
-        self.assertEqual(vac, 10)
+        with freeze_time('2014-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            vac = VacationType.by_name_country(self.session, u'RTT',
+                                               jdoe.country)
+            self.assertEqual(vac, 10)
 
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
@@ -221,7 +242,10 @@ class VacationTypeTestCase(ModelTestCase):
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType
         sub = VacationType._vacation_classes[u'RTT']
-        self.assertEqual(sub.acquired(), 10)
+        with freeze_time('2014-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            self.assertEqual(sub.acquired(), 10)
         with freeze_time('2014-08-15',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):

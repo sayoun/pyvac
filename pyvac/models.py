@@ -391,16 +391,23 @@ class User(Base):
                                ),
                         order_by=cls.lastname)
 
+    def get_rtt_taken_year(self, session, year):
+        """ Retrieve taken RTT for a user for current year """
+        return sum([req.days for req in self.requests
+                    if (req.vacation_type.name == u'RTT')
+                    and (req.status == 'APPROVED_ADMIN')
+                    and (req.date_from.year == year)])
+
     def get_rtt_usage(self, session):
-        """ Get rrt usage for a user """
+        """ Get RTT usage for a user """
         allowed = VacationType.by_name_country(session, name=u'RTT',
                                                country=self.country)
         if allowed is None:
             return
-        taken = sum([req.days for req in self.requests
-                     if (req.vacation_type.name == u'RTT')
-                     and (req.status == 'APPROVED_ADMIN')])
+
         current_year = datetime.now().year
+        taken = self.get_rtt_taken_year(session, current_year)
+
         left = allowed - taken
         if left >= 10 or left < 0:
             state = 'error'
