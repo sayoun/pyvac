@@ -1,3 +1,5 @@
+from freezegun import freeze_time
+
 from pyvac.tests import case
 from pyvac.tests.mocks.tasks import DummyTasks
 from pyvac.tests.mocks.celery import subtask
@@ -168,16 +170,19 @@ class RequestTestCase(case.ViewTestCase):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)
         from pyvac.views.request import Export
-        view = Export(self.create_request())()
-        self.assertEqual(set(view.keys()),
-                         set(['months', 'current_month', 'pyvac']))
-        self.assertEqual(len(view[u'months']), 12)
+        with freeze_time('2015-02-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = Export(self.create_request())()
+            self.assertEqual(set(view.keys()),
+                             set(['months', 'current_month', 'pyvac']))
+            self.assertEqual(len(view[u'months']), 10)
 
     def test_get_exported_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)
         from pyvac.views.request import Exported
-        view = Exported(self.create_request({'month': 6}))()
+        view = Exported(self.create_request({'month': '6/2014'}))()
         self.assertEqual(set(view.keys()),
                          set(['exported', 'pyvac']))
         exported = [u'#,lastname,firstname,from,to,number,type']
