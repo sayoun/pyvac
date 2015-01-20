@@ -1,6 +1,12 @@
+pyvac (1.4.0-3) unstable; urgency=medium
+
+  * Update Export view to work with multiple years
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 20 Jan 2015 12:01:54 +0100
+
 pyvac (1.4.0-2) unstable; urgency=medium
 
-  * Disable the PENDING notification reminder mail as it seems to bugs
+  * Disable the PENDING notification reminder mail as it seems to bug
 
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 02 Jan 2015 11:39:09 +0100
 
