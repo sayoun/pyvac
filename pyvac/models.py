@@ -656,14 +656,14 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
-    def get_by_month(cls, session, country, month=0):
+    def get_by_month(cls, session, country, month, year):
         """
         Get all requests for a given month.
         """
         from calendar import monthrange
 
         date = datetime.now()
-        date = date.replace(month=month)
+        date = date.replace(month=month, year=year)
         # retrieve first day of the previous month
         # first_month_day = date.replace(day=1) - relativedelta(months=1)
         first_month_day = date.replace(day=1)

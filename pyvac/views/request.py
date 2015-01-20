@@ -287,10 +287,19 @@ class Export(View):
     Display form to export requests
     """
     def render(self):
-        import calendar
         from datetime import datetime
-        months = calendar.month_name
-        return {'months': months[1:], 'current_month': datetime.now().month}
+        start = datetime(2014, 5, 1)
+        today = datetime.now()
+        entries = []
+        for year in reversed(range(start.year, today.year + 1)):
+            for month in reversed(range(1, 13)):
+                temp = datetime(year, month, 1)
+                if start <= temp <= today:
+                    entries.append(('%d/%d' % (month, year),
+                                   temp.strftime('%B %Y')))
+
+        return {'months': entries,
+                'current_month': '%d/%d' % (today.month, today.year)}
 
 
 class Exported(View):
@@ -302,8 +311,9 @@ class Exported(View):
         exported = {}
         if self.user.is_admin:
             country = self.user.country
-            month = int(self.request.params.get('month'))
-            requests = Request.get_by_month(self.session, country, month=month)
+            month, year = self.request.params.get('month').split('/')
+            requests = Request.get_by_month(self.session, country,
+                                            int(month), int(year))
             data = []
             header = '%s,%s,%s,%s,%s,%s,%s' % ('#', 'lastname', 'firstname',
                                                'from', 'to', 'number', 'type')

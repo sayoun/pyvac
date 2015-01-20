@@ -5,8 +5,8 @@
 <form class="form-inline">
     <label>{% trans %}Select month:{% endtrans %}</label>
     <select id="month_select">
-    {% for month in months %}
-        <option  value="{{ loop.index }}" {% if loop.index == current_month %}selected="selected"{% endif %}>{{ month }}</option>
+    {% for (entry, text) in months %}
+        <option  value="{{ entry }}" {% if entry == current_month %}selected="selected"{% endif %}>{{ text }}</option>
     {% endfor %}
      </select>
 </form>
