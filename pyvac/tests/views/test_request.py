@@ -166,6 +166,53 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
+    def test_set_status_cancel_ko_consumed_after(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Cancel
+        req_id = 6
+        req = Request.by_id(self.session, req_id)
+        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        with freeze_time('2099-02-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            status = Cancel(self.create_request({'request_id': req_id}))()
+            self.assertEqual(status, u'APPROVED_ADMIN')
+
+    def test_set_status_cancel_ko_consumed_during(self):
+        self.config.testing_securitypolicy(userid=u'manager3',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Cancel
+        req_id = 5
+        req = Request.by_id(self.session, req_id)
+        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        with freeze_time('2015-04-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            status = Cancel(self.create_request({'request_id': req_id}))()
+            self.assertEqual(status, u'APPROVED_ADMIN')
+
+    def test_set_status_cancel_consumed_admin_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Cancel
+        req_id = 6
+        req = Request.by_id(self.session, req_id)
+        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        orig_status = req.status
+        with freeze_time('2099-02-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            status = Cancel(self.create_request({'request_id': req_id}))()
+            self.assertEqual(status, u'CANCELED')
+            self.session.commit()
+            self.assertEqual(req.status, u'CANCELED')
+            self.assertEqual(req.notified, False)
+            req.update_status(orig_status)
+
     def test_get_export_choice_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)

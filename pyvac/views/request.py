@@ -266,6 +266,14 @@ class Cancel(View):
         if not req:
             return ''
 
+        # check if request have already been consumed
+        if not self.user.is_admin:
+            today = datetime.now()
+            if req.date_from <= today:
+                log.error('User %s tried to CANCEL consumed request %d.' %
+                          (self.user.login, req.id))
+                return req.status
+
         # delete from calendar
         if req.status == 'APPROVED_ADMIN' and req.ics_url:
             settings = self.request.registry.settings
