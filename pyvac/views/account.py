@@ -134,7 +134,7 @@ class Create(AccountMixin, CreateView):
             if 'ldappassword' not in r.params:
                 raise MandatoryLdapPassword()
             new_dn = ldap.add_user(account, password=r.params['ldappassword'],
-                                   unit=r.params['unit'])
+                                   unit=r.params.get('unit'))
             # update dn
             account.dn = new_dn
 
