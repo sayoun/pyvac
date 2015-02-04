@@ -8,7 +8,7 @@
   </a>
 </legend>
 
-  <table id="users" class="table table-bordered table-condensed table-striped table-hover">
+  <table id="users" class="table table-bordered table-condensed table-striped table-hover tablesorter">
     <thead>
       <tr>
         <th>{% trans %}Login{% endtrans %}</th>
@@ -66,3 +66,17 @@
   </table>
 </div>
     {% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function()
+        {
+            $("#users").tablesorter({
+                theme : 'blue',
+                debug: false,
+            });
+        }
+    );
+</script>
+
+{% endblock %}
