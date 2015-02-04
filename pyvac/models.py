@@ -114,6 +114,8 @@ class User(Base):
     country_id = Column('country_id', ForeignKey(Countries.id))
     _country = relationship(Countries, backref='users')
 
+    ou = Column(Unicode(255), nullable=True)
+
     @property
     def name(self):
         return u'%s %s' % (self.firstname.capitalize(),
@@ -290,6 +292,8 @@ class User(Base):
                 user.manager_dn = user_data['manager_dn'].decode('utf-8')
                 user.dn = user_data['dn'].decode('utf-8')
                 user.role = group
+                if 'ou' in user_data:
+                    user.ou = user_data['ou'].decode('utf-8')
 
                 # handle update of groups if it has changed
                 exists = []
@@ -323,6 +327,9 @@ class User(Base):
                     dn=data['dn'].decode('utf-8'),
                     role=group,
                     )
+        ou = data['ou'].decode('utf-8') if 'ou' in data else None
+        if ou:
+            user.ou = ou
         # put in correct group
         user.groups.append(Group.by_name(session, group))
         session.add(user)
@@ -651,6 +658,27 @@ class Request(Base):
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
                                User.manager_dn == req.user.manager_dn,
+                               cls.id != req.id),
+                        count=count,
+                        order_by=cls.user_id)
+
+    @classmethod
+    def in_conflict_ou(cls, session, req, count=None):
+        """
+        Get all requests conflicting on dates with given request.
+        """
+        return cls.find(session,
+                        join=(cls.user),
+                        where=(or_(and_(cls.date_from >= req.date_from,
+                                        cls.date_to <= req.date_to),
+                               and_(cls.date_from <= req.date_from,
+                                    cls.date_to >= req.date_to),
+                               and_(cls.date_from <= req.date_from,
+                                    cls.date_to >= req.date_from),
+                               and_(cls.date_from <= req.date_to,
+                                    cls.date_to >= req.date_from)),
+                               cls.status != 'CANCELED',
+                               User.ou == req.user.ou,
                                cls.id != req.id),
                         count=count,
                         order_by=cls.user_id)
