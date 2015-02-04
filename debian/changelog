@@ -1,3 +1,11 @@
+pyvac (1.4.0-7) unstable; urgency=medium
+
+  * OU are now mirrored from ldap to local database
+  * Request conflicts are now based on common OU and not managers
+  * Fixes bug with line warp in conflicts tooltip
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 04 Feb 2015 18:04:29 +0100
+
 pyvac (1.4.0-6) unstable; urgency=medium
 
   * Unit is not mandatory when creating a ldap user
