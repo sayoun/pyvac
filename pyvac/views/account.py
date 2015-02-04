@@ -8,7 +8,9 @@ from .base import View, CreateView, EditView, DeleteView
 
 from pyvac.models import User, Group, Countries, Request
 from pyvac.helpers.i18n import trans as _
-from pyvac.helpers.ldap import LdapCache, hashPassword, randomstring
+from pyvac.helpers.ldap import (
+    LdapCache, hashPassword, randomstring, UnknownLdapUser,
+)
 
 
 log = logging.getLogger(__name__)
@@ -64,7 +66,11 @@ class AccountMixin:
             ldap = LdapCache()
             login = self.get_model().login
             if login:
-                view['ldap_user'] = ldap.search_user_by_login(login)
+                try:
+                    view['ldap_user'] = ldap.search_user_by_login(login)
+                except UnknownLdapUser:
+                    msg = 'Unknown ldap user %s' % login
+                    self.request.session.flash('error;%s' % msg)
             else:
                 view['ldap_user'] = {}
             view['managers'] = ldap.list_manager()
@@ -226,4 +232,7 @@ class Delete(AccountMixin, DeleteView):
         if account.ldap_user:
             # delete in ldap
             ldap = LdapCache()
-            ldap.delete_user(account.dn)
+            try:
+                ldap.delete_user(account.dn)
+            except IndexError:
+                log.info('User %s seems already deleted in ldap' % account.dn)
