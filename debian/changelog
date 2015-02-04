@@ -1,3 +1,10 @@
+pyvac (1.4.0-5) unstable; urgency=medium
+
+  * Fixes bugs when deleting/editing user already deleted in LDAP
+  * Add table sorting for account list view
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 04 Feb 2015 11:15:41 +0100
+
 pyvac (1.4.0-4) unstable; urgency=medium
 
   * Canceling requests should only be enabled for unconsumed requests.
