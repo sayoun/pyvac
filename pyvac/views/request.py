@@ -163,7 +163,7 @@ class List(View):
             conflicts = {}
             for req in requests:
                 req.conflict = [req2.summary for req2 in
-                                Request.in_conflict(self.session, req)]
+                                Request.in_conflict_ou(self.session, req)]
                 if req.conflict:
                     conflicts[req.id] = '\n'.join(req.conflict)
             req_list['requests'] = requests
