@@ -141,7 +141,7 @@ class LdapWrapper(object):
             data['firstname'] = entry[self.firstname_attr].pop()
 
         if 'ou' in entry:
-            data['ou'] = entry['ou']
+            data['ou'] = entry['ou'].pop()
 
         # save user dn
         data['dn'] = user_dn
