@@ -1,3 +1,10 @@
+pyvac (1.4.0-8) unstable; urgency=medium
+
+  * Admin should be able to define country, unit and manager when
+    creating an account
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 05 Feb 2015 17:06:58 +0100
+
 pyvac (1.4.0-7) unstable; urgency=medium
 
   * OU are now mirrored from ldap to local database
