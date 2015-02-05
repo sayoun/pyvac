@@ -117,8 +117,7 @@
             {% endif %}
             {% endblock %}
         {% else %}
-            {% if ldap_user %}
-                {% if has_permission('admin_view') %}
+            {% if has_permission('admin_view') %}
                 <div class="control-group">
                     <label class="control-label">{% trans %}country:{% endtrans %}</label>
                     <div class="controls">
@@ -153,7 +152,6 @@
                      </select>
                     </div>
                 </div>
-                {% endif %}
             {% endif %}
 
         {% endif %}
