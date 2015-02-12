@@ -319,7 +319,7 @@ class LdapWrapper(object):
         return set(units)
 
     def list_teams(self):
-        """ Retrieve available organisational units """
+        """ Retrieve available teams """
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # retrieve all teams so we can extract members
