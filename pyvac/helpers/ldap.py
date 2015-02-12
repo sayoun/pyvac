@@ -265,6 +265,27 @@ class LdapWrapper(object):
             # Do the actual modification if needed
             self._conn.modify_s(user_dn, ldif)
 
+    def update_team(self, team, members):
+        """ Update team members in ldap directory """
+        # dn of object we want to update
+        dn = 'cn=%s,%s' % (team, self.team_dn)
+        log.info('updating team %s from ldap' % team)
+
+        # retrieve current team members
+        team_members = self.get_team_members(team)
+
+        old = {'member': team_members}
+        new = {'member': members}
+
+        # Convert place-holders for modify-operation using modlist-module
+        ldif = modlist.modifyModlist(old, new)
+        if ldif:
+            # rebind with system dn
+            self._bind(self.system_DN, self.system_password)
+            log.info('sending for dn %r: %r' % (dn, ldif))
+            # Do the actual modification if needed
+            self._conn.modify_s(dn, ldif)
+
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
         what = '(member=*)'
@@ -296,6 +317,19 @@ class LdapWrapper(object):
             units.append(USER_DN)
         # only return unique entries
         return set(units)
+
+    def list_teams(self):
+        """ Retrieve available organisational units """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all teams so we can extract members
+        required = None
+        item = '(member=*)'
+        res = self._search_team(item, required)
+        teams = {}
+        for USER_DN, entry in res:
+            teams[entry['cn'][0]] = entry['member']
+        return teams
 
     def list_manager(self):
         """ Retrieve available managers dn """
@@ -338,6 +372,17 @@ class LdapWrapper(object):
             if 'ou' in entry:
                 users_units[USER_DN]['ou'] = entry['ou'][0]
         return users_units
+
+    def get_team_members(self, team):
+        """ Retrieve team members list """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all teams so we can extract members
+        required = None
+        item = '(&(cn=*%s*)(member=*))' % team
+        res = self._search_team(item, required)
+        _, entry = res[0]
+        return entry['member']
 
 
 class LdapCache(object):
