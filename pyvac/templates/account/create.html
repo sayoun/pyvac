@@ -130,11 +130,12 @@
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label">{% trans %}organisational unit:{% endtrans %}</label>
+                    <label class="control-label">{% trans %}teams:{% endtrans %}</label>
                     <div class="controls">
-                    <select name="unit">
-                    {% for unit in units|sort %}
-                        <option  value="{{ unit }}" {% if unit in ldap_user.ou %}selected="selected"{% endif %}>{{ unit|extract_cn }}</option>
+                    <select id="teams" name="teams" multiple="multiple">
+                    {% for team in teams|sort %}
+                        <option value="{{ team }}" {% if team in user_teams %}selected="selected"{% endif %}>{{ team }}</option>
+                        }
                     {% endfor %}
                      </select>
                     </div>
@@ -152,6 +153,7 @@
                      </select>
                     </div>
                 </div>
+
             {% endif %}
 
         {% endif %}
@@ -202,6 +204,8 @@ $(document).ready(function(){
             _passwordIsOk = true;
         }
     });
+
+    $('#teams').multiselect();
 });
 </script>
 {% endblock %}
