@@ -178,15 +178,15 @@ class List(View):
 
                 for req in requests:
                     user_teams = users_teams.get(req.user.dn, [])
-
                     matched = {}
                     # for all requests in conflict with current req
                     for req2 in Request.in_conflict(self.session, req):
                         # if we have some match between request teams
                         # and conflicting request teams
                         conflict_teams = users_teams.get(req2.user.dn, [])
-                        if set(conflict_teams) & set(user_teams):
-                            for team in conflict_teams:
+                        common_set = set(conflict_teams) & set(user_teams)
+                        if common_set:
+                            for team in common_set:
                                 if team not in matched:
                                     matched[team] = []
                                 matched[team].append(req2.summary)
