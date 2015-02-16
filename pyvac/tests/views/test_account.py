@@ -29,7 +29,7 @@ class AccountTestCase(case.ViewTestCase):
         from pyvac.views.account import List
         view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set(['pyvac', 'user_count', 'users',
+                         set(['pyvac', 'user_count', 'users', 'users_teams',
                               'use_ldap', 'ldap_info']))
         self.assertEqual(view['user_count'], 7)
         self.assertEqual(len(view['users']), 7)

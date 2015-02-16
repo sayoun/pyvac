@@ -166,11 +166,12 @@ class RequestTestCase(ModelTestCase):
         nb_requests = Request.all_for_admin(self.session, count=True)
         self.assertEqual(nb_requests, 12)
 
-    def test_in_conflict(self):
+    def test_in_conflict_manager(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        nb_conflicts = Request.in_conflict(self.session, req, count=True)
+        nb_conflicts = Request.in_conflict_manager(self.session, req,
+                                                   count=True)
         self.assertEqual(nb_conflicts, 1)
 
     def test_get_by_month(self):
