@@ -16,7 +16,7 @@
         <th>{% trans %}Manager{% endtrans %}</th>
         {% if use_ldap and has_permission('admin_view') %}
         <th>{% trans %}Country{% endtrans %}</th>
-        <th>{% trans %}Unit{% endtrans %}</th>
+        <th>{% trans %}Teams{% endtrans %}</th>
         {% endif %}
         <th>{% trans %}Group{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
@@ -46,9 +46,7 @@
                 {{ user.country }}
             </td>
             <td>
-                {% if ldap_info.get(user.dn, {}).get('ou') %}
-                    {{ ldap_info.get(user.dn, {}).get('ou', '')|extract_cn }}
-                {% endif %}
+                {{ ','.join(users_teams.get(user.dn, [])) }}
             </td>
             {% endif %}
             <td>
