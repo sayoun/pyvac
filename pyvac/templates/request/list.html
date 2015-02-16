@@ -41,9 +41,17 @@
             {% endif %}
             <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
             {% if pyvac.user.is_super %}
-            <td>{% if req.conflict%}
-            <a id="td_conflict_req_{{ req.id }}" href="#" data-toggle="tooltip" title="" data-original-title="{{conflicts[req.id]}}"><span class="badge-important badge">{{ req.conflict|count }}</span></a>
-            {% else %}<span class="badge">{{ req.conflict|count }}</span>{% endif %}</td>
+            <td>
+                {% if req.conflict %}
+                    {% for team in req.conflict %}
+                        <a id="td_conflict_req_{{ req.id }}_{{ team }}" href="#" data-toggle="tooltip" title=""
+                        data-original-title="{{ conflicts[req.id][team] }}">
+                        <span class="badge-important badge">{{ req.conflict[team]|count }}</span></a>
+                    {% endfor %}
+                {% else %}
+                    <span class="badge">0</span>
+                {% endif %}
+            </td>
             {% endif %}
             <td>{{ req.days }}</td>
             <td>{{ req.type }}</td>
@@ -117,8 +125,10 @@
 {% block js %}
 <script>
     {% if pyvac.user.is_super %}
-    {% for id, con in conflicts.iteritems() %}
-        $('#td_conflict_req_{{id}}').tooltip({})
+    {% for id in conflicts %}
+      {% for team in conflicts[id] %}
+        $("#td_conflict_req_{{id}}_{{team.replace('&', '\\\\&')|safe}}").tooltip({});
+      {% endfor %}
     {% endfor %}
     {% endif %}
 
