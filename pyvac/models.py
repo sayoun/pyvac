@@ -642,9 +642,10 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
-    def in_conflict(cls, session, req, count=None):
+    def in_conflict_manager(cls, session, req, count=None):
         """
-        Get all requests conflicting on dates with given request.
+        Get all requests conflicting on dates with given request,
+        and with common user manager.
         """
         return cls.find(session,
                         join=(cls.user),
@@ -665,7 +666,8 @@ class Request(Base):
     @classmethod
     def in_conflict_ou(cls, session, req, count=None):
         """
-        Get all requests conflicting on dates with given request.
+        Get all requests conflicting on dates with given request,
+        and with common user ou (organisational unit)
         """
         return cls.find(session,
                         join=(cls.user),
@@ -682,6 +684,27 @@ class Request(Base):
                                cls.id != req.id),
                         count=count,
                         order_by=cls.user_id)
+
+    @classmethod
+    def in_conflict(cls, session, req, count=None):
+        """
+        Get all requests conflicting on dates with given request.
+        """
+        return cls.find(session,
+                        join=(cls.user),
+                        where=(or_(and_(cls.date_from >= req.date_from,
+                                        cls.date_to <= req.date_to),
+                               and_(cls.date_from <= req.date_from,
+                                    cls.date_to >= req.date_to),
+                               and_(cls.date_from <= req.date_from,
+                                    cls.date_to >= req.date_from),
+                               and_(cls.date_from <= req.date_to,
+                                    cls.date_to >= req.date_from)),
+                               cls.status != 'CANCELED',
+                               cls.id != req.id),
+                        count=count,
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def get_by_month(cls, session, country, month, year):
