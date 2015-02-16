@@ -32,16 +32,22 @@ class List(View):
             use_ldap = asbool(settings.get('pyvac.use_ldap'))
 
         user_attr = {}
+        users_teams = {}
         if use_ldap:
             # synchronise user groups/roles
             User.sync_ldap_info(self.session)
             ldap = LdapCache()
             user_attr = ldap.get_users_units()
+            users_teams = {}
+            for team, members in ldap.list_teams().iteritems():
+                for member in members:
+                    users_teams.setdefault(member, []).append(team)
 
         return {u'user_count': User.find(self.session, count=True),
                 u'users': User.find(self.session, order_by=[User.dn]),
                 'use_ldap': use_ldap,
                 'ldap_info': user_attr,
+                'users_teams': users_teams,
                 }
 
 
@@ -75,6 +81,14 @@ class AccountMixin:
                 view['ldap_user'] = {}
             view['managers'] = ldap.list_manager()
             view['units'] = ldap.list_ou()
+
+            view['teams'] = ldap.list_teams()
+            uteams = {}
+            for team, members in view['teams'].iteritems():
+                for member in members:
+                    uteams.setdefault(member, []).append(team)
+            view['user_teams'] = uteams.get(view['ldap_user'].get('dn'), [])
+
             view['countries'] = Countries.all(self.session,
                                               order_by=Countries.name)
             # generate a random password for the user, he must change it later
@@ -191,6 +205,28 @@ class Edit(AccountMixin, EditView):
             ldap = LdapCache()
             ldap.update_user(account, password=password, unit=unit)
 
+            # update teams
+            uteams = {}
+            for team, members in ldap.list_teams().iteritems():
+                for member in members:
+                    uteams.setdefault(member, []).append(team)
+            user_teams = uteams.get(account.dn, [])
+
+            # add to new teams
+            for team in r.params.getall('teams'):
+                members = ldap.get_team_members(team)
+                if account.dn not in members:
+                    members.append(account.dn.encode('utf-8'))
+                    ldap.update_team(team, members)
+
+            # remove from old teams
+            for team in user_teams:
+                if team not in r.params.getall('teams'):
+                    members = ldap.get_team_members(team)
+                    if account.dn in members:
+                        members.remove(account.dn)
+                    ldap.update_team(team, members)
+
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'
 
@@ -198,6 +234,7 @@ class Edit(AccountMixin, EditView):
         r = self.request
         settings = r.registry.settings
         ldap = False
+
         if 'pyvac.use_ldap' in settings:
             ldap = asbool(settings.get('pyvac.use_ldap'))
 
