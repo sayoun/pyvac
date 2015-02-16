@@ -328,7 +328,8 @@ class LdapWrapper(object):
         res = self._search_team(item, required)
         teams = {}
         for USER_DN, entry in res:
-            teams[entry['cn'][0]] = entry['member']
+            if 'manager' not in entry['cn'][0]:
+                teams[entry['cn'][0]] = entry['member']
         return teams
 
     def list_manager(self):
