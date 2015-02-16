@@ -5,7 +5,7 @@ from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy import Column, Integer, DateTime, engine_from_config
 from sqlalchemy.sql.expression import func
 
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker, eagerload_all
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 
@@ -37,14 +37,14 @@ class _Base(object):
 
     @classmethod
     def find(cls, session, join=None, where=None, order_by=None, limit=None,
-             offset=None, count=None):
+             offset=None, count=None, eagerload=None):
         qry = cls.build_query(session, join, where, order_by, limit,
-                              offset, count)
+                              offset, count, eagerload)
         return qry.scalar() if count is not None else qry.all()
 
     @classmethod
-    def first(cls, session, join=None, where=None, order_by=None):
-        return cls.build_query(session, join, where, order_by).first()
+    def first(cls, session, join=None, where=None, order_by=None, eagerload=None):
+        return cls.build_query(session, join, where, order_by, eagerload=eagerload).first()
 
     @classmethod
     def all(cls, session, page_size=1000, order_by=None):
@@ -62,9 +62,11 @@ class _Base(object):
 
     @classmethod
     def build_query(cls, session, join=None, where=None, order_by=None,
-                    limit=None, offset=None, count=None):
+                    limit=None, offset=None, count=None, eagerload=None):
 
+        aggregating = False
         if count is not None:
+            aggregating = True
             query = session.query(func.count(count)).select_from(cls)
         else:
             query = session.query(cls)
@@ -79,6 +81,10 @@ class _Base(object):
         if where:
             for filter in where:
                 query = query.filter(filter)
+
+        if eagerload and not aggregating:
+            for relname in eagerload:
+                query = query.options(eagerload_all(relname))
 
         if order_by is not None:
             if count is None:
