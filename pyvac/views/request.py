@@ -6,10 +6,12 @@ from .base import View
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
+from pyramid.settings import asbool
 
 from pyvac.models import Request, VacationType, User
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
+from pyvac.helpers.ldap import LdapCache
 
 import yaml
 try:
@@ -161,11 +163,48 @@ class List(View):
 
         if requests:
             conflicts = {}
-            for req in requests:
-                req.conflict = [req2.summary for req2 in
-                                Request.in_conflict_ou(self.session, req)]
-                if req.conflict:
-                    conflicts[req.id] = '\n'.join(req.conflict)
+
+            settings = self.request.registry.settings
+            use_ldap = False
+            if 'pyvac.use_ldap' in settings:
+                use_ldap = asbool(settings.get('pyvac.use_ldap'))
+
+            if use_ldap:
+                ldap = LdapCache()
+                users_teams = {}
+                for team, members in ldap.list_teams().iteritems():
+                    for member in members:
+                        users_teams.setdefault(member, []).append(team)
+
+                for req in requests:
+                    user_teams = users_teams.get(req.user.dn, [])
+
+                    matched = {}
+                    # for all requests in conflict with current req
+                    for req2 in Request.in_conflict(self.session, req):
+                        # if we have some match between request teams
+                        # and conflicting request teams
+                        conflict_teams = users_teams.get(req2.user.dn, [])
+                        if set(conflict_teams) & set(user_teams):
+                            for team in conflict_teams:
+                                if team not in matched:
+                                    matched[team] = []
+                                matched[team].append(req2.summary)
+
+                    req.conflict = matched
+                    if req.conflict:
+                        for team in req.conflict:
+                            if req.id not in conflicts:
+                                conflicts[req.id] = {}
+                            conflicts[req.id][team] = ('\n'.join([team] +
+                                                       req.conflict[team]))
+            else:
+                for req in requests:
+                    req.conflict = [req2.summary for req2 in
+                                    Request.in_conflict_ou(self.session, req)]
+                    if req.conflict:
+                        conflicts[req.id] = '\n'.join(req.conflict)
+
             req_list['requests'] = requests
             req_list['conflicts'] = conflicts
 
