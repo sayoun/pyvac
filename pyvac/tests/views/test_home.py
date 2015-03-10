@@ -49,7 +49,7 @@ class HomeTestCase(case.ViewTestCase):
                         'taken': 0.5, 'year': 2014}
             self.assertEqual(view_user.rtt, expected)
 
-        with freeze_time('2015-01-02',
+        with freeze_time('2011-01-02',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             view = Home(self.create_request())()
@@ -60,5 +60,21 @@ class HomeTestCase(case.ViewTestCase):
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 1, 'left': 0.5, 'state': 'success',
-                        'taken': 0.5, 'year': 2015}
+                        'taken': 0.5, 'year': 2011}
+            self.assertEqual(view_user.rtt, expected)
+
+        # testing that we take count of all type of requests
+        # PENDING, ACCEPTED_MANAGER, APPROVED_ADMIN
+        with freeze_time('2016-05-02',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = Home(self.create_request())()
+            self.assertEqual(set(view.keys()),
+                             set([u'matched_route', u'types', u'csrf_token',
+                                  u'pyvac', u'holidays', u'sudo_users']))
+            self.assertEqual(len(view[u'types']), 2)
+            view_user = view['pyvac']['user']
+            self.assertTrue(view_user.rtt)
+            expected = {'allowed': 5, 'left': 2.0, 'state': 'success',
+                        'taken': 3.0, 'year': 2016}
             self.assertEqual(view_user.rtt, expected)

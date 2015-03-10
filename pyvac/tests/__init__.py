@@ -134,8 +134,8 @@ def setUpModule():
                    notified=True,)
     session.add(req5)
 
-    date_from = datetime.strptime('24/08/2015', '%d/%m/%Y')
-    date_to = datetime.strptime('24/08/2015', '%d/%m/%Y')
+    date_from = datetime.strptime('24/08/2011', '%d/%m/%Y')
+    date_to = datetime.strptime('24/08/2011', '%d/%m/%Y')
     req6 = Request(date_from=date_from,
                    date_to=date_to,
                    days=0.5,
@@ -157,6 +157,41 @@ def setUpModule():
                    notified=True,
                    label=u'AM')
     session.add(req7)
+
+    # used for rtt vacation checks
+
+    date_from = datetime.strptime('01/04/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('02/04/2016', '%d/%m/%Y')
+    req8 = Request(date_from=date_from,
+                   date_to=date_to,
+                   days=1,
+                   vacation_type=rtt_vacation,
+                   status=u'PENDING',
+                   user=user1,
+                   notified=True)
+    session.add(req8)
+
+    date_from = datetime.strptime('01/03/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('02/03/2016', '%d/%m/%Y')
+    req9 = Request(date_from=date_from,
+                   date_to=date_to,
+                   days=1,
+                   vacation_type=rtt_vacation,
+                   status=u'ACCEPTED_MANAGER',
+                   user=user1,
+                   notified=True)
+    session.add(req9)
+
+    date_from = datetime.strptime('01/02/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('02/02/2016', '%d/%m/%Y')
+    req10 = Request(date_from=date_from,
+                    date_to=date_to,
+                    days=1,
+                    vacation_type=rtt_vacation,
+                    status=u'APPROVED_ADMIN',
+                    user=user1,
+                    notified=True)
+    session.add(req10)
 
     session.commit()
 
