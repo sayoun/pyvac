@@ -400,9 +400,10 @@ class User(Base):
 
     def get_rtt_taken_year(self, session, year):
         """ Retrieve taken RTT for a user for current year """
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         return sum([req.days for req in self.requests
                     if (req.vacation_type.name == u'RTT')
-                    and (req.status == 'APPROVED_ADMIN')
+                    and (req.status in valid_status)
                     and (req.date_from.year == year)])
 
     def get_rtt_usage(self, session):
