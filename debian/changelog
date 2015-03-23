@@ -1,3 +1,9 @@
+pyvac (1.5.0-4) unstable; urgency=medium
+
+  * Sudoed requests should also be added in calendar
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 23 Mar 2015 17:15:09 +0100
+
 pyvac (1.5.0-3) unstable; urgency=medium
 
   * Update RTT usage formula to take count of all states not just the
