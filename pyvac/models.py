@@ -18,6 +18,7 @@ from .helpers.sqla import (Database, SessionFactory, ModelError,
 
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
+from pyvac.helpers.calendar import addToCal
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -814,6 +815,32 @@ class Request(Base):
                  self.days,
                  self.type,
                  label))
+
+    def add_to_cal(self, caldav_url):
+        """
+        Add entry in calendar for request
+        """
+        if self.ics_url:
+            log.info('Tried to add to cal request %d but ics_url already set'
+                     % self.id)
+            return
+
+        if not caldav_url:
+            log.info('Tried to add to cal request %d but no url provided'
+                     % self.id)
+            return
+
+        try:
+            # add new entry in caldav
+            ics_url = addToCal(caldav_url,
+                               self.date_from,
+                               self.date_to,
+                               self.summarycal)
+            # save ics url in request
+            self.ics_url = ics_url
+        except Exception as err:
+            log.exception('Error while adding to calendar')
+            self.flag_error(str(err))
 
     def __eq__(self, other):
         return (
