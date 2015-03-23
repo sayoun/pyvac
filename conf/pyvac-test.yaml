@@ -66,4 +66,4 @@ databases:
 
 caldav:
     # http url including credentials to calendar were to write request entries after admin validation
-    url: '{{caldav.url}}'
+    url: ''
