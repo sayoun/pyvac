@@ -130,6 +130,16 @@ class Send(View):
                 data = {'req_id': request.id}
                 subtask(req_task).delay(data=data)
 
+            if request and sudo_use:
+                settings = self.request.registry.settings
+                if 'pyvac.celery.yaml' in settings:
+                    with open(settings['pyvac.celery.yaml']) as fdesc:
+                        Conf = yaml.load(fdesc, YAMLLoader)
+                    caldav_url = Conf.get('caldav').get('url')
+                    request.add_to_cal(caldav_url)
+                    msg = 'Request added to calendar and DB.'
+                    self.request.session.flash('info;%s' % msg)
+
         except Exception as exc:
             log.error(exc)
             msg = ('An error has occured while processing this request: %r'
