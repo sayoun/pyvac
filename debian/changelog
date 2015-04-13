@@ -1,3 +1,10 @@
+pyvac (1.5.0-5) unstable; urgency=medium
+
+  * RTT allowed number must take count of user arrival date if current
+    year
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 13 Apr 2015 14:24:11 +0200
+
 pyvac (1.5.0-4) unstable; urgency=medium
 
   * Sudoed requests should also be added in calendar
