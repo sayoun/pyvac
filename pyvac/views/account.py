@@ -71,14 +71,14 @@ class AccountMixin:
         if ldap:
             ldap = LdapCache()
             login = self.get_model().login
+            view['ldap_user'] = {}
             if login:
                 try:
                     view['ldap_user'] = ldap.search_user_by_login(login)
                 except UnknownLdapUser:
                     msg = 'Unknown ldap user %s' % login
                     self.request.session.flash('error;%s' % msg)
-            else:
-                view['ldap_user'] = {}
+
             view['managers'] = ldap.list_manager()
             view['units'] = ldap.list_ou()
 
