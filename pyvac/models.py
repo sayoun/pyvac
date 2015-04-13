@@ -410,7 +410,8 @@ class User(Base):
     def get_rtt_usage(self, session):
         """ Get RTT usage for a user """
         allowed = VacationType.by_name_country(session, name=u'RTT',
-                                               country=self.country)
+                                               country=self.country,
+                                               user=self)
         if allowed is None:
             return
 
@@ -443,7 +444,7 @@ class BaseVacation(object):
     name = None
 
     @classmethod
-    def acquired(cls):
+    def acquired(cls, **kwargs):
         """ Return acquired vacation this year to current day. """
         raise NotImplementedError
 
@@ -453,15 +454,21 @@ class RTTVacation(BaseVacation):
     name = u'RTT'
 
     @classmethod
-    def acquired(cls):
+    def acquired(cls, **kwargs):
         """ Return acquired vacation this year to current day.
 
         We acquire one RTT at the start of each month except in august and
         december.
         """
-        except_months = [8, 12]
+        start_month = 1
         today = datetime.now()
-        return len([i for i in xrange(1, today.month + 1)
+
+        user = kwargs.get('user')
+        if user and (user.created_at.year == today.year):
+            start_month = user.created_at.month
+
+        except_months = [8, 12]
+        return len([i for i in xrange(start_month, today.month + 1)
                     if i not in except_months])
 
 
@@ -497,7 +504,7 @@ class VacationType(Base):
                         order_by=cls.id)
 
     @classmethod
-    def by_name_country(cls, session, name, country):
+    def by_name_country(cls, session, name, country, user=None):
         """
         Return allowed count of vacations per name and country
         """
@@ -505,7 +512,8 @@ class VacationType(Base):
         vac = cls.first(session, where=(cls.countries.contains(ctry),
                                         cls.name == name), order_by=cls.id)
 
-        return cls._vacation_classes[vac.name].acquired() if vac else None
+        return (cls._vacation_classes[vac.name].acquired(user=user)
+                if vac else None)
 
 
 class Request(Base):
