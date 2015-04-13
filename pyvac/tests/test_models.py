@@ -237,6 +237,18 @@ class VacationTypeTestCase(ModelTestCase):
                                                jdoe.country)
             self.assertEqual(vac, 10)
 
+    def test_by_name_country_rtt_truncated_ok(self):
+        from pyvac.models import User, VacationType
+        jdoe = User.by_login(self.session, u'jdoe')
+        jdoe.created_at = datetime(2014, 9, 13)
+        with freeze_time('2014-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            vac = VacationType.by_name_country(self.session, u'RTT',
+                                               jdoe.country,
+                                               jdoe)
+            self.assertEqual(vac, 3)
+
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
         self.assertEqual(VacationType._vacation_classes.keys(), [u'RTT'])

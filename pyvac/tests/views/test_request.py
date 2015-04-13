@@ -159,12 +159,15 @@ class RequestTestCase(case.ViewTestCase):
         req_id = 1
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
-        status = Cancel(self.create_request({'request_id': req_id}))()
-        self.assertEqual(status, u'CANCELED')
-        self.session.commit()
-        self.assertEqual(req.status, u'CANCELED')
-        self.assertEqual(req.notified, False)
-        req.update_status(orig_status)
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            status = Cancel(self.create_request({'request_id': req_id}))()
+            self.assertEqual(status, u'CANCELED')
+            self.session.commit()
+            self.assertEqual(req.status, u'CANCELED')
+            self.assertEqual(req.notified, False)
+            req.update_status(orig_status)
 
     def test_set_status_cancel_ko_consumed_after(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
