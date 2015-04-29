@@ -1,3 +1,9 @@
+pyvac (1.5.0-6) unstable; urgency=medium
+
+  * Add more log messages
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 29 Apr 2015 15:09:36 +0200
+
 pyvac (1.5.0-5) unstable; urgency=medium
 
   * RTT allowed number must take count of user arrival date if current
