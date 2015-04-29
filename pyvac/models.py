@@ -846,6 +846,7 @@ class Request(Base):
                                self.summarycal)
             # save ics url in request
             self.ics_url = ics_url
+            log.info('Request %d added to cal: %s ' % (self.id, ics_url))
         except Exception as err:
             log.exception('Error while adding to calendar')
             self.flag_error(str(err))

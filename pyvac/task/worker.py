@@ -234,6 +234,7 @@ Request details: %s""" % req.summarymail
                                req.summarycal)
             # save ics url in request
             req.ics_url = ics_url
+            self.log.info('Request %d added to cal: %s ' % (req.id, ics_url))
         except Exception as err:
             self.log.exception('Error while adding to calendar')
             req.flag_error(str(err))

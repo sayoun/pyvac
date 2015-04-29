@@ -129,6 +129,7 @@ class Send(View):
                 req_task = tasks['worker_pending']
                 data = {'req_id': request.id}
                 subtask(req_task).delay(data=data)
+                log.info('scheduling task worker_pending for %s' % data)
 
             if request and sudo_use:
                 settings = self.request.registry.settings
@@ -270,7 +271,7 @@ class Accept(View):
         req_task = tasks[task_name]
 
         subtask(req_task).delay(data=data)
-
+        log.info('scheduling task %s for %s' % (task_name, data))
         return req.status
 
 
@@ -299,6 +300,7 @@ class Refuse(View):
         req_task = tasks['worker_denied']
         data = {'req_id': req.id}
         subtask(req_task).delay(data=data)
+        log.info('scheduling task worker_denied for %s' % data)
 
         return req.status
 

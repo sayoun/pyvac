@@ -37,7 +37,7 @@ class SmtpWrapper(object):
 
         log.info('Smtp wrapper initialized')
 
-    def send_mail(self, sender, target, subject, content):
+    def send_mail(self, sender, target, subject, content, tracking_id=None):
         """ Send a mail through smtp using given parameters """
 
         content = """%s
@@ -59,7 +59,8 @@ class SmtpWrapper(object):
         conn.sendmail(_from, [target], msg.as_string())
         conn.quit()
 
-        log.info('Message sent through SMTP.')
+        log.info('Message sent through SMTP: (%s) %s -> %s [%s]' %
+                 (subject, sender, target, tracking_id or ''))
 
 
 class SmtpCache(object):
