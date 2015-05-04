@@ -32,8 +32,7 @@ def configure(filename='conf/pyvac.yaml', init_celery=True, default_app=None):
     if init_celery:
         if not default_app:
             try:
-                from celery import Celery
-                default_app = Celery()
+                from celery import current_app as default_app
             except ImportError:  # pragma: no cover
                 from celery.app import default_app
 
