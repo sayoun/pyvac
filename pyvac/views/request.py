@@ -128,7 +128,7 @@ class Send(View):
                 from celery.task import subtask
                 req_task = tasks['worker_pending']
                 data = {'req_id': request.id}
-                subtask(req_task).delay(data=data)
+                subtask(req_task).delay(countdown=5, data=data)
                 log.info('scheduling task worker_pending for %s' % data)
 
             if request and sudo_use:
@@ -270,7 +270,7 @@ class Accept(View):
         from celery.task import subtask
         req_task = tasks[task_name]
 
-        subtask(req_task).delay(data=data)
+        subtask(req_task).delay(countdown=5, data=data)
         log.info('scheduling task %s for %s' % (task_name, data))
         return req.status
 
@@ -299,7 +299,7 @@ class Refuse(View):
         from celery.task import subtask
         req_task = tasks['worker_denied']
         data = {'req_id': req.id}
-        subtask(req_task).delay(data=data)
+        subtask(req_task).delay(countdown=5, data=data)
         log.info('scheduling task worker_denied for %s' % data)
 
         return req.status
