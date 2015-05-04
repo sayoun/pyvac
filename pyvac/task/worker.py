@@ -29,11 +29,11 @@ class BaseWorker(Task):
         self.log = log
         self.session = DBSession()
         self.smtp = SmtpCache()
-        self.log.info('using session %r, %r' %
-                      (self.session, id(self.session)))
+        self.log.debug('using session %r, %r' %
+                       (self.session, id(self.session)))
 
         req = kwargs.get('data')
-        self.log.info('RECEIVED %r' % req)
+        self.log.info('[Task %s]: RECEIVED %r' % (self.name, req))
 
         self.process(req)
 
