@@ -1,3 +1,9 @@
+pyvac (1.5.0-8) unstable; urgency=medium
+
+  * Managers can now see request submission date
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 22 May 2015 14:13:00 +0200
+
 pyvac (1.5.0-7) unstable; urgency=medium
 
   * Add 5s delay to async launch in case webview is slow to commit
