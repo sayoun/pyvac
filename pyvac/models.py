@@ -143,6 +143,11 @@ class User(Base):
         return self.role in ('admin',)
 
     @property
+    def is_manager(self):
+        """ Check if user has admin rights """
+        return self.role in ('manager',)
+
+    @property
     def manager_mail(self):
         """ Get manager email for a user """
         if not self.ldap_user:
