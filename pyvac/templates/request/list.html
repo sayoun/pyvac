@@ -21,6 +21,9 @@
         <th>{% trans %}Status{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
         <th>{% trans %}Notified{% endtrans %}</th>
+        {% if pyvac.user.is_manager %}
+        <th data-sorter="period" data-dateFormat="ddmmyyyy">{% trans %}Created{% endtrans %}</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -94,6 +97,9 @@
               {% endif %}
             </td>
             <td>{{ req.notified }}</td>
+            {% if pyvac.user.is_manager %}
+            <td>{{ req.created_at.strftime('%d/%m/%Y') }}</td>
+            {% endif %}
       </tr>
       {% endfor %}
     </tbody>
