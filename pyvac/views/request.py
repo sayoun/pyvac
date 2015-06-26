@@ -356,9 +356,8 @@ class Export(View):
         for year in reversed(range(start.year, today.year + 1)):
             for month in reversed(range(1, 13)):
                 temp = datetime(year, month, 1)
-                if start <= temp <= today:
-                    entries.append(('%d/%d' % (month, year),
-                                   temp.strftime('%B %Y')))
+                entries.append(('%d/%d' % (month, year),
+                               temp.strftime('%B %Y')))
 
         return {'months': entries,
                 'current_month': '%d/%d' % (today.month, today.year)}
