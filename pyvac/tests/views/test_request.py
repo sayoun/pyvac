@@ -226,7 +226,7 @@ class RequestTestCase(case.ViewTestCase):
             view = Export(self.create_request())()
             self.assertEqual(set(view.keys()),
                              set(['months', 'current_month', 'pyvac']))
-            self.assertEqual(len(view[u'months']), 10)
+            self.assertEqual(len(view[u'months']), 24)
 
     def test_get_exported_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
