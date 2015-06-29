@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="previsions-contain">
+  <legend>Total of APPROVED_ADMIN CP per user between {{ today.strftime('%Y-%m-%d') }} and {{ end_date.strftime('%Y-%m-%d') }}</legend>
+
+  <table id="previsions" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Login{% endtrans %}</th>
+        <th>{% trans %}Total{% endtrans %}</th>
+        {% if use_ldap and has_permission('admin_view') %}
+        <th>{% trans %}Country{% endtrans %}</th>
+        <th>{% trans %}Teams{% endtrans %}</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for user_id, total in previsions.items() %}
+      <tr>
+            <td>{{ users_per_id[user_id].login }}</td>
+            <td>{{ total }}</td>
+            {% if use_ldap and has_permission('admin_view') %}
+            <td>
+                {{ users_per_id[user_id].country }}
+            </td>
+            <td>
+                {{ ','.join(users_teams.get(users_per_id[user_id].dn, [])) }}
+            </td>
+            {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+    {% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function()
+        {
+            $("#previsions").tablesorter({
+                theme : 'blue',
+                debug: false,
+                sortList: [[1,1]]
+            });
+        }
+    );
+</script>
+
+{% endblock %}
