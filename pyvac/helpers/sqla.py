@@ -37,14 +37,16 @@ class _Base(object):
 
     @classmethod
     def find(cls, session, join=None, where=None, order_by=None, limit=None,
-             offset=None, count=None, eagerload=None):
+             offset=None, count=None, eagerload=None, group=None):
         qry = cls.build_query(session, join, where, order_by, limit,
-                              offset, count, eagerload)
+                              offset, count, eagerload, group)
         return qry.scalar() if count is not None else qry.all()
 
     @classmethod
-    def first(cls, session, join=None, where=None, order_by=None, eagerload=None):
-        return cls.build_query(session, join, where, order_by, eagerload=eagerload).first()
+    def first(cls, session, join=None, where=None, order_by=None,
+              eagerload=None, group=None):
+        return cls.build_query(session, join, where, order_by,
+                               eagerload=eagerload, group=group).first()
 
     @classmethod
     def all(cls, session, page_size=1000, order_by=None):
@@ -62,7 +64,8 @@ class _Base(object):
 
     @classmethod
     def build_query(cls, session, join=None, where=None, order_by=None,
-                    limit=None, offset=None, count=None, eagerload=None):
+                    limit=None, offset=None, count=None, eagerload=None,
+                    group=None):
 
         aggregating = False
         if count is not None:
@@ -96,6 +99,12 @@ class _Base(object):
             query = query.limit(limit)
         if offset:
             query = query.offset(offset)
+
+        if group:
+            group_clause = []
+            for key in group:
+                group_clause.append(getattr(cls, key))
+            query = query.group_by(*group_clause)
 
         return query
 
