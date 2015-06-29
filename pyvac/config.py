@@ -192,3 +192,9 @@ def includeme(config):
                     route_name=u'request_export',
                     renderer=u'templates/request/exported.html',
                     permission=u'admin_view')
+
+    config.add_route(u'prevision_request', u'/pyvac/prevision')
+    config.add_view(u'pyvac.views.request.Prevision',
+                    route_name=u'prevision_request',
+                    renderer=u'templates/request/prevision.html',
+                    permission=u'admin_view')

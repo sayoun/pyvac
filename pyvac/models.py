@@ -760,6 +760,30 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
+    def get_previsions(cls, session):
+        """ Retrieve future validated requests per user """
+        future_requests = session.execute("""
+            SELECT
+                request.user_id,
+                sum(request.days)
+            FROM
+                request
+            INNER JOIN "user" on "user".id = request.user_id
+            WHERE
+                date_from > NOW()
+                AND vacation_type_id = 1
+                AND status='APPROVED_ADMIN'
+            GROUP BY user_id
+            ORDER BY user_id;
+            """)
+
+        ret = {}
+        for user_id, total in future_requests:
+            ret[user_id] = total
+
+        return ret
+
+    @classmethod
     def get_today(cls, session):
         """
         Get all requests valid for current day

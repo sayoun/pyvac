@@ -383,3 +383,38 @@ class Exported(View):
                 data.append('%d,%s' % (idx, req.summarycsv))
             exported = '\n'.join(data)
         return {u'exported': exported}
+
+
+class Prevision(View):
+    """
+    Display future CP used per user
+    """
+    def render(self):
+        previsions = Request.get_previsions(self.session)
+
+        users_per_id = dict([(user.id, user)
+                             for user in User.find(self.session)])
+
+        settings = self.request.registry.settings
+        use_ldap = False
+        if 'pyvac.use_ldap' in settings:
+            use_ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        user_attr = {}
+        users_teams = {}
+        if use_ldap:
+            # synchronise user groups/roles
+            User.sync_ldap_info(self.session)
+            ldap = LdapCache()
+            user_attr = ldap.get_users_units()
+            users_teams = {}
+            for team, members in ldap.list_teams().iteritems():
+                for member in members:
+                    users_teams.setdefault(member, []).append(team)
+
+        return {'users_per_id': users_per_id,
+                'use_ldap': use_ldap,
+                'ldap_info': user_attr,
+                'users_teams': users_teams,
+                'previsions': previsions,
+                }
