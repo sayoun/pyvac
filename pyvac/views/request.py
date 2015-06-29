@@ -390,7 +390,11 @@ class Prevision(View):
     Display future CP used per user
     """
     def render(self):
-        previsions = Request.get_previsions(self.session)
+        from datetime import datetime
+        today = datetime.now()
+        end_date = datetime(today.year, 10, 31)
+
+        previsions = Request.get_previsions(self.session, end_date)
 
         users_per_id = dict([(user.id, user)
                              for user in User.find(self.session)])
@@ -417,4 +421,6 @@ class Prevision(View):
                 'ldap_info': user_attr,
                 'users_teams': users_teams,
                 'previsions': previsions,
+                'today': today,
+                'end_date': end_date,
                 }

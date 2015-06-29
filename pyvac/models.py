@@ -760,8 +760,16 @@ class Request(Base):
                         order_by=cls.user_id)
 
     @classmethod
-    def get_previsions(cls, session):
+    def get_previsions(cls, session, end_date=None):
         """ Retrieve future validated requests per user """
+        end_statement = ''
+        if end_date:
+            end_statement = """
+                AND (date_from <= '%(end_date)s'
+                    OR (date_from > '%(end_date)s'
+                        AND date_to < '%(end_date)s'))
+            """ % {'end_date': end_date}
+
         future_requests = session.execute("""
             SELECT
                 request.user_id,
@@ -770,12 +778,14 @@ class Request(Base):
                 request
             INNER JOIN "user" on "user".id = request.user_id
             WHERE
-                date_from > NOW()
+                (date_from >= NOW()
+                    OR (date_from < NOW() AND date_to >= NOW()))
+                %s
                 AND vacation_type_id = 1
                 AND status='APPROVED_ADMIN'
             GROUP BY user_id
             ORDER BY user_id;
-            """)
+            """ % end_statement)
 
         ret = {}
         for user_id, total in future_requests:
