@@ -258,7 +258,7 @@ class WorkerDenied(BaseWorker):
         # send mail to user
         src = action_user.email
         dst = req.user.email
-        content = """You request has been refused for the following reason: %s
+        content = """Your request has been refused for the following reason: %s
 Request details: %s""" % (req.reason, req.summarymail)
         try:
             self.send_mail(sender=src, target=dst, request=req,
