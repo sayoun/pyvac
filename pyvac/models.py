@@ -928,3 +928,23 @@ class PasswordRecovery(Base):
         """
         from datetime import datetime
         return self.date_end < datetime.now()
+
+
+class Sudoer(Base):
+    """
+    To allow a user to have access to another user interface
+    """
+    source_id = Column(Integer, nullable=False)
+    target_id = Column(Integer, nullable=False)
+
+    @classmethod
+    def alias(cls, session, user):
+        targets = cls.find(session, where=(cls.source_id == user.id,))
+        if targets:
+            return [User.by_id(session, target.target_id)
+                    for target in targets]
+        return []
+
+    @classmethod
+    def list(cls, session):
+        return cls.find(session, order_by=cls.source_id)
