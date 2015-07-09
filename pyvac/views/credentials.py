@@ -10,7 +10,7 @@ from pyramid.security import remember, forget
 from pyramid.settings import asbool
 
 from pyvac.helpers.i18n import trans as _
-from pyvac.models import User, PasswordRecovery
+from pyvac.models import User, PasswordRecovery, Sudoer
 from pyvac.helpers.ldap import (
     UnknownLdapUser, LdapCache, hashPassword,
 )
@@ -50,6 +50,14 @@ class Login(View):
                     if user is not None:
                         log.info('login %r succeed' % user.login)
                         headers = remember(self.request, user.login)
+
+                        # check for available users for sudo
+                        sudoers = Sudoer.alias(self.session, user)
+                        if sudoers:
+                            location = route_url('sudo', self.request)
+                            return HTTPFound(location=location,
+                                             headers=headers)
+
                         return HTTPFound(location=came_from,
                                          headers=headers)
                     else:
