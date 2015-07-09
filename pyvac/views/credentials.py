@@ -171,3 +171,25 @@ class ChangePassword(View):
                     return HTTPFound(location=route_url('login', self.request))
 
         return {'user': entry.user}
+
+
+class Sudo(View):
+
+    def render(self):
+        req = self.request
+        if req.method == 'POST' and 'continue' in req.params:
+            headers = None
+            target_id = int(req.params.get('sudo', self.user.id))
+            if target_id != self.user.id:
+                target = User.by_id(self.session, target_id)
+                if not target:
+                    errors = ['Cannot find user with id %d' % target_id]
+                    self.request.session.flash('error;%s' % ','.join(errors))
+
+                log.info("user '%s' will sudo to user '%s'" %
+                         (self.user.login, target.login))
+                headers = remember(self.request, target.login)
+            return HTTPFound(location=route_url('home', self.request),
+                             headers=headers)
+
+        return {'user': self.user}
