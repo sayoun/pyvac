@@ -12,7 +12,7 @@ from pyramid.settings import asbool
 from pyvac.helpers.sqla import ModelError
 
 from .. import __version__
-from ..models import DBSession, User, Request
+from ..models import DBSession, User, Request, Sudoer
 
 
 log = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class ViewBase(object):
             # if isinstance(response, dict):
             #     log.info("rendering template with context %r", dict)
             self.session.flush()
-        except Exception, exc:
+        except Exception as exc:
             if self.on_error(exc):
                 log.error('Error on view %s' % self.__class__.__name__,
                           exc_info=True)
@@ -95,6 +95,12 @@ class View(ViewBase):
                         req_list['requests'].append(req)
 
                 global_['pyvac']['requests_count'] = len(req_list['requests'])
+
+                # retrieve available users for sudo
+                sudoers = Sudoer.alias(self.session, self.user)
+                if sudoers:
+                    sudoers.append(self.user)
+                global_['pyvac']['sudoers'] = sudoers
 
             response.update(global_)
 
@@ -204,8 +210,8 @@ class EditView(CreateView):
     """
 
     def get_model(self):
-        return self.model.by_id(self.session,
-                                int(self.request.matchdict[self.matchdict_key]))
+        return self.model.by_id(
+            self.session, int(self.request.matchdict[self.matchdict_key]))
 
 
 class DeleteView(RedirectView):
@@ -221,8 +227,8 @@ class DeleteView(RedirectView):
 
     def render(self):
 
-        model = self.model.by_id(self.session,
-                                 int(self.request.matchdict[self.matchdict_key]))
+        model = self.model.by_id(
+            self.session, int(self.request.matchdict[self.matchdict_key]))
 
         if 'form.submitted' in self.request.params:
             self.delete(model)
