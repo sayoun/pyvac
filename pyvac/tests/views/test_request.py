@@ -23,7 +23,10 @@ class RequestTestCase(case.ViewTestCase):
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
-        view = List(self.create_request())()
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
@@ -39,7 +42,10 @@ class RequestTestCase(case.ViewTestCase):
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
-        view = List(self.create_request())()
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
@@ -54,7 +60,10 @@ class RequestTestCase(case.ViewTestCase):
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
-        view = List(self.create_request())()
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
@@ -68,7 +77,10 @@ class RequestTestCase(case.ViewTestCase):
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
-        view = List(self.create_request())()
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(len(view[u'requests']), 1)

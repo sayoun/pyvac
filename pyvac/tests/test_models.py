@@ -56,7 +56,7 @@ class UserTestCase(ModelTestCase):
     def test_get_admin_by_country(self):
         from pyvac.models import User
         admin = User.get_admin_by_country(self.session, u'fr')
-        self.assertEqual(admin.name, u'admin')
+        self.assertEqual(admin.login, u'admin')
         self.assertEqual(admin.country, u'fr')
 
     def test_by_country(self):
@@ -108,7 +108,10 @@ class RequestTestCase(ModelTestCase):
     def test_by_manager(self):
         from pyvac.models import User, Request
         manager1 = User.by_login(self.session, u'manager1')
-        requests = Request.by_manager(self.session, manager1)
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            requests = Request.by_manager(self.session, manager1)
         self.assertEqual(len(requests), 5)
         # take the first
         request = requests.pop()
@@ -117,7 +120,10 @@ class RequestTestCase(ModelTestCase):
     def test_by_user(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        requests = Request.by_user(self.session, user1)
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            requests = Request.by_user(self.session, user1)
         self.assertEqual(len(requests), 5)
         # take the first
         request = requests[-1]
@@ -132,7 +138,10 @@ class RequestTestCase(ModelTestCase):
     def test_by_user_outdated(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        requests = Request.by_user(self.session, user1)
+        with freeze_time('2015-03-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            requests = Request.by_user(self.session, user1)
         self.assertEqual(len(requests), 5)
 
         outdated = Request.by_id(self.session, 7)
@@ -163,7 +172,10 @@ class RequestTestCase(ModelTestCase):
 
     def test_all_for_admin(self):
         from pyvac.models import Request
-        nb_requests = Request.all_for_admin(self.session, count=True)
+        with freeze_time('2014-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            nb_requests = Request.all_for_admin(self.session, count=True)
         self.assertEqual(nb_requests, 14)
 
     def test_in_conflict_manager(self):
@@ -264,3 +276,35 @@ class VacationTypeTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             self.assertEqual(sub.acquired(), 7)
+
+
+class SudoerTestCase(ModelTestCase):
+
+    def test_list(self):
+        from pyvac.models import Sudoer
+        sudoers = Sudoer.list(self.session)
+        self.assertEqual(len(sudoers), 1)
+        sudoer = sudoers[0]
+        self.assertIsInstance(sudoer, Sudoer)
+        self.assertEqual(sudoer.target_id, 1)
+        self.assertEqual(sudoer.source_id, 6)
+
+    def test_alias(self):
+        from pyvac.models import Sudoer
+        from pyvac.models import User
+        user = User.by_login(self.session, u'janedoe')
+        self.assertIsInstance(user, User)
+
+        sudoers = Sudoer.alias(self.session, user)
+        self.assertEqual(len(sudoers), 1)
+        sudoer = sudoers[0]
+        self.assertIsInstance(sudoer, User)
+
+    def test_alias_ko(self):
+        from pyvac.models import Sudoer
+        from pyvac.models import User
+        user = User.by_login(self.session, u'jdoe')
+        self.assertIsInstance(user, User)
+
+        sudoers = Sudoer.alias(self.session, user)
+        self.assertEqual(sudoers, [])

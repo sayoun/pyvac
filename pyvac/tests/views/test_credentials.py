@@ -47,3 +47,55 @@ class AccountTestCase(case.UnauthenticatedViewTestCase):
         request = self.create_request()
         view = Logout(request)()
         self.assertIsRedirect(view)
+
+
+class SudoTestCase(case.ViewTestCase):
+
+    def test_login_sudo_ok(self):
+        from pyvac.views.credentials import Login
+        request = self.create_request({'submit': u'1',
+                                       'login': u'janedoe',
+                                       'password': u'changeme',
+                                       })
+        view = Login(request)()
+        self.assertTrue(view.location.endswith('/sudo'))
+        self.assertIsRedirect(view)
+
+    def test_login_sudo_nope_ok(self):
+        from pyvac.views.credentials import Login
+        request = self.create_request({'submit': u'1',
+                                       'login': u'jdoe',
+                                       'password': u'changeme',
+                                       })
+        view = Login(request)()
+        self.assertFalse(view.location.endswith('/sudo'))
+        self.assertIsRedirect(view)
+
+    def test_sudo_view_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.views.credentials import Sudo
+        view = Sudo(self.create_request())()
+        self.assertEqual(set(view.keys()),
+                         set([u'user', 'pyvac']))
+        self.assertEqual(len(view[u'pyvac'][u'sudoers']), 2)
+
+    def test_sudo_continue_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True,
+                                           remember_result={'login': 'admin'})
+        from pyvac.views.credentials import Sudo
+        view = Sudo(self.create_request({'continue': u'1', 'sudo': 1},
+                                        post='blah'))()
+        self.assertTrue(view.location.endswith('/home'))
+        self.assertTrue(('login', 'admin') in view.headerlist)
+
+    def test_sudo_continue_self_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True,
+                                           remember_result={'login': 'admin'})
+        from pyvac.views.credentials import Sudo
+        view = Sudo(self.create_request({'continue': u'1', 'sudo': 6},
+                                        post='blah'))()
+        self.assertTrue(view.location.endswith('/home'))
+        self.assertFalse(('login', 'admin') in view.headerlist)

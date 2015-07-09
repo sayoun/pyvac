@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pyvac.models import (create_engine, dispose_engine, DBSession,
                           Group,
-                          User, Request, VacationType, Countries,
+                          User, Request, VacationType, Countries, Sudoer,
                           )
 from pyvac.bin.install import populate
 from .conf import settings
@@ -78,6 +78,10 @@ def setUpModule():
                  )
     user2.groups.append(user_group)
     session.add(user2)
+
+    session.flush()
+    sudoer = Sudoer(source_id=user2.id, target_id=1)
+    session.add(sudoer)
 
     date_from = datetime.strptime('10/04/2015', '%d/%m/%Y')
     date_to = datetime.strptime('14/04/2015', '%d/%m/%Y')
