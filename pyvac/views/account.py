@@ -121,7 +121,9 @@ class AccountMixin:
         if 'set_country' in r.params:
             _ct = r.params['set_country']
         else:
-            _ct = u'fr'
+            # country cannot be edited by user, only admin
+            # so default to logged user country
+            _ct = self.user.country
         country = Countries.by_name(self.session, _ct)
         account._country = country
 
