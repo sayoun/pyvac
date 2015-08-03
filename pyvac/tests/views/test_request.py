@@ -375,11 +375,15 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        view = Send(self.create_request({'days': 1,
-                                         'date_from': '05/05/2015 - 05/05/2015',
-                                         'type': '2',
-                                         'breakdown': 'AM',
-                                         }))()
+        with freeze_time('2015-09-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = Send(self.create_request({'days': 1,
+                                             'date_from': '05/05/2015 - 05/05/2015',
+                                             'type': '2',
+                                             'breakdown': 'AM',
+                                             }))()
+
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
@@ -440,7 +444,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
         User.get_rtt_usage = orig_get_rtt_usage
 
-    def test_post_send_rtt_usage_not_enought_ko(self):
+    def test_post_send_rtt_usage_not_enough_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
