@@ -1,3 +1,9 @@
+pyvac (1.5.0-12) unstable; urgency=medium
+
+  * Fixes bug with wrong country used during user edit profile process
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 03 Aug 2015 15:52:39 +0200
+
 pyvac (1.5.0-11) unstable; urgency=medium
 
   * Add new Sudo feature to allow a user to behave as another user
