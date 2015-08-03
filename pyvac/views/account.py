@@ -123,7 +123,10 @@ class AccountMixin:
         else:
             # country cannot be edited by user, only admin
             # so default to logged user country
-            _ct = self.user.country
+            if self.user:
+                _ct = self.user.country
+            else:
+                _ct = u'fr'
         country = Countries.by_name(self.session, _ct)
         account._country = country
 
