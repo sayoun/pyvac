@@ -62,6 +62,9 @@
             <td id="td_req_buttons_{{ req.id }}">
               {% if req.status != 'ERROR' %}
                   {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
+
+                    {# for admin+managers and for all requests but without user requests #}
+
                     <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
                     {% if pyvac.user.is_admin %}
                         {% if req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
@@ -82,15 +85,18 @@
                       </a>
                     {% endif %}
                   {% else %}
-                  {% if pyvac.user.is_admin and (req.user_id == pyvac.user.id) and (req.status == 'ACCEPTED_MANAGER') %}
-                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small">
-                        ACCEPT
+
+                    {# for normal users or user requests #}
+
+                    {% if pyvac.user.is_admin and (req.user_id == pyvac.user.id) and (req.status == 'ACCEPTED_MANAGER') %}
+                      <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small">
+                          ACCEPT
+                      </a>
+                    {% endif %}
+                    <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                    {% if not pyvac.user.is_admin and req.status in ['CANCELED', 'APPROVED_ADMIN', 'DENIED'] %}disabled="disabled"{% endif %}>
+                      CANCEL
                     </a>
-                  {% endif %}
-                  <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
-                  {% if req.status in ['CANCELED', 'APPROVED_ADMIN','DENIED'] %}disabled="disabled"{% endif %}>
-                    CANCEL
-                  </a>
                   {% endif %}
               {% else %}
               -
