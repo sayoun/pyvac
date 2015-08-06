@@ -1,3 +1,9 @@
+pyvac (1.5.0-13) unstable; urgency=medium
+
+  * Admin should be able to cancel his requests
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 06 Aug 2015 11:39:50 +0200
+
 pyvac (1.5.0-12) unstable; urgency=medium
 
   * Fixes bug with wrong country used during user edit profile process
