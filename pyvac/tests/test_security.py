@@ -11,9 +11,12 @@ class RootFactoryTestCase(UnauthenticatedViewTestCase):
                              ('Allow', u'admin', u'admin_view'),
                              ('Allow', u'admin', u'manager_view'),
                              ('Allow', u'admin', u'user_view'),
+                             ('Allow', u'admin', u'sudo_view'),
                              ('Allow', u'manager', u'manager_view'),
                              ('Allow', u'manager', u'user_view'),
-                             ('Allow', u'user', u'user_view')]))
+                             ('Allow', u'manager', u'sudo_view'),
+                             ('Allow', u'user', u'user_view'),
+                             ('Allow', u'sudoer', u'sudo_view')]))
 
 
 class GroupFinderTestCase(UnauthenticatedViewTestCase):
@@ -32,4 +35,3 @@ class GroupFinderTestCase(UnauthenticatedViewTestCase):
         from pyvac.security import groupfinder
         self.assertEqual(set(groupfinder(u'jdoe', self.create_request())),
                          set([u'user']))
-

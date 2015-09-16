@@ -16,6 +16,7 @@ def setUpModule():
     session = DBSession()
     user_group = Group.by_name(session, u'user')
     manager_group = Group.by_name(session, u'manager')
+    sudoer_group = Group.by_name(session, u'sudoer')
     common_password = u'changeme'
 
     cp_vacation = VacationType.by_name(session, u'CP')
@@ -77,6 +78,7 @@ def setUpModule():
                  _country=fr_country,
                  )
     user2.groups.append(user_group)
+    user2.groups.append(sudoer_group)
     session.add(user2)
 
     session.flush()

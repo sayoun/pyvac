@@ -45,7 +45,7 @@ class AccountTestCase(case.ViewTestCase):
 
         self.assertEqual(view['errors'], [])
         groups = [g for g in view['groups']]
-        self.assertEqual(len(groups), 3)
+        self.assertEqual(len(groups), 4)
         self.assertIsInstance(groups[0], Group)
         self.assertIsInstance(view['user'], User)
         self.assertIsNone(view['user'].id)
@@ -85,7 +85,7 @@ class AccountTestCase(case.ViewTestCase):
 
         self.assertEqual(view['errors'], [u'passwords do not match'])
         groups = [g for g in view['groups']]
-        self.assertEqual(len(groups), 3)
+        self.assertEqual(len(groups), 4)
         self.assertIsInstance(groups[0], Group)
         self.assertIsInstance(view['user'], User)
         self.assertIsNone(view['user'].id)
@@ -101,7 +101,7 @@ class AccountTestCase(case.ViewTestCase):
                               'managers', 'csrf_token', 'use_ldap']))
         self.assertEqual(view['errors'], [])
         groups = [g for g in view['groups']]
-        self.assertEqual(len(groups), 3)
+        self.assertEqual(len(groups), 4)
         self.assertIsInstance(groups[0], Group)
         self.assertIsInstance(view['user'], User)
         self.assertEqual(view['user'].id, self.account_id)

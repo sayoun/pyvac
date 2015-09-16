@@ -86,8 +86,8 @@ class SudoTestCase(case.ViewTestCase):
                                            remember_result={'login': 'admin'})
         from pyvac.views.credentials import Sudo
         view = Sudo(self.create_request({'continue': u'1', 'sudo': 1},
-                                        post='blah'))()
-        self.assertTrue(view.location.endswith('/home'))
+                                        post=u'blah'))()
+        self.assertTrue(view.location.endswith(u'/home'))
         self.assertTrue(('login', 'admin') in view.headerlist)
 
     def test_sudo_continue_self_ok(self):
