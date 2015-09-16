@@ -308,7 +308,9 @@ class User(Base):
                 for ugroup in user.groups:
                     exists.append(ugroup.id)
                     if ugroup.id not in group_ids:
-                        user.groups.remove(ugroup)
+                        # keep sudoer group info
+                        if ugroup.name != 'sudoer':
+                            user.groups.remove(ugroup)
 
                 for group_id in group_ids:
                     if group_id not in exists:
