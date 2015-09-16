@@ -10,6 +10,7 @@ from pyvac.models import (
     DBSession, Base, Permission, Group, User, VacationType, Countries,
 )
 
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
@@ -25,24 +26,32 @@ def populate(engine):
     user_perm = Permission(name=u'user_view')
     admin_perm = Permission(name=u'admin_view')
     manager_perm = Permission(name=u'manager_view')
+    sudo_perm = Permission(name=u'sudo_view')
     session.add(user_perm)
     session.add(admin_perm)
     session.add(manager_perm)
+    session.add(sudo_perm)
 
     admin_group = Group(name=u'admin')
     admin_group.permissions.append(user_perm)
     admin_group.permissions.append(admin_perm)
     admin_group.permissions.append(manager_perm)
+    admin_group.permissions.append(sudo_perm)
     session.add(admin_group)
 
     manager_group = Group(name=u'manager')
     manager_group.permissions.append(user_perm)
     manager_group.permissions.append(manager_perm)
+    manager_group.permissions.append(sudo_perm)
     session.add(manager_group)
 
     user_group = Group(name=u'user')
     user_group.permissions.append(user_perm)
     session.add(user_group)
+
+    sudoer_group = Group(name=u'sudoer')
+    sudoer_group.permissions.append(sudo_perm)
+    session.add(sudoer_group)
 
     vactype1 = VacationType(name=u'CP')
     session.add(vactype1)
