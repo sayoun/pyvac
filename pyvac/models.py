@@ -147,6 +147,10 @@ class User(Base):
         """ Check if user has admin rights """
         return self.role in ('manager',)
 
+    def is_sudoer(self, session):
+        """ Check if user has sudoer rights """
+        return Group.by_name(session, 'sudoer') in self.groups
+
     @property
     def manager_mail(self):
         """ Get manager email for a user """
