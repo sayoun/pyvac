@@ -184,6 +184,11 @@ class ChangePassword(View):
 class Sudo(View):
 
     def render(self):
+        if not self.user.is_sudoer(self.session):
+            log.info("user '%s' tried to access sudo but is not authorized" %
+                     self.user.login)
+            return HTTPFound(location=route_url('home', self.request))
+
         req = self.request
         if req.method == 'POST' and 'continue' in req.params:
             headers = None
