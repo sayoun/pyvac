@@ -94,7 +94,7 @@ def includeme(config):
     config.add_route('sudo', '/sudo')
     config.add_view(u'pyvac.views.credentials.Sudo',
                     route_name=u'sudo',
-                    permission=u'user_view',
+                    permission=u'sudo_view',
                     renderer='templates/sudo.html')
 
     # Home page
