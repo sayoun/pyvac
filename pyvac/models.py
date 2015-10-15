@@ -622,6 +622,18 @@ class Request(Base):
                         order_by=(cls.user_id, cls.date_from.desc()))
 
     @classmethod
+    def by_user_future(cls, session, user, count=None):
+        """
+        Get requests for given user in the future.
+        """
+        return cls.find(session,
+                        where=(cls.user_id == user.id,
+                               cls.status == 'APPROVED_ADMIN',
+                               cls.date_from >= datetime.now(),),
+                        count=count,
+                        order_by=(cls.user_id, cls.date_from.desc()))
+
+    @classmethod
     def by_status(cls, session, status, count=None, notified=False):
         """
         Get requests for given status.
