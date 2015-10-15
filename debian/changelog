@@ -1,3 +1,9 @@
+pyvac (1.5.0-15) unstable; urgency=medium
+
+  * Show the half-day leave in the summary
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 15 Oct 2015 17:34:59 +0200
+
 pyvac (1.5.0-14) unstable; urgency=medium
 
   * Add security checks and new permission for Sudo view
