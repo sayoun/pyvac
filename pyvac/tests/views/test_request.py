@@ -371,18 +371,19 @@ class RequestTestCase(case.ViewTestCase):
     def test_post_send_rtt_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
-        from pyvac.models import Request
+        from pyvac.models import Request, User
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        with freeze_time('2015-09-01',
+        with freeze_time('2015-10-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
-            view = Send(self.create_request({'days': 1,
-                                             'date_from': '05/05/2015 - 05/05/2015',
-                                             'type': '2',
-                                             'breakdown': 'AM',
-                                             }))()
+            request = self.create_request({'days': 1,
+                                           'date_from': '05/05/2015 - 05/05/2015',
+                                           'type': '2',
+                                           'breakdown': 'AM',
+                                           })
+            view = Send(request)()
 
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)

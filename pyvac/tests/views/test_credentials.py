@@ -83,7 +83,7 @@ class SudoTestCase(case.ViewTestCase):
     def test_sudo_continue_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True,
-                                           remember_result={'login': 'admin'})
+                                           remember_result={'login': u'admin'})
         from pyvac.views.credentials import Sudo
         view = Sudo(self.create_request({'continue': u'1', 'sudo': 1},
                                         post=u'blah'))()
