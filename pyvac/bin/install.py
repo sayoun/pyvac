@@ -57,6 +57,8 @@ def populate(engine):
     session.add(vactype1)
     vactype2 = VacationType(name=u'RTT')
     session.add(vactype2)
+    vactype3 = VacationType(name=u'Congé Parental')
+    session.add(vactype3)
 
     fr_country = Countries(name=u'fr')
     session.add(fr_country)
@@ -75,6 +77,12 @@ def populate(engine):
 
     # RTT only available for france
     vactype2.countries.append(fr_country)
+
+    # Parental vacation is available for everyone
+    vactype3.countries.append(fr_country)
+    vactype3.countries.append(lu_country)
+    vactype3.countries.append(us_country)
+    vactype3.countries.append(zh_country)
 
     common_password = u'changeme'
 
