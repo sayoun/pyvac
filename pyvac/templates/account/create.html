@@ -74,6 +74,19 @@
         {% endif %}
         {% endblock %}
 
+        {% if has_permission('admin_view') %}
+        <div class="control-group">
+            <label class="control-label">{% trans %}country:{% endtrans %}</label>
+            <div class="controls">
+            <select name="set_country">
+            {% for c in countries %}
+                <option  value="{{ c.name }}" {% if c.name == user.country %}selected="selected"{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+        {% endif %}
+
         {% if not use_ldap %}
             {% block groups %}
             {% if has_permission('admin_view') %}
@@ -118,17 +131,6 @@
             {% endblock %}
         {% else %}
             {% if has_permission('admin_view') %}
-                <div class="control-group">
-                    <label class="control-label">{% trans %}country:{% endtrans %}</label>
-                    <div class="controls">
-                    <select name="set_country">
-                    {% for c in countries %}
-                        <option  value="{{ c.name }}" {% if c.name == user.country %}selected="selected"{% endif %}>{{ c.name }}</option>
-                    {% endfor %}
-                     </select>
-                    </div>
-                </div>
-
                 <div class="control-group">
                     <label class="control-label">{% trans %}teams:{% endtrans %}</label>
                     <div class="controls">

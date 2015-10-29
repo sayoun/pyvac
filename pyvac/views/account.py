@@ -67,7 +67,8 @@ class AccountMixin:
 
         view['groups'] = Group.all(self.session, order_by=Group.name)
         view['managers'] = User.by_role(self.session, 'manager')
-
+        view['countries'] = Countries.all(self.session,
+                                          order_by=Countries.name)
         if ldap:
             ldap = LdapCache()
             login = self.get_model().login
@@ -89,8 +90,6 @@ class AccountMixin:
                     uteams.setdefault(member, []).append(team)
             view['user_teams'] = uteams.get(view['ldap_user'].get('dn'), [])
 
-            view['countries'] = Countries.all(self.session,
-                                              order_by=Countries.name)
             # generate a random password for the user, he must change it later
             password = randomstring()
             log.debug('temporary password generated: %s' % password)
