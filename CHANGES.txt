@@ -1,3 +1,9 @@
+1.7
+---
+
+- Add new vacation type: Recovery
+  * Work as others requests type but is excluded from export
+
 1.6
 ---
 
