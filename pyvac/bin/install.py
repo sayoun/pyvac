@@ -59,6 +59,8 @@ def populate(engine):
     session.add(vactype2)
     vactype3 = VacationType(name=u'Congé Parental')
     session.add(vactype3)
+    vactype4 = VacationType(name=u'Récupération')
+    session.add(vactype4)
 
     fr_country = Countries(name=u'fr')
     session.add(fr_country)
@@ -83,6 +85,12 @@ def populate(engine):
     vactype3.countries.append(lu_country)
     vactype3.countries.append(us_country)
     vactype3.countries.append(zh_country)
+
+    # Recovery is available for everyone
+    vactype4.countries.append(fr_country)
+    vactype4.countries.append(lu_country)
+    vactype4.countries.append(us_country)
+    vactype4.countries.append(zh_country)
 
     common_password = u'changeme'
 
