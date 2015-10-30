@@ -1,3 +1,26 @@
+1.6
+---
+
+- Add Sudo feature to enable a user to have access to another user account:
+  * New Sudoer table
+  * Login will redirect to Sudo view if sudoers available for logged user
+  * Sudo view is restricted by user permissions
+  * Update install script to initialize DB with new sudo permissions
+- Improve logging in worker and various helper: request actions, mail sent and calendar add.
+- Creating a request using admin sudo option now also add request to calendar.
+- Managers can now see deposit date when the request has been created.
+- Admins are now able to cancel their requests
+- Update export page so you can export for all months of current year
+- Add new view "Prevision" for admins to see all future approved CP vacation per user for date < 31/10
+- Admins can now edit country of users even when not using LDAP
+- Fixes issue #7: Display detail on request page list for half-day leaves.
+- Fixes bug: wrong country used during user edit profile process
+- Fixes bug: RTT usage to take count of all states.
+- Fixes bug: RTT allowed compute must take count of user creation date (arrival).
+- Fixes bug: Add delay to async worker call to avoid race condition when DB is not updated yet.
+- Fixes bug: Do not raise a Traceback when session expired upon country retrieval
+- Fixes bug: Add missing parental vacation to install script
+
 1.5
 ---
 
