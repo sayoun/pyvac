@@ -745,6 +745,8 @@ class Request(Base):
     def get_by_month(cls, session, country, month, year):
         """
         Get all requests for a given month.
+
+        Exclude Recovery requests from result.
         """
         from calendar import monthrange
 
@@ -776,7 +778,8 @@ class Request(Base):
                                and_(cls.date_from <= last_month_date,
                                     cls.date_to >= last_month_date)),
                                User.country_id == country_id,
-                               cls.status == 'APPROVED_ADMIN',),
+                               cls.status == 'APPROVED_ADMIN',
+                               cls.vacation_type_id != 4,),
                         order_by=cls.user_id)
 
     @classmethod
