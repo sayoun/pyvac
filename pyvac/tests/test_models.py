@@ -112,7 +112,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_manager(self.session, manager1)
-        self.assertEqual(len(requests), 5)
+        self.assertEqual(len(requests), 6)
         # take the first
         request = requests.pop()
         self.assertIsInstance(request, Request)
@@ -124,7 +124,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 5)
+        self.assertEqual(len(requests), 6)
         # take the first
         request = requests[-1]
         self.assertIsInstance(request, Request)
@@ -142,7 +142,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 5)
+        self.assertEqual(len(requests), 6)
 
         outdated = Request.by_id(self.session, 7)
         self.assertIsInstance(outdated, Request)
@@ -176,7 +176,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 14)
+        self.assertEqual(nb_requests, 15)
 
     def test_in_conflict_manager(self):
         from pyvac.models import Request
@@ -227,7 +227,7 @@ class VacationTypeTestCase(ModelTestCase):
         from pyvac.models import User, VacationType
         manager3 = User.by_login(self.session, u'manager3')
         vac_types = VacationType.by_country(self.session, manager3.country)
-        self.assertEqual(len(vac_types), 1)
+        self.assertEqual(len(vac_types), 3)
         # take the first
         vac_type = vac_types.pop()
         self.assertIsInstance(vac_type, VacationType)

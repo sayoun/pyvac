@@ -23,6 +23,7 @@ def populate(engine):
     cp = VacationType.by_id(session, 1)
     rtt = VacationType.by_id(session, 2)
     parent = VacationType.by_id(session, 3)
+    recovery = VacationType.by_id(session, 4)
 
     fr_country = Countries.by_name(session, u'fr')
     session.add(fr_country)
@@ -47,6 +48,12 @@ def populate(engine):
     parent.countries.append(lu_country)
     parent.countries.append(us_country)
     parent.countries.append(zh_country)
+
+    # recovery is available for everyone
+    recovery.countries.append(fr_country)
+    recovery.countries.append(lu_country)
+    recovery.countries.append(us_country)
+    recovery.countries.append(zh_country)
 
     session.commit()
 

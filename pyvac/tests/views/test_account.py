@@ -41,7 +41,8 @@ class AccountTestCase(case.ViewTestCase):
         view = Create(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set(['errors', 'groups', 'pyvac', 'user',
-                              'managers', 'csrf_token', 'use_ldap']))
+                              'managers', 'csrf_token', 'use_ldap',
+                              'countries']))
 
         self.assertEqual(view['errors'], [])
         groups = [g for g in view['groups']]
@@ -81,7 +82,8 @@ class AccountTestCase(case.ViewTestCase):
                                            }))()
         self.assertEqual(set(view.keys()),
                          set(['errors', 'groups', 'pyvac', 'user',
-                              'managers', 'csrf_token', 'use_ldap']))
+                              'managers', 'csrf_token', 'use_ldap',
+                              'countries']))
 
         self.assertEqual(view['errors'], [u'passwords do not match'])
         groups = [g for g in view['groups']]
@@ -98,7 +100,8 @@ class AccountTestCase(case.ViewTestCase):
                                                    }))()
         self.assertEqual(set(view.keys()),
                          set(['errors', 'groups', 'pyvac', 'user',
-                              'managers', 'csrf_token', 'use_ldap']))
+                              'managers', 'csrf_token', 'use_ldap',
+                              'countries']))
         self.assertEqual(view['errors'], [])
         groups = [g for g in view['groups']]
         self.assertEqual(len(groups), 4)

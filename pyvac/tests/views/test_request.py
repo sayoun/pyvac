@@ -33,8 +33,9 @@ class RequestTestCase(case.ViewTestCase):
             1: u'Jane Doe: 10/04/2015 - 21/04/2015',
             2: u'John Doe: 10/04/2015 - 14/04/2015',
             3: u'Third Manager: 24/04/2015 - 28/04/2015'})
+
         self.assertEqual(len(view[u'conflicts']), 3)
-        self.assertEqual(len(view[u'requests']), 6)
+        self.assertEqual(len(view[u'requests']), 7)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager1_ok(self):
@@ -52,7 +53,7 @@ class RequestTestCase(case.ViewTestCase):
             1: u'Jane Doe: 10/04/2015 - 21/04/2015',
             3: u'Third Manager: 24/04/2015 - 28/04/2015'})
         self.assertEqual(len(view[u'conflicts']), 2)
-        self.assertEqual(len(view[u'requests']), 5)
+        self.assertEqual(len(view[u'requests']), 6)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager2_ok(self):
