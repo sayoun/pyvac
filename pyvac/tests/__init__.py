@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 
 from pyvac.models import (create_engine, dispose_engine, DBSession,
@@ -21,6 +22,7 @@ def setUpModule():
 
     cp_vacation = VacationType.by_name(session, u'CP')
     rtt_vacation = VacationType.by_name(session, u'RTT')
+    recovery_vacation = VacationType.by_name(session, u'Récupération')
 
     fr_country = Countries.by_name(session, u'fr')
     us_country = Countries.by_name(session, u'us')
@@ -198,6 +200,17 @@ def setUpModule():
                     user=user1,
                     notified=True)
     session.add(req10)
+
+    date_from = datetime.strptime('01/06/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('02/06/2016', '%d/%m/%Y')
+    req11 = Request(date_from=date_from,
+                    date_to=date_to,
+                    days=1,
+                    vacation_type=recovery_vacation,
+                    status=u'APPROVED_ADMIN',
+                    user=user1,
+                    notified=True)
+    session.add(req11)
 
     session.commit()
 
