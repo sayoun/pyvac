@@ -13,7 +13,8 @@ with open(os.path.join(here, 'pyvac', '__init__.py')) as v_file:
                          re.S).match(v_file.read()).group(1)
 
 requires = [
-    'pyramid',
+    'pyramid <= 1.4',
+    'PasteDeploy >= 1.5.0',
     'SQLAlchemy',
 
     'pyramid_jinja2',
@@ -29,15 +30,23 @@ requires = [
     'cryptacular',
     'passlib',
 
-    'caldav',
+    'caldav < 0.2',
     'icalendar',
     'python-ldap',
 
     'psycopg2',
+    'waitress',
+    'translationstring==1.1',
 ]
 
+tests_require = ['nose', 'mock', 'tox', 'freezegun']
 if sys.version_info[:2] < (2, 7):
     requires.extend(['logutils'])
+    tests_require += ['unittest2']
+
+extras_require = {
+    'test': tests_require,
+}
 
 data_files = []
 
@@ -59,6 +68,8 @@ setup(name='pyvac',
       zip_safe=False,
       test_suite='pyvac',
       install_requires=requires,
+      tests_require=tests_require,
+      extras_require=extras_require,
       entry_points="""\
       [paste.app_factory]
       main = pyvac:main
@@ -69,6 +80,5 @@ setup(name='pyvac',
       pyvac_import = pyvac.bin.importldap:main
       pyvac_replay = pyvac.bin.replay:main
       """,
-      paster_plugins=['pyramid'],
       data_files=data_files,
       )
