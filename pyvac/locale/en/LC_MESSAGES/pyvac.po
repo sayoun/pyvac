@@ -24,3 +24,7 @@ msgstr "Paid Leave"
 #: pyvac/views/__init__.py
 msgid "Congé Parental"
 msgstr "Pregnancy"
+
+#: pyvac/views/__init__.py
+msgid "Récupération"
+msgstr "Recovery"
