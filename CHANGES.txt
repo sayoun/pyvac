@@ -1,3 +1,15 @@
+1.5
+---
+
+- Disable PENDING reminder mail for managers.
+- Update Export view to work with multiple years.
+- Request canceling is now only available for unconsumed requests.
+- Improve Account list view to add table sorting
+- LDAP: Fix syncing problem when deleting/editing a user
+- LDAP: User creation/edition now allow teams assignment
+- LDAP: Better handling of attributes for teams
+- LDAP: Conflict are now based on user's team(s), not on user's manager
+
 1.4
 ---
 
