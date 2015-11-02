@@ -35,8 +35,9 @@ requires = [
     'python-ldap',
 
     'psycopg2',
-    'waitress',
     'translationstring==1.1',
+    # dev only
+    # 'waitress',
 ]
 
 tests_require = ['nose', 'mock', 'tox', 'freezegun']
