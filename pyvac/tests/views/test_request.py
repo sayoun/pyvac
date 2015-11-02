@@ -376,7 +376,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        with freeze_time('2015-10-01',
+        with freeze_time('2016-10-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             request = self.create_request({'days': 1,
