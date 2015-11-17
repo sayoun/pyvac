@@ -1,3 +1,9 @@
+pyvac (1.6.0-3) unstable; urgency=medium
+
+  * Update translations
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 17 Nov 2015 13:21:50 +0100
+
 pyvac (1.6.0-2) unstable; urgency=medium
 
   * Fix debian packaging: waitress
