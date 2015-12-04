@@ -131,11 +131,12 @@ function DateDiff(date1, date2) {
       minDate: {% if pyvac.user.is_admin %}-30{% else %}0{% endif %},
 
     beforeShowDay: function ( date ) {
-        /* do not select weekend days */
         var date_class = ''
         if (holidays.indexOf(date.getTime()) != -1) {
-          date_class = 'date-range-holiday';
+           date_class = 'date-range-holiday';
+           return [false, date_class];
         }
+        /* do not select weekend days */
         var day = date.getDay();
         var isWeekend = (day == 6) || (day == 0);
         if (isWeekend)
