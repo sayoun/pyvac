@@ -31,6 +31,20 @@ class HomeTestCase(case.ViewTestCase):
                               u'pyvac', u'holidays', u'sudo_users']))
         self.assertEqual(len(view[u'types']), 3)
 
+    def test_render_holiday_ok(self):
+        self.config.testing_securitypolicy(userid=u'manager2',
+                                           permissive=True)
+        from pyvac.views import Home
+        with freeze_time('2015-12-25',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            view = Home(self.create_request())()
+        self.assertEqual(set(view.keys()),
+                         set([u'matched_route', u'types', u'csrf_token',
+                              u'pyvac', u'holidays', u'sudo_users']))
+        self.assertEqual(len(view[u'types']), 4)
+        self.assertEqual(len(view[u'holidays']), 22)
+
     def test_render_user_rtt_ok(self):
         self.config.testing_securitypolicy(userid=u'jdoe',
                                            permissive=True)

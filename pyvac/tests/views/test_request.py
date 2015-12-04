@@ -277,7 +277,8 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'date_from': '15/05/2015 - 10/05/2015'}))()
+        view = Send(self.create_request({
+            'date_from': '15/05/2015 - 10/05/2015'}))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
@@ -287,11 +288,12 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2015 - 10/05/2015',
-                                         'type': '1',
-                                         'breakdown': 'FULL',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 4,
+            'date_from': '05/05/2015 - 10/05/2015',
+            'type': '1',
+            'breakdown': 'FULL',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
@@ -301,11 +303,12 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'days': 0.5,
-                                         'date_from': '05/05/2015 - 05/05/2015',
-                                         'type': '1',
-                                         'breakdown': 'AM',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 0.5,
+            'date_from': '05/05/2015 - 05/05/2015',
+            'type': '1',
+            'breakdown': 'AM',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
@@ -315,12 +318,13 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request, User
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2015 - 10/05/2015',
-                                         'type': '1',
-                                         'breakdown': 'FULL',
-                                         'sudo_user': '-1',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 4,
+            'date_from': '05/05/2015 - 10/05/2015',
+            'type': '1',
+            'breakdown': 'FULL',
+            'sudo_user': '-1',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
@@ -335,12 +339,13 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request, User
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2015 - 10/05/2015',
-                                         'type': '1',
-                                         'breakdown': 'FULL',
-                                         'sudo_user': '2',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 4,
+            'date_from': '05/05/2015 - 10/05/2015',
+            'type': '1',
+            'breakdown': 'FULL',
+            'sudo_user': '2',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
@@ -355,12 +360,13 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request, User
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        view = Send(self.create_request({'days': 4,
-                                         'date_from': '05/05/2015 - 10/05/2015',
-                                         'type': '1',
-                                         'breakdown': 'FULL',
-                                         'sudo_user': '200',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 4,
+            'date_from': '05/05/2015 - 10/05/2015',
+            'type': '1',
+            'breakdown': 'FULL',
+            'sudo_user': '200',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
@@ -369,21 +375,69 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)
 
-    def test_post_send_rtt_ok(self):
+    def test_post_send_rtt_holiday_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
-        from pyvac.models import Request, User
+        from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
         with freeze_time('2016-10-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
-            request = self.create_request({'days': 1,
-                                           'date_from': '05/05/2015 - 05/05/2015',
-                                           'type': '2',
-                                           'breakdown': 'AM',
-                                           })
+            request = self.create_request({
+                'days': 5,
+                'date_from': '11/07/2016 - 15/07/2016',
+                'type': '2',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.status, u'PENDING')
+        self.assertEqual(last_req.days, 4.0)
+
+    def test_post_send_holiday_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '11/11/2015 - 11/11/2015',
+                'type': '1',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = ['error;Invalid value for days.']
+        self.assertEqual(request.session.pop_flash(), expected)
+
+    def test_post_send_rtt_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2016-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '05/05/2015 - 05/05/2015',
+                'type': '2',
+                'breakdown': 'AM',
+            })
             view = Send(request)()
 
         self.assertIsRedirect(view)
@@ -406,11 +460,12 @@ class RequestTestCase(case.ViewTestCase):
         rtt_data = user.get_rtt_usage(self.session)
         self.assertIsNone(rtt_data)
 
-        view = Send(self.create_request({'days': 1,
-                                         'date_from': '05/05/2015 - 05/05/2015',
-                                         'type': '2',
-                                         'breakdown': 'AM',
-                                         }))()
+        view = Send(self.create_request({
+            'days': 1,
+            'date_from': '05/05/2015 - 05/05/2015',
+            'type': '2',
+            'breakdown': 'AM',
+        }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         User.get_rtt_usage = orig_get_rtt_usage
