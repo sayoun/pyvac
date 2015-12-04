@@ -34,6 +34,8 @@ requires = [
     'icalendar',
     'python-ldap',
 
+    'workalendar',
+
     'psycopg2',
     'translationstring==1.1',
     # dev only

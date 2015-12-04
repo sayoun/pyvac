@@ -11,3 +11,4 @@ pyramid_jinja2 python-pyramid-jinja2
 PasteScript python-pastescript (>= 1.7.5)
 passlib python-passlib
 caldav python-caldav
+workalendar python-workalendar
