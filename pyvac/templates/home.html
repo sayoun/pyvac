@@ -162,6 +162,19 @@ function DateDiff(date1, date2) {
         return [true, date_class];
        },
 
+    onChangeMonthYear: function( year, month, inst ) {
+
+          // retrieve holidays value for the current display year and the next
+          $.ajax({
+              url: "{{ route_url('list_holiday') }}",
+              type: 'post',
+              data: {'year': year},
+              success: function(data) {
+                  holidays = data;
+              }
+          });
+    },
+
     onSelect: function ( dateText, inst ) {
           var d1, d2;
 
