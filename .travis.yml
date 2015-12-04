@@ -6,6 +6,7 @@ python:
 install:
     - 'pip install -e ".[test]"'
     - 'pip install coveralls'
+    - 'pip install workalendar'
 script:
     - "python ./setup.py nosetests"
 after_success:
