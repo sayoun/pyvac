@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from .base import RedirectView
 from pyvac.models import VacationType, User
+from pyvac.helpers.holiday import get_holiday
 
 
 class Index(RedirectView):
@@ -19,7 +20,9 @@ class Home(RedirectView):
 
         self.user.rtt = self.user.get_rtt_usage(self.session)
 
-        ret_dict = {'types': [], 'holidays': [], 'sudo_users': []}
+        holidays = get_holiday(self.user)
+
+        ret_dict = {'types': [], 'holidays': holidays, 'sudo_users': []}
 
         vacation_types = VacationType.by_country(self.session,
                                                  self.user.country)
