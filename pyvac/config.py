@@ -204,3 +204,10 @@ def includeme(config):
                     route_name=u'prevision_request',
                     renderer=u'templates/request/prevision.html',
                     permission=u'admin_view')
+
+    # Holiday request
+    config.add_route('list_holiday', u'/pyvac/list_holiday',
+                     request_method=u'POST')
+    config.add_view(u'pyvac.views.holiday.List',
+                    route_name=u'list_holiday',
+                    renderer='json')
