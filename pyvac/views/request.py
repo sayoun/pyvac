@@ -12,6 +12,7 @@ from pyvac.models import Request, VacationType, User
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.holiday import get_holiday
 
 import yaml
 try:
@@ -41,8 +42,13 @@ class Send(View):
             date_from = datetime.strptime(dates[0], '%d/%m/%Y')
             date_to = datetime.strptime(dates[1], '%d/%m/%Y')
 
+            # retrieve holidays for user so we can remove them from selection
+            holidays = get_holiday(self.user, year=date_from.year,
+                                   use_datetime=True)
+
             days = float(len([d for d in daterange(date_from, date_to)
-                              if d.isoweekday() not in [6, 7]]))
+                              if d.isoweekday() not in [6, 7]
+                              and d not in holidays]))
 
             days_diff = (date_to - date_from).days
             if days_diff < 0:
