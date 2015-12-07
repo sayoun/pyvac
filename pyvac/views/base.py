@@ -54,6 +54,8 @@ class ViewBase(object):
                 log.error('Error on view %s' % self.__class__.__name__,
                           exc_info=True)
                 raise
+
+        log.info('view %s dispatched', self.__class__.__name__)
         return response
 
     def render(self):
