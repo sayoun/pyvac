@@ -545,11 +545,11 @@ class Request(Base):
     vacation_type = relationship(VacationType, backref='requests')
 
     status = Column(Enum('PENDING',
-                    'ACCEPTED_MANAGER',
-                    'DENIED',
-                    'APPROVED_ADMIN',
-                    'CANCELED',
-                    'ERROR',
+                         'ACCEPTED_MANAGER',
+                         'DENIED',
+                         'APPROVED_ADMIN',
+                         'CANCELED',
+                         'ERROR',
                     name='enum_request_status'),
                     nullable=False, default='PENDING')
     # why this request
