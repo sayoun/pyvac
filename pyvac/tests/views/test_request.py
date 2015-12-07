@@ -30,9 +30,9 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            1: u'Jane Doe: 10/04/2015 - 21/04/2015',
-            2: u'John Doe: 10/04/2015 - 14/04/2015',
-            3: u'Third Manager: 24/04/2015 - 28/04/2015'})
+            1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
+            2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'},
+            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'}})
 
         self.assertEqual(len(view[u'conflicts']), 3)
         self.assertEqual(len(view[u'requests']), 7)
@@ -50,8 +50,8 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            1: u'Jane Doe: 10/04/2015 - 21/04/2015',
-            3: u'Third Manager: 24/04/2015 - 28/04/2015'})
+            1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
+            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 2)
         self.assertEqual(len(view[u'requests']), 6)
         self.assertIsInstance(view[u'requests'][0], Request)
@@ -68,7 +68,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
-            2: u'John Doe: 10/04/2015 - 14/04/2015'})
+            2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 1)
         self.assertEqual(len(view[u'requests']), 1)
         self.assertIsInstance(view[u'requests'][0], Request)
