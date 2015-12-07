@@ -155,6 +155,49 @@ class List(View):
     """
     List all user requests
     """
+
+    def get_conflict(self, requests):
+        """ Returns requests conflicts """
+        conflicts = {}
+        for req in requests:
+            req.conflict = [req2.summary for req2 in
+                            Request.in_conflict_ou(self.session, req)]
+            if req.conflict:
+                req.conflict = {'': req.conflict}
+                if req.id not in conflicts:
+                    conflicts[req.id] = {}
+                conflicts[req.id][''] = '\n'.join(req.conflict[''])
+
+        return conflicts
+
+    def get_conflict_by_teams(self, requests, users_teams):
+        """ Returns requests conflicts by teams """
+        conflicts = {}
+        for req in requests:
+            user_teams = users_teams.get(req.user.dn, [])
+            matched = {}
+            # for all requests in conflict with current req
+            for req2 in Request.in_conflict(self.session, req):
+                # if we have some match between request teams
+                # and conflicting request teams
+                conflict_teams = users_teams.get(req2.user.dn, [])
+                common_set = set(conflict_teams) & set(user_teams)
+                if common_set:
+                    for team in common_set:
+                        if team not in matched:
+                            matched[team] = []
+                        matched[team].append(req2.summary)
+
+            req.conflict = matched
+            if req.conflict:
+                for team in req.conflict:
+                    if req.id not in conflicts:
+                        conflicts[req.id] = {}
+                    conflicts[req.id][team] = ('\n'.join([team] +
+                                               req.conflict[team]))
+
+        return conflicts
+
     def render(self):
 
         req_list = {'requests': [], 'conflicts': {}}
@@ -173,6 +216,7 @@ class List(View):
         elif self.user.is_super:
             requests = Request.by_manager(self.session, self.user)
 
+        # only retrieve conflicts for super users
         if requests and self.user.is_super:
             conflicts = {}
 
@@ -188,37 +232,9 @@ class List(View):
                     for member in members:
                         users_teams.setdefault(member, []).append(team)
 
-                for req in requests:
-                    user_teams = users_teams.get(req.user.dn, [])
-                    matched = {}
-                    # for all requests in conflict with current req
-                    for req2 in Request.in_conflict(self.session, req):
-                        # if we have some match between request teams
-                        # and conflicting request teams
-                        conflict_teams = users_teams.get(req2.user.dn, [])
-                        common_set = set(conflict_teams) & set(user_teams)
-                        if common_set:
-                            for team in common_set:
-                                if team not in matched:
-                                    matched[team] = []
-                                matched[team].append(req2.summary)
-
-                    req.conflict = matched
-                    if req.conflict:
-                        for team in req.conflict:
-                            if req.id not in conflicts:
-                                conflicts[req.id] = {}
-                            conflicts[req.id][team] = ('\n'.join([team] +
-                                                       req.conflict[team]))
+                conflicts = self.get_conflict_by_teams(requests, users_teams)
             else:
-                for req in requests:
-                    req.conflict = [req2.summary for req2 in
-                                    Request.in_conflict_ou(self.session, req)]
-                    if req.conflict:
-                        req.conflict = {'': req.conflict}
-                        if req.id not in conflicts:
-                            conflicts[req.id] = {}
-                        conflicts[req.id][''] = '\n'.join(req.conflict[''])
+                conflicts = self.get_conflict(requests)
 
             req_list['requests'] = requests
             req_list['conflicts'] = conflicts
