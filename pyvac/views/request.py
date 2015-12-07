@@ -216,8 +216,27 @@ class List(View):
         elif self.user.is_super:
             requests = Request.by_manager(self.session, self.user)
 
+        req_list['requests'] = requests
+
+        # always add our requests
+        for req in Request.by_user(self.session, self.user):
+            if req not in req_list['requests']:
+                req_list['requests'].append(req)
+
+        # split requests by past/next
+        today = datetime.now()
+        past_req = [req for req in req_list['requests']
+                    if req.date_to < today]
+
+        next_req = [req for req in req_list['requests']
+                    if req not in past_req]
+
+        req_list['past'] = past_req
+        req_list['next'] = next_req
+
         # only retrieve conflicts for super users
-        if requests and self.user.is_super:
+        # only retrieve conflicts for next requests, not past ones
+        if req_list['next'] and self.user.is_super:
             conflicts = {}
 
             settings = self.request.registry.settings
@@ -232,17 +251,12 @@ class List(View):
                     for member in members:
                         users_teams.setdefault(member, []).append(team)
 
-                conflicts = self.get_conflict_by_teams(requests, users_teams)
+                conflicts = self.get_conflict_by_teams(req_list['next'],
+                                                       users_teams)
             else:
-                conflicts = self.get_conflict(requests)
+                conflicts = self.get_conflict(req_list['next'])
 
-            req_list['requests'] = requests
             req_list['conflicts'] = conflicts
-
-        # always add our requests
-        for req in Request.by_user(self.session, self.user):
-            if req not in req_list['requests']:
-                req_list['requests'].append(req)
 
         return req_list
 
