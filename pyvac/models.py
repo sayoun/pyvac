@@ -152,6 +152,11 @@ class User(Base):
         return Group.by_name(session, 'sudoer') in self.groups
 
     @property
+    def has_no_role(self):
+        """ Check if user has no specific rights """
+        return self.role in ('user',)
+
+    @property
     def manager_mail(self):
         """ Get manager email for a user """
         if not self.ldap_user:
