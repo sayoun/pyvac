@@ -32,10 +32,11 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(view[u'conflicts'], {
             1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
             2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'},
-            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'}})
-
-        self.assertEqual(len(view[u'conflicts']), 3)
-        self.assertEqual(len(view[u'requests']), 7)
+            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'},
+            12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
+                     u'Jane Doe: 10/04/2015 - 21/04/2015'}})
+        self.assertEqual(len(view[u'conflicts']), 4)
+        self.assertEqual(len(view[u'requests']), 8)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager1_ok(self):
@@ -51,9 +52,11 @@ class RequestTestCase(case.ViewTestCase):
                          set([u'conflicts', u'requests', 'pyvac']))
         self.assertEqual(view[u'conflicts'], {
             1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
-            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'}})
-        self.assertEqual(len(view[u'conflicts']), 2)
-        self.assertEqual(len(view[u'requests']), 6)
+            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'},
+            12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
+                     u'Jane Doe: 10/04/2015 - 21/04/2015'}})
+        self.assertEqual(len(view[u'conflicts']), 3)
+        self.assertEqual(len(view[u'requests']), 7)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager2_ok(self):
