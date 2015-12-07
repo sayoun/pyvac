@@ -3,6 +3,7 @@
 
 - Add new vacation type: Recovery
   * Work as others requests type but is excluded from export
+- Fixes bug: conflicts were not working properly in non LDAP mode
 
 1.6
 ---
