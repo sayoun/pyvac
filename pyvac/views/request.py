@@ -215,7 +215,10 @@ class List(View):
                     req.conflict = [req2.summary for req2 in
                                     Request.in_conflict_ou(self.session, req)]
                     if req.conflict:
-                        conflicts[req.id] = '\n'.join(req.conflict)
+                        req.conflict = {'': req.conflict}
+                        if req.id not in conflicts:
+                            conflicts[req.id] = {}
+                        conflicts[req.id][''] = '\n'.join(req.conflict[''])
 
             req_list['requests'] = requests
             req_list['conflicts'] = conflicts
