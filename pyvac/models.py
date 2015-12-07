@@ -657,7 +657,8 @@ class Request(Base):
                         where=(cls.status != 'CANCELED',
                                cls.date_from >= date_limit,),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def all_for_admin_per_country(cls, session, country, count=None):
@@ -674,7 +675,8 @@ class Request(Base):
                                cls.date_from >= date_limit,
                                ),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict_manager(cls, session, req, count=None):
@@ -697,7 +699,8 @@ class Request(Base):
                                User.manager_dn == req.user.manager_dn,
                                cls.id != req.id),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict_ou(cls, session, req, count=None):
@@ -720,7 +723,8 @@ class Request(Base):
                                User.ou == req.user.ou,
                                cls.id != req.id),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict(cls, session, req, count=None):
