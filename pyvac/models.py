@@ -614,8 +614,8 @@ class Request(Base):
         """
         Get requests for given user.
         """
-        # we only want to display less than 3 months data
-        date_limit = datetime.now() - timedelta(days=90)
+        # we only want to display less than 1 year data
+        date_limit = datetime.now() - timedelta(days=366)
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED',
