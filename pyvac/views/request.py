@@ -173,7 +173,7 @@ class List(View):
         elif self.user.is_super:
             requests = Request.by_manager(self.session, self.user)
 
-        if requests:
+        if requests and self.user.is_super:
             conflicts = {}
 
             settings = self.request.registry.settings
