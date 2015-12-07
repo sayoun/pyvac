@@ -120,7 +120,7 @@ class RequestTestCase(ModelTestCase):
     def test_by_user(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        with freeze_time('2015-03-01',
+        with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
@@ -138,7 +138,7 @@ class RequestTestCase(ModelTestCase):
     def test_by_user_outdated(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        with freeze_time('2015-03-01',
+        with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)

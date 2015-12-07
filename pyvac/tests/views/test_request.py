@@ -28,7 +28,8 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', 'pyvac']))
+                         set([u'conflicts', u'requests', u'pyvac',
+                              u'next', u'past']))
         self.assertEqual(view[u'conflicts'], {
             1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
             2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'},
@@ -49,7 +50,8 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', 'pyvac']))
+                         set([u'conflicts', u'requests', u'pyvac',
+                              u'next', u'past']))
         self.assertEqual(view[u'conflicts'], {
             1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
             3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'},
@@ -69,7 +71,8 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', 'pyvac']))
+                         set([u'conflicts', u'requests', u'pyvac',
+                              u'next', u'past']))
         self.assertEqual(view[u'conflicts'], {
             2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 1)
@@ -86,7 +89,8 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', 'pyvac']))
+                         set([u'conflicts', u'requests', u'pyvac',
+                              u'next', u'past']))
         self.assertEqual(len(view[u'requests']), 1)
         self.assertIsInstance(view[u'requests'][0], Request)
 
