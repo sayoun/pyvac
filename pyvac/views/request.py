@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from .base import View
 
@@ -12,6 +12,7 @@ from pyvac.models import Request, VacationType, User
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
+from pyvac.helpers.util import daterange
 
 import yaml
 try:
@@ -20,11 +21,6 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 log = logging.getLogger(__name__)
-
-
-def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days + 1)):
-        yield start_date + timedelta(n)
 
 
 class Send(View):

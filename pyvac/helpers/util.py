@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ldap import dn
+from datetime import timedelta
 
 
 def flash_type(message):
@@ -47,3 +48,8 @@ def extract_cn(user_dn):
                 return rdn[1]
     except Exception:
         return user_dn
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days + 1)):
+        yield start_date + timedelta(n)
