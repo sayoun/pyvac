@@ -429,6 +429,29 @@ class RequestTestCase(case.ViewTestCase):
         expected = ['error;Invalid value for days.']
         self.assertEqual(request.session.pop_flash(), expected)
 
+    def test_post_send_overlap_ko(self):
+        self.config.testing_securitypolicy(userid=u'manager3',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-04-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 8,
+                'date_from': '22/04/2015 - 30/04/2015',
+                'type': '1',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = ['error;Invalid period: days already requested.']
+        self.assertEqual(request.session.pop_flash(), expected)
+
     def test_post_send_rtt_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
