@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .base import RedirectView
-from pyvac.models import VacationType, User
+from pyvac.models import VacationType, User, Request
 
 
 class Index(RedirectView):
@@ -19,7 +19,8 @@ class Home(RedirectView):
 
         self.user.rtt = self.user.get_rtt_usage(self.session)
 
-        ret_dict = {'types': [], 'holidays': [], 'sudo_users': []}
+        ret_dict = {'types': [], 'holidays': [], 'sudo_users': [],
+                    'futures_pending': [], 'futures_approved': []}
 
         vacation_types = VacationType.by_country(self.session,
                                                  self.user.country)
@@ -28,6 +29,19 @@ class Home(RedirectView):
 
         if self.user.is_admin:
             ret_dict['sudo_users'] = User.for_admin(self.session, self.user)
+
+        futures_pending = [timestamp
+                           for req in
+                           Request.by_user_future_pending(self.session,
+                                                          self.user)
+                           for timestamp in req.timestamps]
+        ret_dict['futures_pending'] = futures_pending
+        futures_approved = [timestamp
+                            for req in
+                            Request.by_user_future_approved(self.session,
+                                                            self.user)
+                            for timestamp in req.timestamps]
+        ret_dict['futures_approved'] = futures_approved
 
         if self.request.matched_route:
             matched_route = self.request.matched_route.name

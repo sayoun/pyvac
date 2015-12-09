@@ -19,6 +19,7 @@ from .helpers.sqla import (Database, SessionFactory, ModelError,
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
 from pyvac.helpers.calendar import addToCal
+from pyvac.helpers.util import daterange
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -641,6 +642,35 @@ class Request(Base):
                         order_by=(cls.user_id, cls.date_from.desc()))
 
     @classmethod
+    def by_user_future_pending(cls, session, user, count=None):
+        """
+        Get pending requests for given user in the future
+
+        retrieve status = PENDING, ACCEPTED_MANAGER
+        """
+        return cls.find(session,
+                        where=(cls.user_id == user.id,
+                               or_(cls.status == 'PENDING',
+                                   cls.status == 'ACCEPTED_MANAGER'),
+                               cls.date_from >= datetime.now(),),
+                        count=count,
+                        order_by=(cls.user_id, cls.date_from.desc()))
+
+    @classmethod
+    def by_user_future_approved(cls, session, user, count=None):
+        """
+        Get pending requests for given user in the future
+
+        retrieve status = APPROVED_ADMIN
+        """
+        return cls.find(session,
+                        where=(cls.user_id == user.id,
+                               cls.status == 'APPROVED_ADMIN',
+                               cls.date_from >= datetime.now(),),
+                        count=count,
+                        order_by=(cls.user_id, cls.date_from.desc()))
+
+    @classmethod
     def by_status(cls, session, status, count=None, notified=False):
         """
         Get requests for given status.
@@ -897,6 +927,17 @@ class Request(Base):
                  self.days,
                  self.type,
                  label))
+
+    @property
+    def timestamps(self):
+        """
+        Return request dates as list of timestamps
+
+        timestamp are in javascript format
+        """
+        return [int(date.strftime("%s")) * 1000
+                for date in daterange(self.date_from, self.date_to)
+                if date.isoweekday() not in [6, 7]]
 
     def add_to_cal(self, caldav_url):
         """
