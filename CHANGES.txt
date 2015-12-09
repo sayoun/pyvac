@@ -3,6 +3,12 @@
 
 - Add new vacation type: Recovery
   * Work as others requests type but is excluded from export
+- Fixes issue #6: Request list view splitted:
+  * Split the view in 2 tab: past and next requests splitted on current date
+  * Conflicts are only computed for next requests to reduce the page load
+  * Past requests tab have less columns: action, conflict and notified has been removed
+- Fixes bug: conflicts were not working properly in non LDAP mode
+- Fixes bug: conflicts should not include DENIED requests
 
 1.6
 ---

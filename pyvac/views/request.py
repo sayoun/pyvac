@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from .base import View
 
@@ -13,6 +13,7 @@ from pyvac.models import Request, VacationType, User
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.holiday import get_holiday
+from pyvac.helpers.util import daterange
 
 import yaml
 try:
@@ -21,11 +22,6 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 log = logging.getLogger(__name__)
-
-
-def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days + 1)):
-        yield start_date + timedelta(n)
 
 
 class Send(View):
@@ -161,6 +157,49 @@ class List(View):
     """
     List all user requests
     """
+
+    def get_conflict(self, requests):
+        """ Returns requests conflicts """
+        conflicts = {}
+        for req in requests:
+            req.conflict = [req2.summary for req2 in
+                            Request.in_conflict_ou(self.session, req)]
+            if req.conflict:
+                req.conflict = {'': req.conflict}
+                if req.id not in conflicts:
+                    conflicts[req.id] = {}
+                conflicts[req.id][''] = '\n'.join(req.conflict[''])
+
+        return conflicts
+
+    def get_conflict_by_teams(self, requests, users_teams):
+        """ Returns requests conflicts by teams """
+        conflicts = {}
+        for req in requests:
+            user_teams = users_teams.get(req.user.dn, [])
+            matched = {}
+            # for all requests in conflict with current req
+            for req2 in Request.in_conflict(self.session, req):
+                # if we have some match between request teams
+                # and conflicting request teams
+                conflict_teams = users_teams.get(req2.user.dn, [])
+                common_set = set(conflict_teams) & set(user_teams)
+                if common_set:
+                    for team in common_set:
+                        if team not in matched:
+                            matched[team] = []
+                        matched[team].append(req2.summary)
+
+            req.conflict = matched
+            if req.conflict:
+                for team in req.conflict:
+                    if req.id not in conflicts:
+                        conflicts[req.id] = {}
+                    conflicts[req.id][team] = ('\n'.join([team] +
+                                               req.conflict[team]))
+
+        return conflicts
+
     def render(self):
 
         req_list = {'requests': [], 'conflicts': {}}
@@ -179,7 +218,27 @@ class List(View):
         elif self.user.is_super:
             requests = Request.by_manager(self.session, self.user)
 
-        if requests:
+        req_list['requests'] = requests
+
+        # always add our requests
+        for req in Request.by_user(self.session, self.user):
+            if req not in req_list['requests']:
+                req_list['requests'].append(req)
+
+        # split requests by past/next
+        today = datetime.now()
+        past_req = [req for req in req_list['requests']
+                    if req.date_to < today]
+
+        next_req = [req for req in req_list['requests']
+                    if req not in past_req]
+
+        req_list['past'] = past_req
+        req_list['next'] = next_req
+
+        # only retrieve conflicts for super users
+        # only retrieve conflicts for next requests, not past ones
+        if req_list['next'] and self.user.is_super:
             conflicts = {}
 
             settings = self.request.registry.settings
@@ -194,42 +253,12 @@ class List(View):
                     for member in members:
                         users_teams.setdefault(member, []).append(team)
 
-                for req in requests:
-                    user_teams = users_teams.get(req.user.dn, [])
-                    matched = {}
-                    # for all requests in conflict with current req
-                    for req2 in Request.in_conflict(self.session, req):
-                        # if we have some match between request teams
-                        # and conflicting request teams
-                        conflict_teams = users_teams.get(req2.user.dn, [])
-                        common_set = set(conflict_teams) & set(user_teams)
-                        if common_set:
-                            for team in common_set:
-                                if team not in matched:
-                                    matched[team] = []
-                                matched[team].append(req2.summary)
-
-                    req.conflict = matched
-                    if req.conflict:
-                        for team in req.conflict:
-                            if req.id not in conflicts:
-                                conflicts[req.id] = {}
-                            conflicts[req.id][team] = ('\n'.join([team] +
-                                                       req.conflict[team]))
+                conflicts = self.get_conflict_by_teams(req_list['next'],
+                                                       users_teams)
             else:
-                for req in requests:
-                    req.conflict = [req2.summary for req2 in
-                                    Request.in_conflict_ou(self.session, req)]
-                    if req.conflict:
-                        conflicts[req.id] = '\n'.join(req.conflict)
+                conflicts = self.get_conflict(req_list['next'])
 
-            req_list['requests'] = requests
             req_list['conflicts'] = conflicts
-
-        # always add our requests
-        for req in Request.by_user(self.session, self.user):
-            if req not in req_list['requests']:
-                req_list['requests'].append(req)
 
         return req_list
 

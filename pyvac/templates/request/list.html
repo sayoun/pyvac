@@ -2,10 +2,10 @@
 
 {% block body %}
 <div id="users-contain">
-  <legend>Requests</legend>
+  <legend>Next requests</legend>
 </div>
 
-  <table id="requests" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+  <table id="next_requests" class="table table-bordered table-condensed table-striped table-hover tablesorter">
     <thead>
       <tr>
         <th data-sorter="familyName">{% trans %}User{% endtrans %}</th>
@@ -27,7 +27,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for req in requests %}
+      {% for req in next %}
       <tr id="tr_req_{{ req.id }}">
             <td>{{ req.user.name }}</td>
             {% if pyvac.user.is_super %}
@@ -111,6 +111,54 @@
     </tbody>
   </table>
 
+
+<div id="users-contain">
+  <legend>Past requests</legend>
+</div>
+
+  <table id="past_requests" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th data-sorter="familyName">{% trans %}User{% endtrans %}</th>
+        {% if pyvac.user.is_super %}
+        <th>{% trans %}Manager{% endtrans %}</th>
+        {% endif %}
+        <th data-sorter="period" data-dateFormat="ddmmyyyy">{% trans %}Period{% endtrans %}</th>
+        <th>{% trans %}Number{% endtrans %}</th>
+        <th>{% trans %}Type{% endtrans %}</th>
+        <th>{% trans %}Status{% endtrans %}</th>
+        {% if pyvac.user.is_manager %}
+        <th data-sorter="period" data-dateFormat="ddmmyyyy">{% trans %}Submitted{% endtrans %}</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in past %}
+      <tr id="tr_req_{{ req.id }}">
+            <td>{{ req.user.name }}</td>
+            {% if pyvac.user.is_super %}
+            <td>{% if req.user.manager_dn %}
+                  {{ req.user.manager_dn|extract_cn }}
+                {%else%}
+                  {% if req.user.manager %}
+                    {{ req.user.manager.name }}
+                  {%else%}
+                    -
+                  {% endif %}
+                {% endif %}
+            </td>
+            {% endif %}
+            <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
+            <td>{{ req.days }} {{ req.label }}</td>
+            <td>{{ req.type }}</td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
+            {% if pyvac.user.is_manager %}
+            <td>{{ req.created_at.strftime('%d/%m/%Y') }}</td>
+            {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 <!-- Modal -->
 <div id="myModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
@@ -272,7 +320,12 @@
                 type: "text"
             });
 
-            $("#requests").tablesorter({
+            $("#next_requests").tablesorter({
+                theme : 'blue',
+                debug: false,
+            });
+
+            $("#past_requests").tablesorter({
                 theme : 'blue',
                 debug: false,
             });

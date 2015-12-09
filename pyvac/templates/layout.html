@@ -108,6 +108,56 @@
         color: #fff;
       }
 
+      .date-range-future-pending > .ui-state-active,
+      .date-range-future-pending > .ui-state-default {
+        background: none;
+        /*background-color: #3DDB09;*/
+        background-color: #FFAE00;
+        /*background-color: #A709DB;*/
+        color: #000;
+        /*border: 2px dotted black;*/
+      }
+
+      .date-range-future-approved > .ui-state-active,
+      .date-range-future-approved > .ui-state-default {
+        background: none;
+        background-color: #3FFF00;
+        /*background-color: #A709DB;*/
+        color: #000;
+      }
+
+      .color-future-pending {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        background-color: #FFAE00;
+        /*border: 2px dotted black;*/
+        vertical-align: middle;
+        opacity: .35;
+        filter:Alpha(Opacity=35);
+      }
+
+      .color-future-approved {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        background-color: #3FFF00;
+        vertical-align: middle;
+        opacity: .35;
+        filter:Alpha(Opacity=35);
+      }
+
+      .no-bottom {
+        margin-bottom: 5px;
+      }
+
+      div.color-legend {
+        margin-left: 0px;
+        margin-bottom: 5px;
+      }
+
       div.tooltip-inner {
           text-align: left;
           -webkit-border-radius: 0px;

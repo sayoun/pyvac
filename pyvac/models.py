@@ -19,6 +19,7 @@ from .helpers.sqla import (Database, SessionFactory, ModelError,
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
 from pyvac.helpers.calendar import addToCal
+from pyvac.helpers.util import daterange
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -150,6 +151,11 @@ class User(Base):
     def is_sudoer(self, session):
         """ Check if user has sudoer rights """
         return Group.by_name(session, 'sudoer') in self.groups
+
+    @property
+    def has_no_role(self):
+        """ Check if user has no specific rights """
+        return self.role in ('user',)
 
     @property
     def manager_mail(self):
@@ -545,11 +551,11 @@ class Request(Base):
     vacation_type = relationship(VacationType, backref='requests')
 
     status = Column(Enum('PENDING',
-                    'ACCEPTED_MANAGER',
-                    'DENIED',
-                    'APPROVED_ADMIN',
-                    'CANCELED',
-                    'ERROR',
+                         'ACCEPTED_MANAGER',
+                         'DENIED',
+                         'APPROVED_ADMIN',
+                         'CANCELED',
+                         'ERROR',
                     name='enum_request_status'),
                     nullable=False, default='PENDING')
     # why this request
@@ -614,8 +620,8 @@ class Request(Base):
         """
         Get requests for given user.
         """
-        # we only want to display less than 3 months data
-        date_limit = datetime.now() - timedelta(days=90)
+        # we only want to display less than 1 year data
+        date_limit = datetime.now() - timedelta(days=366)
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED',
@@ -631,6 +637,35 @@ class Request(Base):
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED',
+                               cls.date_from >= datetime.now(),),
+                        count=count,
+                        order_by=(cls.user_id, cls.date_from.desc()))
+
+    @classmethod
+    def by_user_future_pending(cls, session, user, count=None):
+        """
+        Get pending requests for given user in the future
+
+        retrieve status = PENDING, ACCEPTED_MANAGER
+        """
+        return cls.find(session,
+                        where=(cls.user_id == user.id,
+                               or_(cls.status == 'PENDING',
+                                   cls.status == 'ACCEPTED_MANAGER'),
+                               cls.date_from >= datetime.now(),),
+                        count=count,
+                        order_by=(cls.user_id, cls.date_from.desc()))
+
+    @classmethod
+    def by_user_future_approved(cls, session, user, count=None):
+        """
+        Get pending requests for given user in the future
+
+        retrieve status = APPROVED_ADMIN
+        """
+        return cls.find(session,
+                        where=(cls.user_id == user.id,
+                               cls.status == 'APPROVED_ADMIN',
                                cls.date_from >= datetime.now(),),
                         count=count,
                         order_by=(cls.user_id, cls.date_from.desc()))
@@ -657,7 +692,8 @@ class Request(Base):
                         where=(cls.status != 'CANCELED',
                                cls.date_from >= date_limit,),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def all_for_admin_per_country(cls, session, country, count=None):
@@ -674,7 +710,8 @@ class Request(Base):
                                cls.date_from >= date_limit,
                                ),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict_manager(cls, session, req, count=None):
@@ -693,10 +730,12 @@ class Request(Base):
                                and_(cls.date_from <= req.date_to,
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
+                               cls.status != 'DENIED',
                                User.manager_dn == req.user.manager_dn,
                                cls.id != req.id),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict_ou(cls, session, req, count=None):
@@ -715,10 +754,12 @@ class Request(Base):
                                and_(cls.date_from <= req.date_to,
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
+                               cls.status != 'DENIED',
                                User.ou == req.user.ou,
                                cls.id != req.id),
                         count=count,
-                        order_by=cls.user_id)
+                        order_by=cls.user_id,
+                        eagerload=['user'])
 
     @classmethod
     def in_conflict(cls, session, req, count=None):
@@ -736,6 +777,7 @@ class Request(Base):
                                and_(cls.date_from <= req.date_to,
                                     cls.date_to >= req.date_from)),
                                cls.status != 'CANCELED',
+                               cls.status != 'DENIED',
                                cls.id != req.id),
                         count=count,
                         order_by=cls.user_id,
@@ -885,6 +927,17 @@ class Request(Base):
                  self.days,
                  self.type,
                  label))
+
+    @property
+    def timestamps(self):
+        """
+        Return request dates as list of timestamps
+
+        timestamp are in javascript format
+        """
+        return [int(date.strftime("%s")) * 1000
+                for date in daterange(self.date_from, self.date_to)
+                if date.isoweekday() not in [6, 7]]
 
     def add_to_cal(self, caldav_url):
         """

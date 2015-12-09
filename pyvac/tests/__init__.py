@@ -212,6 +212,17 @@ def setUpModule():
                     notified=True)
     session.add(req11)
 
+    date_from = datetime.strptime('12/04/2015', '%d/%m/%Y')
+    date_to = datetime.strptime('12/04/2015', '%d/%m/%Y')
+    req12 = Request(date_from=date_from,
+                    date_to=date_to,
+                    days=1,
+                    vacation_type=rtt_vacation,
+                    status=u'DENIED',
+                    user=user1,
+                    notified=True)
+    session.add(req12)
+
     session.commit()
 
 

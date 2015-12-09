@@ -112,7 +112,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_manager(self.session, manager1)
-        self.assertEqual(len(requests), 6)
+        self.assertEqual(len(requests), 7)
         # take the first
         request = requests.pop()
         self.assertIsInstance(request, Request)
@@ -120,11 +120,11 @@ class RequestTestCase(ModelTestCase):
     def test_by_user(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        with freeze_time('2015-03-01',
+        with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 6)
+        self.assertEqual(len(requests), 7)
         # take the first
         request = requests[-1]
         self.assertIsInstance(request, Request)
@@ -138,11 +138,11 @@ class RequestTestCase(ModelTestCase):
     def test_by_user_outdated(self):
         from pyvac.models import User, Request
         user1 = User.by_login(self.session, u'jdoe')
-        with freeze_time('2015-03-01',
+        with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 6)
+        self.assertEqual(len(requests), 7)
 
         outdated = Request.by_id(self.session, 7)
         self.assertIsInstance(outdated, Request)
@@ -184,6 +184,20 @@ class RequestTestCase(ModelTestCase):
         self.assertIsInstance(req, Request)
         nb_conflicts = Request.in_conflict_manager(self.session, req,
                                                    count=True)
+        self.assertEqual(nb_conflicts, 1)
+
+    def test_in_conflict_ou(self):
+        from pyvac.models import Request
+        req = Request.by_id(self.session, 1)
+        self.assertIsInstance(req, Request)
+        nb_conflicts = Request.in_conflict_ou(self.session, req, count=True)
+        self.assertEqual(nb_conflicts, 1)
+
+    def test_in_conflict(self):
+        from pyvac.models import Request
+        req = Request.by_id(self.session, 1)
+        self.assertIsInstance(req, Request)
+        nb_conflicts = Request.in_conflict(self.session, req, count=True)
         self.assertEqual(nb_conflicts, 1)
 
     def test_get_by_month(self):

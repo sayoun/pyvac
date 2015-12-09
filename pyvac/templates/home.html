@@ -5,9 +5,14 @@
 <form action="{{ route_url('request_send') }}" method="post" id="todoForm" class="form-horizontal">
 
     <fieldset>
-        <legend>Leave request</legend>
+        <legend class="no-bottom">Leave request</legend>
         <input type="hidden" name="user_id" value="{{pyvac.user.id|default('', true)}}"/>
         <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="color-legend">
+            <span class="color-future-approved"></span>&nbsp;<span>approved</span>
+            <span class="color-future-pending"></span>&nbsp;<span>pending</span>
+        </div>
 
         <div class="control-group">
             <div id="datefrompicker"></div>
@@ -92,6 +97,8 @@
     var cur = -1, prv = -1, days = 0;
 
     var holidays = {{ holidays }};
+    var futures_pending = {{ futures_pending }};
+    var futures_approved = {{ futures_approved }};
 
     $.datepicker.regional['fr'] = {
         closeText: 'Fermer',
@@ -132,12 +139,20 @@ function DateDiff(date1, date2) {
 
     beforeShowDay: function ( date ) {
         var date_class = ''
+        /* do not select holidays */
         if (holidays.indexOf(date.getTime()) != -1) {
            date_class = 'date-range-holiday';
            return [false, date_class];
         }
-        /* do not select weekend days */
+        /* do not select future pending or approved */
+        if (futures_pending.indexOf(date.getTime()) != -1) {
+          return [false, 'date-range-future-pending'];
+        }
+        if (futures_approved.indexOf(date.getTime()) != -1) {
+          return [false, 'date-range-future-approved'];
+        }
         var day = date.getDay();
+        /* do not select weekend days */
         var isWeekend = (day == 6) || (day == 0);
         if (isWeekend)
         {
