@@ -3,10 +3,21 @@
 
 - Add new vacation type: Recovery
   * Work as others requests type but is excluded from export
+- Add holiday feature:
+  * Display holidays dates in calendar regarding user country
+  * Theses dates cannot be selected
+    - they will be substracted from requests when requesting a period including an holiday
+    - requests will now have a duration of days equal to the real working dates
+  * Holidays data retrieved from workalendar package
 - Fixes issue #6: Request list view splitted:
   * Split the view in 2 tab: past and next requests splitted on current date
   * Conflicts are only computed for next requests to reduce the page load
   * Past requests tab have less columns: action, conflict and notified has been removed
+- Fixes issue #9: Show user vacation in the home calendar
+  * Add color code to calendar for:
+    - pending/accepted_manager requests
+    - approved_admin requests
+  * Theses dates cannot be selected, so user cannot request multiple times the same period
 - Fixes bug: conflicts were not working properly in non LDAP mode
 - Fixes bug: conflicts should not include DENIED requests
 
