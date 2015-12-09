@@ -18,7 +18,8 @@ class HomeTestCase(case.ViewTestCase):
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users']))
+                              u'pyvac', u'holidays', u'sudo_users',
+                              u'futures_approved', u'futures_pending']))
         self.assertEqual(len(view[u'types']), 4)
 
     def test_render_country_ok(self):
@@ -28,7 +29,8 @@ class HomeTestCase(case.ViewTestCase):
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users']))
+                              u'pyvac', u'holidays', u'sudo_users',
+                              u'futures_approved', u'futures_pending']))
         self.assertEqual(len(view[u'types']), 3)
 
     def test_render_holiday_ok(self):
@@ -41,7 +43,8 @@ class HomeTestCase(case.ViewTestCase):
             view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users']))
+                              u'pyvac', u'holidays', u'sudo_users',
+                              u'futures_approved', u'futures_pending']))
         self.assertEqual(len(view[u'types']), 4)
         self.assertEqual(len(view[u'holidays']), 22)
 
@@ -55,7 +58,8 @@ class HomeTestCase(case.ViewTestCase):
             view = Home(self.create_request())()
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
-                                  u'pyvac', u'holidays', u'sudo_users']))
+                                  u'pyvac', u'holidays', u'sudo_users',
+                                  u'futures_approved', u'futures_pending']))
             self.assertEqual(len(view[u'types']), 4)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
@@ -69,7 +73,8 @@ class HomeTestCase(case.ViewTestCase):
             view = Home(self.create_request())()
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
-                                  u'pyvac', u'holidays', u'sudo_users']))
+                                  u'pyvac', u'holidays', u'sudo_users',
+                                  u'futures_approved', u'futures_pending']))
             self.assertEqual(len(view[u'types']), 4)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
@@ -85,7 +90,8 @@ class HomeTestCase(case.ViewTestCase):
             view = Home(self.create_request())()
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
-                                  u'pyvac', u'holidays', u'sudo_users']))
+                                  u'pyvac', u'holidays', u'sudo_users',
+                                  u'futures_approved', u'futures_pending']))
             self.assertEqual(len(view[u'types']), 4)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
