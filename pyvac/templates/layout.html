@@ -97,8 +97,9 @@
       .date-range-holiday > .ui-state-active,
       .date-range-holiday > .ui-state-default {
         background: none;
-        background-color: #c4003f;
-        color: #ffffff;
+        /*background-color: #c4003f;*/
+        background-color: #FF0000;
+        color: #fff;
       }
 
       .date-range-selected-holiday > .ui-state-active,
@@ -122,31 +123,30 @@
       .date-range-future-approved > .ui-state-default {
         background: none;
         background-color: #3FFF00;
-        /*background-color: #A709DB;*/
         color: #000;
       }
 
-      .color-future-pending {
+      span.color {
         display: inline-block;
         width: 15px;
         height: 15px;
         cursor: pointer;
-        background-color: #FFAE00;
-        /*border: 2px dotted black;*/
+        background-color: #FFFFFF
         vertical-align: middle;
         opacity: .35;
         filter:Alpha(Opacity=35);
       }
 
-      .color-future-approved {
-        display: inline-block;
-        width: 15px;
-        height: 15px;
-        cursor: pointer;
+      span.future-pending {
+        background-color: #FFAE00;
+      }
+
+      span.future-approved {
         background-color: #3FFF00;
-        vertical-align: middle;
-        opacity: .35;
-        filter:Alpha(Opacity=35);
+      }
+
+      span.holiday {
+        background-color: #FF0000;
       }
 
       .no-bottom {
