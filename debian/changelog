@@ -1,3 +1,9 @@
+pyvac (1.7.0-1) unstable; urgency=medium
+
+  * Add holidays feature and various UI enhancements
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 09 Dec 2015 20:35:18 +0100
+
 pyvac (1.6.0-3) unstable; urgency=medium
 
   * Update translations
