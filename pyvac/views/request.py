@@ -42,9 +42,11 @@ class Send(View):
             holidays = get_holiday(self.user, year=date_from.year,
                                    use_datetime=True)
 
-            days = float(len([d for d in daterange(date_from, date_to)
-                              if d.isoweekday() not in [6, 7]
-                              and d not in holidays]))
+            submitted = [d for d in daterange(date_from, date_to)
+                         if d.isoweekday() not in [6, 7]
+                         and d not in holidays]
+
+            days = float(len(submitted))
 
             days_diff = (date_to - date_from).days
             if days_diff < 0:
@@ -60,6 +62,17 @@ class Send(View):
 
             if days <= 0:
                 msg = 'Invalid value for days.'
+                self.request.session.flash('error;%s' % msg)
+                return HTTPFound(location=route_url('home', self.request))
+
+            # retrieve future requests for user so we can check overlap
+            futures = [d for req in
+                       Request.by_user_future(self.session, self.user)
+                       for d in daterange(req.date_from, req.date_to)]
+
+            intersect = set(futures) & set(submitted)
+            if intersect:
+                msg = 'Invalid period: days already requested.'
                 self.request.session.flash('error;%s' % msg)
                 return HTTPFound(location=route_url('home', self.request))
 

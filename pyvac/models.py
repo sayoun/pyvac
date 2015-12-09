@@ -637,6 +637,8 @@ class Request(Base):
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED',
+                               cls.status != 'DENIED',
+                               cls.status != 'ERROR',
                                cls.date_from >= datetime.now(),),
                         count=count,
                         order_by=(cls.user_id, cls.date_from.desc()))
