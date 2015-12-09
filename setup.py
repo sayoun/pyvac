@@ -13,8 +13,7 @@ with open(os.path.join(here, 'pyvac', '__init__.py')) as v_file:
                          re.S).match(v_file.read()).group(1)
 
 requires = [
-    'pyramid <= 1.4',
-    'PasteDeploy >= 1.5.0',
+    'pyramid',
     'SQLAlchemy',
 
     'pyramid_jinja2',
@@ -30,7 +29,7 @@ requires = [
     'cryptacular',
     'passlib',
 
-    'caldav < 0.2',
+    'caldav',
     'icalendar',
     'python-ldap',
 
