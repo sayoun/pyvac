@@ -1,3 +1,11 @@
+1.8
+---
+
+- Add a new route to query for users presence: /pyvac/off
+  * can be filtered by date (default today)
+  * can be filtered by name
+  * can be filtered by nickame (LDAP uid field)
+
 1.7
 ---
 

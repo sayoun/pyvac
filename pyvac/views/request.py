@@ -472,3 +472,46 @@ class Prevision(View):
                 'today': today,
                 'end_date': end_date,
                 }
+
+
+class Off(View):
+    """
+    Return all users who are on vacation for given date
+
+    If no date provided, default to current date
+    Results can be filtered in querystring by user name or nickname (LDAP uid)
+    """
+    def update_response(self, response):
+        """ Do nothing """
+
+    def render(self):
+        filter_nick = self.request.params.get('nick')
+        filter_name = self.request.params.get('name')
+        filter_date = self.request.params.get('date')
+
+        requests = Request.get_active(self.session, filter_date)
+        data_name = dict([(req.user.name.lower(), req.type.encode('utf-8'))
+                          for req in requests])
+        data_nick = dict([(req.user.nickname, req.type.encode('utf-8'))
+                          for req in requests])
+
+        ret = val = None
+        if filter_nick:
+            val = data_nick.get(filter_nick.lower())
+            if val:
+                ret = {filter_nick: val}
+            else:
+                val = dict([(k, v) for k, v in data_nick.items()
+                            if filter_nick.lower() in k])
+                return val
+
+        if filter_name:
+            val = data_name.get(filter_name.lower())
+            if val:
+                ret = {filter_name: val}
+            else:
+                val = dict([(k, v) for k, v in data_name.items()
+                            if filter_name.lower() in k])
+                return val
+
+        return ret if ret else data_name

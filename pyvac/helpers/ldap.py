@@ -143,6 +143,9 @@ class LdapWrapper(object):
         if 'ou' in entry:
             data['ou'] = entry['ou'].pop()
 
+        if 'uid' in entry:
+            data['uid'] = entry['uid'].pop()
+
         # save user dn
         data['dn'] = user_dn
         data['country'] = self._extract_country(user_dn)

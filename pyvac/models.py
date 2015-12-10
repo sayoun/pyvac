@@ -117,6 +117,7 @@ class User(Base):
     _country = relationship(Countries, backref='users')
 
     ou = Column(Unicode(255), nullable=True)
+    uid = Column(Unicode(255), nullable=True)
 
     @property
     def name(self):
@@ -156,6 +157,11 @@ class User(Base):
     def has_no_role(self):
         """ Check if user has no specific rights """
         return self.role in ('user',)
+
+    @property
+    def nickname(self):
+        """ Returns user nickname """
+        return self.uid.lower() if self.uid else ''
 
     @property
     def manager_mail(self):
@@ -310,6 +316,8 @@ class User(Base):
                 user.role = group
                 if 'ou' in user_data:
                     user.ou = user_data['ou'].decode('utf-8')
+                if 'uid' in user_data:
+                    user.uid = user_data['uid'].decode('utf-8')
 
                 # handle update of groups if it has changed
                 exists = []
@@ -348,6 +356,9 @@ class User(Base):
         ou = data['ou'].decode('utf-8') if 'ou' in data else None
         if ou:
             user.ou = ou
+        uid = data['uid'].decode('utf-8') if 'uid' in data else None
+        if uid:
+            user.uid = uid
         # put in correct group
         user.groups.append(Group.by_name(session, group))
         session.add(user)

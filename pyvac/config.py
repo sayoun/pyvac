@@ -211,3 +211,10 @@ def includeme(config):
     config.add_view(u'pyvac.views.holiday.List',
                     route_name=u'list_holiday',
                     renderer='json')
+
+    # Retrieve today vacations
+    config.add_route('request_off', u'/pyvac/off',
+                     request_method=u'GET')
+    config.add_view(u'pyvac.views.request.Off',
+                    route_name=u'request_off',
+                    renderer='json')
