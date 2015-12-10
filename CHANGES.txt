@@ -1,10 +1,11 @@
 1.8
 ---
 
-- Add a new route to query for users presence: /pyvac/off
-  * can be filtered by date (default today)
-  * can be filtered by name
-  * can be filtered by nickame (LDAP uid field)
+- Fixes issue #10: Add a new route to query for users presence
+  * route url is /pyvac/off
+  * can be filtered by date (default today) /pyvac/off?date=20151224
+  * can be filtered by name (can be partial) /pyvac/off?name=peter
+  * can be filtered by nickame (LDAP uid field) (can be partial) /pyvac/off?nick=spiderman
 
 1.7
 ---
