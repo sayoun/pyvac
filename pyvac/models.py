@@ -861,12 +861,14 @@ class Request(Base):
         return ret
 
     @classmethod
-    def get_today(cls, session):
+    def get_active(cls, session, date=None):
         """
-        Get all requests valid for current day
+        Get all active requests for give date
+
+        default to today's date
         """
         from datetime import datetime
-        date = datetime.now().date()
+        date = date or datetime.now().date()
         return cls.find(session,
                         join=(cls.user),
                         where=(cls.date_from <= date,
