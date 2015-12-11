@@ -1,3 +1,14 @@
+pyvac (1.7.0-2) unstable; urgency=medium
+
+  * Fixes issue #10: Add a new route to query for users presence
+    * route url is /pyvac/off
+    * can be filtered by date (default today) /pyvac/off?date=20151224
+    * can be filtered by name (can be partial) /pyvac/off?name=peter
+    * can be filtered by nickame (LDAP uid field) (can be partial) /pyvac/off?nick=spiderman
+  * Fixes UTC issue on calendar not displaying colors properly 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 11 Dec 2015 16:04:52 +0100
+
 pyvac (1.7.0-1) unstable; urgency=medium
 
   * Add holidays feature and various UI enhancements
