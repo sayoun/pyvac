@@ -20,6 +20,7 @@ from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.util import daterange
+from pyvac.helpers.holiday import utcify
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -950,7 +951,7 @@ class Request(Base):
 
         timestamp are in javascript format
         """
-        return [int(date.strftime("%s")) * 1000
+        return [utcify(date)
                 for date in daterange(self.date_from, self.date_to)
                 if date.isoweekday() not in [6, 7]]
 

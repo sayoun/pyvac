@@ -1,4 +1,8 @@
+from __future__ import absolute_import
+
+# import time
 import logging
+import calendar
 from datetime import datetime
 
 from workalendar.europe import France, Luxembourg
@@ -15,6 +19,11 @@ conv_table = {
 }
 
 
+def utcify(date):
+    """ return an UTC datetime from a Date object """
+    return calendar.timegm(date.timetuple()) * 1000
+
+
 def get_holiday(user, year=None, use_datetime=False):
     """ return holidays for user country
 
@@ -24,18 +33,21 @@ def get_holiday(user, year=None, use_datetime=False):
 
     cal = klass()
     current_year = year or datetime.now().year
-    # must cast to datetime as workalendar returns only Date objects
-    holiday_current = [datetime(dt.year, dt.month, dt.day)
-                       for dt, _ in cal.holidays(current_year)]
-    if not use_datetime:
-        holiday_current = [int(dt.strftime("%s")) * 1000
-                           for dt in holiday_current]
-
     next_year = current_year + 1
-    holiday_next = [datetime(dt.year, dt.month, dt.day)
-                    for dt, _ in cal.holidays(next_year)]
+
+    # retrieve Dates from workalendar
+    holiday_current_raw = [dt for dt, _ in cal.holidays(current_year)]
+    holiday_next_raw = [dt for dt, _ in cal.holidays(next_year)]
+
     if not use_datetime:
-        holiday_next = [int(dt.strftime("%s")) * 1000
-                        for dt in holiday_next]
+        # must cast to javascript timestamp
+        holiday_current = [utcify(dt) for dt in holiday_current_raw]
+        holiday_next = [utcify(dt) for dt in holiday_next_raw]
+    else:
+        # must cast to datetime as workalendar returns only Date objects
+        holiday_current = [datetime(dt.year, dt.month, dt.day)
+                           for dt in holiday_current_raw]
+        holiday_next = [datetime(dt.year, dt.month, dt.day)
+                        for dt in holiday_next_raw]
 
     return holiday_current + holiday_next

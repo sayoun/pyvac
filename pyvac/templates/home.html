@@ -139,6 +139,9 @@ function DateDiff(date1, date2) {
       minDate: {% if pyvac.user.is_admin %}-30{% else %}0{% endif %},
 
     beforeShowDay: function ( date ) {
+        // date from datepicker are in localtime, convert to UTC
+        date = new Date(date - new Date(date).getTimezoneOffset() * 60000);
+
         var date_class = ''
         /* do not select holidays */
         if (holidays.indexOf(date.getTime()) != -1) {
@@ -166,14 +169,7 @@ function DateDiff(date1, date2) {
 
         if (date.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date.getTime() <= Math.max(prv.getTime(), cur.getTime()))
         {
-            if (date_class == 'date-range-holiday')
-            {
-                date_class = 'date-range-selected-holiday';
-            }
-            else
-            {
-                date_class = 'date-range-selected';
-            }
+            date_class = 'date-range-selected';
         }
         return [true, date_class];
        },
@@ -196,6 +192,9 @@ function DateDiff(date1, date2) {
 
           prv = cur;
           dt = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
+          // date from datepicker are in localtime, convert to UTC
+          dt = new Date(dt - new Date(dt).getTimezoneOffset() * 60000);
+
           cur = dt;
           //cur = dt.getTime();
           if ( prv == -1 || prv == cur ) {
