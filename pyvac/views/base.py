@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import traceback
+from datetime import datetime
 
 from webob import Response
 from pyramid.security import authenticated_userid
@@ -96,7 +97,12 @@ class View(ViewBase):
                     if req not in req_list['requests']:
                         req_list['requests'].append(req)
 
-                global_['pyvac']['requests_count'] = len(req_list['requests'])
+                # only count next requests
+                today = datetime.now()
+                requests_count = len([req for req in req_list['requests']
+                                      if req.date_from >= today])
+
+                global_['pyvac']['requests_count'] = requests_count
 
                 # retrieve available users for sudo
                 sudoers = Sudoer.alias(self.session, self.user)
