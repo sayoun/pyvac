@@ -6,6 +6,7 @@
   * can be filtered by date (default today) /pyvac/off?date=20151224
   * can be filtered by name (can be partial) /pyvac/off?name=peter
   * can be filtered by nickame (LDAP uid field) (can be partial) /pyvac/off?nick=spiderman
+- Fixes UTC issue on calendar not displaying colors properly
 
 1.7
 ---
