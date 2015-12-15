@@ -28,3 +28,7 @@ msgstr "Pregnancy"
 #: pyvac/views/__init__.py
 msgid "Récupération"
 msgstr "Compensation Time"
+
+#: pyvac/views/__init__.py
+msgid "Maladie"
+msgstr "Sickness"
