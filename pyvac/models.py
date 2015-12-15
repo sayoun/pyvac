@@ -508,6 +508,7 @@ class VacationType(Base):
     Describe allowed type of vacation to request
     """
     name = Column(Unicode(255), nullable=False)
+    visibility = Column(Unicode(255), nullable=True)
 
     countries = relationship(Countries, secondary=vacation_type__country,
                              lazy='joined', backref='vacation_type')

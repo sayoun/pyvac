@@ -28,6 +28,8 @@ class Home(RedirectView):
         vacation_types = VacationType.by_country(self.session,
                                                  self.user.country)
         for vac in vacation_types:
+            if vac.visibility and self.user.role not in vac.visibility:
+                continue
             ret_dict['types'].append({'name': _(vac.name), 'id': vac.id})
 
         if self.user.is_admin:

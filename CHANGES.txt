@@ -1,6 +1,8 @@
 1.8
 ---
 
+- Add new vacation type: Sickness
+  * Work as others requests type but is only available to admin
 - Fixes issue #10: Add a new route to query for users presence
   * route url is /pyvac/off
   * can be filtered by date (default today) /pyvac/off?date=20151224

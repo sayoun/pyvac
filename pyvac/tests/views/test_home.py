@@ -20,7 +20,7 @@ class HomeTestCase(case.ViewTestCase):
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
                               u'futures_approved', u'futures_pending']))
-        self.assertEqual(len(view[u'types']), 4)
+        self.assertEqual(len(view[u'types']), 5)
 
     def test_render_country_ok(self):
         self.config.testing_securitypolicy(userid=u'manager3',

@@ -61,6 +61,8 @@ def populate(engine):
     session.add(vactype3)
     vactype4 = VacationType(name=u'Récupération')
     session.add(vactype4)
+    vactype5 = VacationType(name=u'Maladie', visibility=u'admin')
+    session.add(vactype5)
 
     fr_country = Countries(name=u'fr')
     session.add(fr_country)
@@ -91,6 +93,12 @@ def populate(engine):
     vactype4.countries.append(lu_country)
     vactype4.countries.append(us_country)
     vactype4.countries.append(zh_country)
+
+    # Sickness vacation is available all countries
+    vactype5.countries.append(fr_country)
+    vactype5.countries.append(lu_country)
+    vactype5.countries.append(us_country)
+    vactype5.countries.append(zh_country)
 
     common_password = u'changeme'
 

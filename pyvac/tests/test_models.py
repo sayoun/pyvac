@@ -241,7 +241,7 @@ class VacationTypeTestCase(ModelTestCase):
         from pyvac.models import User, VacationType
         manager3 = User.by_login(self.session, u'manager3')
         vac_types = VacationType.by_country(self.session, manager3.country)
-        self.assertEqual(len(vac_types), 3)
+        self.assertEqual(len(vac_types), 4)
         # take the first
         vac_type = vac_types.pop()
         self.assertIsInstance(vac_type, VacationType)
