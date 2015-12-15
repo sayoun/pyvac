@@ -1,3 +1,12 @@
+pyvac (1.7.0-3) unstable; urgency=medium
+
+  * Add new vacation type: Sickness
+    * Work as others requests type but is only available to admin
+  * Fixes issue #12: Update buble count in header
+    * Number of requests displayed in bubble in now only taking next requests not all requests
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 15 Dec 2015 12:01:45 +0100
+
 pyvac (1.7.0-2) unstable; urgency=medium
 
   * Fixes issue #10: Add a new route to query for users presence
@@ -5,7 +14,7 @@ pyvac (1.7.0-2) unstable; urgency=medium
     * can be filtered by date (default today) /pyvac/off?date=20151224
     * can be filtered by name (can be partial) /pyvac/off?name=peter
     * can be filtered by nickame (LDAP uid field) (can be partial) /pyvac/off?nick=spiderman
-  * Fixes UTC issue on calendar not displaying colors properly 
+  * Fixes UTC issue on calendar not displaying colors properly
 
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 11 Dec 2015 16:04:52 +0100
 
