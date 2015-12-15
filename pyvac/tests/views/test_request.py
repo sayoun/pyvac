@@ -531,6 +531,46 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
         User.get_rtt_usage = orig_get_rtt_usage
 
+    def test_post_send_vacation_type_visibility_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        request = self.create_request({'days': 1,
+                                       'date_from': '05/05/2015 - 05/05/2015',
+                                       'type': '5',
+                                       'breakdown': 'FULL',
+                                       })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        # no new requests were made
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = [u'error;You are not allowed to use type: Maladie']
+        self.assertEqual(request.session.pop_flash(), expected)
+
+    def test_post_send_vacation_type_visibility_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        request = self.create_request({'days': 1,
+                                       'date_from': '05/05/2015 - 05/05/2015',
+                                       'type': '5',
+                                       'breakdown': 'FULL',
+                                       'sudo_user': -1,
+                                       })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        # no new requests were made
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.type, u'Maladie')
+        self.session.delete(last_req)
+
     def test_post_send_rtt_usage_not_enough_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
