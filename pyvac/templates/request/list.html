@@ -57,8 +57,20 @@
             </td>
             {% endif %}
             <td>{{ req.days }} {{ req.label }}</td>
-            <td>{{ req.type }}</td>
-            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
+            <td class="type_message">{{ req.type }}
+                {% if req.vacation_type.id == 6 and req.message%}
+                  <pre>
+                    {{ req.message }}
+                  </pre>
+                {% endif %}
+            </td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}
+                {% if req.status == 'ERROR' %}<br/>
+                  <pre>
+                    {{ req.message }}
+                  </pre>
+                {% endif %}
+            </td>
             <td id="td_req_buttons_{{ req.id }}">
               {% if req.status != 'ERROR' %}
                   {% if pyvac.user.is_super and (req.user_id != pyvac.user.id) %}
