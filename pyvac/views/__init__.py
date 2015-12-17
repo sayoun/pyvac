@@ -48,6 +48,14 @@ class Home(RedirectView):
                             for timestamp in req.timestamps]
         ret_dict['futures_approved'] = futures_approved
 
+        exception_info_tooltip = """\
+This type is for events which are not covered by other types: \
+wedding, funeral, etc.
+
+Providing a reason for this request is mandatory.
+"""
+        ret_dict['exception_info_tooltip'] = _(exception_info_tooltip)
+
         if self.request.matched_route:
             matched_route = self.request.matched_route.name
             ret_dict.update({
