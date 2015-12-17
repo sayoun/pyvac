@@ -1,6 +1,11 @@
 1.8
 ---
 
+- Add new vacation type: Exception
+  * This type is for events which are not covered by other types: like wedding, funeral, etc.
+  * User must provide a reason when requesting an Exception request
+    - the reason is displayed to manager/admin
+    - the reason is exported to the csv
 - Add new vacation type: Sickness
   * Work as others requests type but is only available to admin
 - Fixes issue #10: Add a new route to query for users presence
