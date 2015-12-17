@@ -23,6 +23,8 @@ def setUpModule():
     cp_vacation = VacationType.by_name(session, u'CP')
     rtt_vacation = VacationType.by_name(session, u'RTT')
     recovery_vacation = VacationType.by_name(session, u'Récupération')
+    sickness_vacation = VacationType.by_name(session, u'Maladie')
+    exception_vacation = VacationType.by_name(session, u'Exceptionnel')
 
     fr_country = Countries.by_name(session, u'fr')
     us_country = Countries.by_name(session, u'us')
@@ -222,6 +224,29 @@ def setUpModule():
                     user=user1,
                     notified=True)
     session.add(req12)
+
+    date_from = datetime.strptime('06/06/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('06/06/2016', '%d/%m/%Y')
+    req13 = Request(date_from=date_from,
+                    date_to=date_to,
+                    days=1,
+                    vacation_type=sickness_vacation,
+                    status=u'APPROVED_ADMIN',
+                    user=user1,
+                    notified=True)
+    session.add(req13)
+
+    date_from = datetime.strptime('13/06/2016', '%d/%m/%Y')
+    date_to = datetime.strptime('13/06/2016', '%d/%m/%Y')
+    req14 = Request(date_from=date_from,
+                    date_to=date_to,
+                    days=1,
+                    vacation_type=exception_vacation,
+                    status=u'APPROVED_ADMIN',
+                    user=user2,
+                    message=u"I need to see Star Wars, I'm a huge fan",
+                    notified=True)
+    session.add(req14)
 
     session.commit()
 

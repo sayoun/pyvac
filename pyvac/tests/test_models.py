@@ -112,7 +112,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_manager(self.session, manager1)
-        self.assertEqual(len(requests), 7)
+        self.assertEqual(len(requests), 8)
         # take the first
         request = requests.pop()
         self.assertIsInstance(request, Request)
@@ -124,7 +124,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 7)
+        self.assertEqual(len(requests), 8)
         # take the first
         request = requests[-1]
         self.assertIsInstance(request, Request)
@@ -142,7 +142,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_user(self.session, user1)
-        self.assertEqual(len(requests), 7)
+        self.assertEqual(len(requests), 8)
 
         outdated = Request.by_id(self.session, 7)
         self.assertIsInstance(outdated, Request)
@@ -176,7 +176,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 17)
+        self.assertEqual(nb_requests, 19)
 
     def test_in_conflict_manager(self):
         from pyvac.models import Request
@@ -224,14 +224,22 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP,'
+        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP,,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_label(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 6)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM'
+        msg = u'Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM,'
+        self.assertEqual(req.summarycsv, msg)
+
+    def test_summarycsv_message(self):
+        from pyvac.models import Request
+        req = Request.by_id(self.session, 14)
+        self.assertIsInstance(req, Request)
+        msg = (u"Doe,Jane,13/06/2016,13/06/2016,1.0,Exceptionnel,,"
+               "I need to see Star Wars, I'm a huge fan")
         self.assertEqual(req.summarycsv, msg)
 
 
@@ -241,7 +249,7 @@ class VacationTypeTestCase(ModelTestCase):
         from pyvac.models import User, VacationType
         manager3 = User.by_login(self.session, u'manager3')
         vac_types = VacationType.by_country(self.session, manager3.country)
-        self.assertEqual(len(vac_types), 4)
+        self.assertEqual(len(vac_types), 5)
         # take the first
         vac_type = vac_types.pop()
         self.assertIsInstance(vac_type, VacationType)
@@ -290,6 +298,13 @@ class VacationTypeTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             self.assertEqual(sub.acquired(), 7)
+
+    def test_visibility_ok(self):
+        from pyvac.models import VacationType
+        vac_type = VacationType.by_id(self.session, 5)
+        self.assertEqual(vac_type.visibility, 'admin')
+        vac_type = VacationType.by_id(self.session, 1)
+        self.assertEqual(vac_type.visibility, None)
 
 
 class SudoerTestCase(ModelTestCase):

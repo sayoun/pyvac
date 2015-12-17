@@ -19,8 +19,9 @@ class HomeTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
+                              u'exception_info_tooltip',
                               u'futures_approved', u'futures_pending']))
-        self.assertEqual(len(view[u'types']), 5)
+        self.assertEqual(len(view[u'types']), 6)
 
     def test_render_country_ok(self):
         self.config.testing_securitypolicy(userid=u'manager3',
@@ -30,8 +31,9 @@ class HomeTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
+                              u'exception_info_tooltip',
                               u'futures_approved', u'futures_pending']))
-        self.assertEqual(len(view[u'types']), 3)
+        self.assertEqual(len(view[u'types']), 4)
 
     def test_render_holiday_ok(self):
         self.config.testing_securitypolicy(userid=u'manager2',
@@ -44,8 +46,9 @@ class HomeTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
+                              u'exception_info_tooltip',
                               u'futures_approved', u'futures_pending']))
-        self.assertEqual(len(view[u'types']), 4)
+        self.assertEqual(len(view[u'types']), 5)
         self.assertEqual(len(view[u'holidays']), 22)
 
     def test_render_user_rtt_ok(self):
@@ -59,8 +62,9 @@ class HomeTestCase(case.ViewTestCase):
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
+                                  u'exception_info_tooltip',
                                   u'futures_approved', u'futures_pending']))
-            self.assertEqual(len(view[u'types']), 4)
+            self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 10, 'left': 9.5, 'state': 'warning',
@@ -74,8 +78,9 @@ class HomeTestCase(case.ViewTestCase):
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
+                                  u'exception_info_tooltip',
                                   u'futures_approved', u'futures_pending']))
-            self.assertEqual(len(view[u'types']), 4)
+            self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 1, 'left': 0.5, 'state': 'success',
@@ -91,8 +96,9 @@ class HomeTestCase(case.ViewTestCase):
             self.assertEqual(set(view.keys()),
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
+                                  u'exception_info_tooltip',
                                   u'futures_approved', u'futures_pending']))
-            self.assertEqual(len(view[u'types']), 4)
+            self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 5, 'left': 2.0, 'state': 'success',

@@ -37,7 +37,7 @@ class RequestTestCase(case.ViewTestCase):
             12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
                      u'Jane Doe: 10/04/2015 - 21/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 4)
-        self.assertEqual(len(view[u'requests']), 8)
+        self.assertEqual(len(view[u'requests']), 10)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager1_ok(self):
@@ -58,7 +58,7 @@ class RequestTestCase(case.ViewTestCase):
             12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
                      u'Jane Doe: 10/04/2015 - 21/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 3)
-        self.assertEqual(len(view[u'requests']), 7)
+        self.assertEqual(len(view[u'requests']), 8)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_manager2_ok(self):
@@ -76,7 +76,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(view[u'conflicts'], {
             2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'}})
         self.assertEqual(len(view[u'conflicts']), 1)
-        self.assertEqual(len(view[u'requests']), 1)
+        self.assertEqual(len(view[u'requests']), 2)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_get_list_user_ok(self):
@@ -91,7 +91,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set([u'conflicts', u'requests', u'pyvac',
                               u'next', u'past']))
-        self.assertEqual(len(view[u'requests']), 1)
+        self.assertEqual(len(view[u'requests']), 2)
         self.assertIsInstance(view[u'requests'][0], Request)
 
     def test_set_status_accept_admin_ok(self):
@@ -255,7 +255,7 @@ class RequestTestCase(case.ViewTestCase):
         view = Exported(self.create_request({'month': '6/2014'}))()
         self.assertEqual(set(view.keys()),
                          set(['exported', 'pyvac']))
-        exported = [u'#,lastname,firstname,from,to,number,type']
+        exported = [u'#,lastname,firstname,from,to,number,type,label,message']
         self.assertEqual(view[u'exported'].split('\n'), exported)
 
     def test_post_send_no_param_ko(self):
@@ -429,6 +429,112 @@ class RequestTestCase(case.ViewTestCase):
         expected = ['error;Invalid value for days.']
         self.assertEqual(request.session.pop_flash(), expected)
 
+    def test_post_send_exception_reason_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '6',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = [u'error;You must provide a reason for '
+                    'Exceptionnel requests']
+        self.assertEqual(request.session.pop_flash(), expected)
+
+    def test_post_send_exception_reason_strip_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '6',
+                'breakdown': 'FULL',
+                'exception_text': '             ',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = [u'error;You must provide a reason for '
+                    'Exceptionnel requests']
+        self.assertEqual(request.session.pop_flash(), expected)
+
+    def test_post_send_exception_reason_length_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '6',
+                'breakdown': 'FULL',
+                'exception_text': "I need to see Star Wars, I'm a huge fan"
+                                  "please, please, please, please, please, "
+                                  "please, please, please, please, please, "
+                                  "please, please, please, please, please, "
+                                  "please, please, please, please, please, "
+                                  "please, please, please, please, please, "
+                                  "please, please, please, please, please, ",
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = [u'error;Exceptionnel reason must not exceed 140 '
+                    'characters']
+        self.assertEqual(request.session.pop_flash(), expected)
+
+    def test_post_send_exception_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '6',
+                'breakdown': 'FULL',
+                'exception_text': "I need to see Star Wars, because "
+                                  "I'm a really huge fan !!!",
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.type, u'Exceptionnel')
+        self.session.delete(last_req)
+
     def test_post_send_overlap_ko(self):
         self.config.testing_securitypolicy(userid=u'manager3',
                                            permissive=True)
@@ -565,7 +671,6 @@ class RequestTestCase(case.ViewTestCase):
                                        })
         view = Send(request)()
         self.assertIsRedirect(view)
-        # no new requests were made
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Maladie')
