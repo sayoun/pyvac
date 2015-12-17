@@ -15,7 +15,7 @@
             <span class="color holiday"></span>&nbsp;<span>holiday</span>
         </div>
 
-        <div class="control-group">
+        <div class="control-group-no-bottom">
             <div id="datefrompicker"></div>
             <label class="control-label" for="datefrompicker">Period</label>
             <div class="controls">
@@ -23,19 +23,44 @@
             </div>
         </div>
 
-        <div class="control-group">
+        <div class="control-group-no-bottom">
             <span class="control-label">Type</span>
             <div class="controls">
             {% for type in types %}
+                {% if type['id'] in [1, 2, 3, 4] %}
                 <label class="radio inline">
-                  <input type="radio" name="type" id="type{{ type }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}
+                  <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}
                   {% if type['id'] == 2 and pyvac.user.rtt['left'] <= 0 %}disabled="disabled"{% endif %}>{{ type['name'] }}
                 </label>
+                {% endif %}
+            {% endfor %}
+            </div>
+            <div class="controls">
+            {% for type in types %}
+                {% if type['id'] in [5] %}
+                <label class="radio inline">
+                  <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}">{{ type['name'] }}
+                </label>
+                {% endif %}
+            {% endfor %}
+            </div>
+            <div class="controls">
+            {% for type in types %}
+                {% if type['id'] in [6] %}
+                <label class="radio inline">
+                  <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}">{{ type['name'] }}
+                  <a id="exception_info" href="#" data-toggle="tooltip" title="" data-original-title="{{ exception_info_tooltip }}">
+                    <span class="badge badge-small">?</span>
+                  </a>
+                  &nbsp;
+                  <input name="exception_text" id="exception_text" maxlength="140" disabled="disabled" type="text" placeholder="You must provide a reason" required="required"/>
+                </label>
+                {% endif %}
             {% endfor %}
             </div>
         </div>
 
-        <div class="control-group">
+        <div class="control-group-no-bottom">
             <span class="control-label">Breakdown</span>
             <div class="controls">
                 <label class="radio inline">
@@ -51,7 +76,7 @@
         </div>
 
         {% if pyvac.user.is_admin %}
-        <div class="control-group">
+        <div class="control-group-no-bottom">
             <span class="control-label">Sudo</span>
             <div class="controls">
             <select name="sudo_user">
@@ -71,7 +96,7 @@
         </div>
         {% endif %}
 
-        <div class="control-group">
+        <div class="control-group-no-bottom">
             <div class="controls">
                 <button name="form.submitted" type="submit" class="btn">Submit</button>
             </div>
@@ -239,6 +264,18 @@ function DateDiff(date1, date2) {
 
     });
   });
+
+  $('input:radio[name="type"]').change(
+      function(){
+          if ($(this).val() == '6') {
+              $('#exception_text').prop('disabled', false);
+          }
+          else {
+              $('#exception_text').prop('disabled', true);
+          }
+      });
+
+  $("#exception_info").tooltip({});
 
   </script>
 
