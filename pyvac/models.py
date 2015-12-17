@@ -920,16 +920,18 @@ class Request(Base):
         """
         Get a string representation in csv format of a request.
         """
-        # name, datefrom, dateto, number of days, type of days, label
+        # name, datefrom, dateto, number of days, type of days, label, message
         label = '%s' % self.label if self.label else ''
-        return ('%s,%s,%s,%s,%.1f,%s,%s' %
+        message = '%s' % self.message if self.message else ''
+        return ('%s,%s,%s,%s,%.1f,%s,%s,%s' %
                 (self.user.lastname,
                  self.user.firstname,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
                  self.days,
                  self.type,
-                 label))
+                 label,
+                 message))
 
     @property
     def summarymail(self):
