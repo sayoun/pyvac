@@ -113,6 +113,23 @@ class Send(View):
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 
+            message = None
+            # check Exceptionnel mandatory field
+            if vac_type.name == u'Exceptionnel':
+                message = self.request.params.get('exception_text')
+                message = message.strip() if message else message
+                if not message:
+                    msg = ('You must provide a reason for %s requests' %
+                           vac_type.name)
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                # check size
+                if len(message) > 140:
+                    msg = ('%s reason must not exceed 140 characters' %
+                           vac_type.name)
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+
             # create the request
             # default values
             target_status = u'PENDING'
@@ -138,6 +155,7 @@ class Send(View):
                               user=target_user,
                               notified=target_notified,
                               label=label,
+                              message=message,
                               )
             self.session.add(request)
             self.session.flush()
