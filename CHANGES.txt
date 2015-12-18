@@ -16,6 +16,8 @@
 - Fixes issue #12: Update buble count in header
   * Number of requests displayed in bubble in now only taking next requests not all requests
 - Fixes UTC issue on calendar not displaying colors properly
+- Request list view update:
+  * PENDING requests are kept in the Future table until they've been accepted or denied
 
 1.7
 ---
