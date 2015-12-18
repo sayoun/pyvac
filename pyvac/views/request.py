@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import logging
 from datetime import datetime
 
@@ -515,6 +516,9 @@ class Off(View):
         filter_nick = self.request.params.get('nick')
         filter_name = self.request.params.get('name')
         filter_date = self.request.params.get('date')
+        # remove unwanted chars from filter_date
+        if filter_date:
+            filter_date = re.sub('[^\d+]', '', filter_date)
 
         requests = Request.get_active(self.session, filter_date)
         data_name = dict([(req.user.name.lower(), req.type.encode('utf-8'))

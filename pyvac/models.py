@@ -882,12 +882,15 @@ class Request(Base):
         """
         from datetime import datetime
         date = date or datetime.now().date()
-        return cls.find(session,
-                        join=(cls.user),
-                        where=(cls.date_from <= date,
-                               cls.date_to >= date,
-                               cls.status == 'APPROVED_ADMIN',),
-                        order_by=cls.user_id)
+        try:
+            return cls.find(session,
+                            join=(cls.user),
+                            where=(cls.date_from <= date,
+                                   cls.date_to >= date,
+                                   cls.status == 'APPROVED_ADMIN',),
+                            order_by=cls.user_id)
+        except:
+            return []
 
     @property
     def type(self):
