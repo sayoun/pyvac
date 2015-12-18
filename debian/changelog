@@ -1,3 +1,13 @@
+pyvac (1.7.0-4) unstable; urgency=medium
+
+  * Add new vacation type: Exception
+    * This type is for events which are not covered by other types: like wedding, funeral, etc.
+    * User must provide a reason when requesting an Exception request
+      - the reason is displayed to manager/admin
+      - the reason is exported to the csv
+ 
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 18 Dec 2015 08:35:59 +0100
+
 pyvac (1.7.0-3) unstable; urgency=medium
 
   * Add new vacation type: Sickness
