@@ -266,7 +266,8 @@ class List(View):
         # split requests by past/next
         today = datetime.now()
         past_req = [req for req in req_list['requests']
-                    if req.date_to < today]
+                    if req.date_to < today
+                    and req.status != 'PENDING']
 
         next_req = [req for req in req_list['requests']
                     if req not in past_req]
