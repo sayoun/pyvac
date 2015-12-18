@@ -1,3 +1,10 @@
+pyvac (1.7.0-5) unstable; urgency=medium
+
+  * Keep PENDING requests in future table for request list view
+    - So it can still be approved/denied even when in the past
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 18 Dec 2015 12:42:44 +0100
+
 pyvac (1.7.0-4) unstable; urgency=medium
 
   * Add new vacation type: Exception
