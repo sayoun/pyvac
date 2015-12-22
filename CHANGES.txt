@@ -20,6 +20,9 @@
 - Fixes UTC issue on calendar not displaying colors properly
 - Request list view update:
   * PENDING requests are kept in the Future table until they've been accepted or denied
+- Fixes zh holidays list for 2016:
+  * The holiday dates are changed by the Taiwanese governement each October
+    so we must override workalendar return list to use the correct ones.
 
 1.7
 ---
