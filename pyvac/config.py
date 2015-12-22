@@ -105,8 +105,8 @@ def includeme(config):
     config.add_route('home', '/home')
     config.add_view(u'pyvac.views.Home',
                     route_name=u'home',
-                    permission=u'user_view',
-                    renderer='templates/home.html')
+                    renderer='templates/home.html',
+                    permission=u'user_view')
 
     # Forbidden
     config.add_view(u'pyvac.views.base.forbidden_view',
@@ -131,7 +131,8 @@ def includeme(config):
                      request_method=u'POST')
     config.add_view(u'pyvac.views.request.Send',
                     route_name=u'request_send',
-                    renderer='json')
+                    renderer='json',
+                    permission=u'user_view')
 
     # Manager view
     config.add_route(u'list_request', u'/pyvac/request')
@@ -210,7 +211,8 @@ def includeme(config):
                      request_method=u'POST')
     config.add_view(u'pyvac.views.holiday.List',
                     route_name=u'list_holiday',
-                    renderer='json')
+                    renderer='json',
+                    permission=u'user_view')
 
     # Retrieve today vacations
     config.add_route('request_off', u'/pyvac/off',
