@@ -3,8 +3,9 @@
 import re
 import logging
 from datetime import datetime, timedelta
-import cryptacular.bcrypt
 
+from dateutil.relativedelta import relativedelta
+import cryptacular.bcrypt
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
                         UnicodeText, func)
@@ -987,6 +988,32 @@ class Request(Base):
         except Exception as err:
             log.exception('Error while adding to calendar')
             self.flag_error(str(err))
+
+    def generate_vcal_entry(self):
+        """ Generate vcal entry for request"""
+
+        vcal_entry = """\
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:Pyvac Calendar
+BEGIN:VEVENT
+SUMMARY:%s
+DESCRIPTION:%s
+DTSTART;VALUE=DATE:%s
+DTEND;VALUE=DATE:%s
+ORGANIZER;CN=Gandi:MAILTO:pyvac@gandi.net
+LOCATION:Gandi
+SEQUENCE:0
+END:VEVENT
+END:VCALENDAR
+"""
+        vcal_entry = vcal_entry % (
+            self.summarycal,
+            self.summarycal,
+            self.date_from.strftime('%Y%m%d'),
+            (self.date_to + relativedelta(days=1)).strftime('%Y%m%d'))
+
+        return vcal_entry
 
     def __eq__(self, other):
         return (

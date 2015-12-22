@@ -44,6 +44,13 @@ class BaseWorker(Task):
         subject = 'Request %s' % request.status
         self.smtp.send_mail(sender, target, subject, content)
 
+    def send_mail_ics(self, sender, target, request, content):
+        """ Send a multipart mail with ics file as attachment """
+        subject = 'Request %s' % request.status
+        ics_content = request.generate_vcal_entry()
+        self.smtp.send_mail_multipart(sender, target, subject, content,
+                                      newpart=ics_content)
+
     def get_admin_mail(self, admin):
         """ Return admin email from ldap dict or model """
         if isinstance(admin, dict):
@@ -195,10 +202,12 @@ class WorkerApproved(BaseWorker):
 Request details: %s""" % req.summarymail
         else:
             content = """HR has accepted your request, it has been added to calendar.
-Request details: %s""" % req.summarymail
+Request details: %s
+
+You can find the corresponding .ics file as attachment.""" % req.summarymail
         try:
-            self.send_mail(sender=src, target=dst, request=req,
-                           content=content)
+            self.send_mail_ics(sender=src, target=dst, request=req,
+                               content=content)
 
             # send mail to manager
             src = self.get_admin_mail(admin)

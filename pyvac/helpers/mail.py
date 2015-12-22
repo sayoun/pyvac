@@ -4,6 +4,7 @@ import smtplib
 import email
 import email.charset
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from email.utils import formatdate
 import logging
 
@@ -37,6 +38,19 @@ class SmtpWrapper(object):
 
         log.info('Smtp wrapper initialized')
 
+    def _send_mail(self, sender, target, message):
+        """ Send a MIME Mail message """
+
+        conn = smtplib.SMTP(self.host, self.port)
+        if self.starttls:
+            conn.starttls()
+        _from = self._from if self._from else sender
+        conn.sendmail(_from, [target], message.as_string())
+        conn.quit()
+
+        log.info('Message sent through SMTP: (%s) %s -> %s' %
+                 (message['Subject'], sender, target))
+
     def send_mail(self, sender, target, subject, content, tracking_id=None):
         """ Send a mail through smtp using given parameters """
 
@@ -46,21 +60,38 @@ class SmtpWrapper(object):
 """ % (content, self.signature)
 
         msg = MIMEText(content.encode('utf-8'), 'plain', 'utf-8')
-
         msg['Subject'] = '[Pyvac] %s' % subject
         msg['From'] = sender
         msg['To'] = target
         msg['Date'] = formatdate()
 
-        conn = smtplib.SMTP(self.host, self.port)
-        if self.starttls:
-            conn.starttls()
-        _from = self._from if self._from else sender
-        conn.sendmail(_from, [target], msg.as_string())
-        conn.quit()
+        self._send_mail(sender, target, msg)
 
-        log.info('Message sent through SMTP: (%s) %s -> %s [%s]' %
-                 (subject, sender, target, tracking_id or ''))
+    def send_mail_multipart(self, sender, target, subject, content,
+                            tracking_id=None, newpart=None):
+        """ Send a multipart mail through smtp using given parameters """
+
+        content = """%s
+
+%s
+""" % (content, self.signature)
+
+        msg = MIMEMultipart()
+        msg['Subject'] = '[Pyvac] %s' % subject
+        msg['From'] = sender
+        msg['To'] = target
+        msg['Date'] = formatdate()
+
+        body = MIMEText(content.encode('utf-8'), 'plain', 'utf-8')
+        msg.attach(body)
+
+        if newpart:
+            attachment = MIMEText(newpart.encode('utf-8'), 'calendar', 'utf-8')
+            attachment.add_header('Content-Disposition', 'attachment',
+                                  filename='invite.ics')
+            msg.attach(attachment)
+
+        self._send_mail(sender, target, msg)
 
 
 class SmtpCache(object):
