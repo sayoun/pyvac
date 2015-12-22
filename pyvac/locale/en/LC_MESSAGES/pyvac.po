@@ -32,3 +32,7 @@ msgstr "Compensation Time"
 #: pyvac/views/__init__.py
 msgid "Maladie"
 msgstr "Sickness"
+
+#: pyvac/views/__init__.py
+msgid "Exceptionnel"
+msgstr "Exceptional"

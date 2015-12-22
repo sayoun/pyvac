@@ -21,6 +21,8 @@ def locale_negotiator(request):
         user = User.by_login(session, login)
         if user.country == 'us':
             return 'en'
+        if user.country == 'zh':
+            return 'en'
         return user.country
 
     return None
@@ -49,6 +51,8 @@ def add_localizer(event):
 def translate(string, country):
     # hack to use en locale for us country
     if country == 'us':
+        country = 'en'
+    if country == 'zh':
         country = 'en'
 
     if country in localizers:
