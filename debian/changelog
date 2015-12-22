@@ -1,7 +1,7 @@
 pyvac (1.7.0-7) unstable; urgency=medium
 
   * Fixes zh holidays list for 2016
-  * Fixes issue #10: Send an ICS file with date information on vacation validation
+  * Fixes issue #11: Send an ICS file with date information on vacation validation
 
  -- Dejan Filipovic <sayoun@gandi.net>  Tue, 22 Dec 2015 15:53:30 +0100
 
@@ -25,7 +25,7 @@ pyvac (1.7.0-4) unstable; urgency=medium
     * User must provide a reason when requesting an Exception request
       - the reason is displayed to manager/admin
       - the reason is exported to the csv
- 
+
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 18 Dec 2015 08:35:59 +0100
 
 pyvac (1.7.0-3) unstable; urgency=medium
