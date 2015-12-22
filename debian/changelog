@@ -1,3 +1,10 @@
+pyvac (1.7.0-7) unstable; urgency=medium
+
+  * Fixes zh holidays list for 2016
+  * Fixes issue #10: Send an ICS file with date information on vacation validation
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 22 Dec 2015 15:53:30 +0100
+
 pyvac (1.7.0-6) unstable; urgency=medium
 
   * Validate input for date filter in /off view
