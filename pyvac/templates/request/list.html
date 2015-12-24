@@ -113,8 +113,17 @@
               {% endif %}
             </td>
             {% if pyvac.user.is_super %}
-            <td>{% if req.pool %}Left: {{ req.pool['left'] }}
-            {% else %}-
+            <td>
+            {% if req.pool %}
+                {% if req.type == 'CP' %}
+                  {% if pyvac.user.has_feature('cp_class') %}
+                    {{ req.pool['restant']['left'] + req.pool['acquis']['left'] }} CP
+                  {% endif %}
+                {% else %}
+                  {{ req.pool['left'] }} RTT
+                {% endif %}
+            {% else %}
+              -
             {% endif %}
             </td>
             {% endif %}

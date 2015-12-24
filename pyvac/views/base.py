@@ -188,7 +188,7 @@ class CreateView(RedirectView):
         errors = []
         model = self.get_model()
 
-        if not self.user.is_admin:
+        if self.user and not self.user.is_admin:
             if model.id != self.user.id:
                 return self.redirect('home')
 

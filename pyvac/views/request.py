@@ -10,7 +10,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 from pyramid.settings import asbool
 
-from pyvac.models import Request, VacationType, User
+from pyvac.models import Request, VacationType, User, CPVacation
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
@@ -150,6 +150,35 @@ class Send(View):
                            vac_type.name)
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
+
+            # check CP usage
+            if vac_type.name == u'CP':
+                pool = cp_data = self.user.get_cp_usage(self.session)
+                if cp_data is not None:
+                    total_left = (cp_data['acquis']['left'] +
+                                  cp_data['restant']['left'])
+
+                if cp_data is not None and total_left <= 0:
+                    msg = 'No CP left to take.'
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                # check that we have enough CP to take
+                if cp_data is not None and days > total_left:
+                    msg = 'You only have %s CP to use.' % total_left
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                # check that we request vacations in the allowed cycle
+                if cp_data is not None and (
+                        not (date_from <= date_to <=
+                             cp_data['acquis']['expire'])):
+                    msg = ('CP can only be used until %s.' %
+                           cp_data['acquis']['expire'].strftime('%d/%m/%Y'))
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                if pool:
+                    # remove expire datetimes as it's not json serializable
+                    pool['acquis'].pop('expire', None)
+                    pool['restant'].pop('expire', None)
 
             # create the request
             # default values
@@ -625,7 +654,20 @@ class PoolHistory(View):
         start = datetime(2014, 5, 1)
         years = [item for item in reversed(range(start.year, today.year + 1))]
 
-        pool_history = User.get_rtt_history(self.session, user, year)
+        pool_history = {}
+        pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
-        return {'user': user, 'year': year, 'years': years,
-                'pool_history': pool_history}
+        ret = {'user': user,
+               'year': year,
+               'years': years,
+               'pool_history': pool_history}
+
+        if self.user.has_feature('cp_class'):
+            pool_history['CP'] = {}
+            history, restant = User.get_cp_history(self.session, user, year)
+            pool_history['CP']['history'] = history
+            pool_history['CP']['restant'] = restant
+
+            ret['consume_cp'] = CPVacation.consume
+
+        return ret

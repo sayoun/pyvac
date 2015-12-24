@@ -232,6 +232,9 @@
                 <li><a href="{{route_url('list_account')}}"><i class="fa fa-users fa-fw"></i> Manage Users</a></li>
                 <li><a href="{{route_url('export_request')}}"><i class="fa fa-files-o fa-fw"></i> Export Data</a></li>
                 <li><a href="{{route_url('prevision_request')}}"><i class="fa fa-calendar-o fa-fw"></i> Prevision</a></li>
+                    {% if pyvac.user.country == 'fr' %}
+                    <li><a href="{{route_url('list_user_pool')}}"><i class="fa fa-calendar fa-fw"></i> Users Pool</a></li>
+                    {% endif %}
                 {% endif %}
               </ul>
               </li>

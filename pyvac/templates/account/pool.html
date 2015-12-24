@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="users-contain">
+  <legend>Users Pool</legend>
+
+  <table id="users" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Login{% endtrans %}</th>
+        <th>{% trans %}Name{% endtrans %}</th>
+        <th>{% trans %}Manager{% endtrans %}</th>
+        {% if pyvac.user.has_feature('cp_class') %}
+        <th>{% trans %}CP Pool{% endtrans %}</th>
+        {% endif %}
+        <th>{% trans %}RTT Pool{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+            <td>{{ user.login }}</td>
+            <td>{{ user.name }}</td>
+            <td>{% if user.manager_dn %}
+                  {{ user.manager_dn|extract_cn }}
+                {%else%}
+                  {% if user.manager %}
+                    {{ user.manager.name }}
+                  {%else%}
+                    -
+                  {% endif %}
+                {% endif %}
+            </td>
+            {% if pyvac.user.has_feature('cp_class') %}
+            <td>
+                {{ cp_usage[user.login] }}
+            </td>
+            {% endif %}
+            <td>
+                {{ rtt_usage[user.login] }}
+            </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+    {% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function()
+        {
+            $("#users").tablesorter({
+                theme : 'blue',
+                debug: false,
+            });
+        }
+    );
+</script>
+
+{% endblock %}
