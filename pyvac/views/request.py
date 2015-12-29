@@ -513,6 +513,10 @@ class Off(View):
         """ Do nothing """
 
     def render(self):
+        def fmt_req_type(req):
+            label = ' %s' % req.label if req.label else ''
+            return '%s%s' % (req.type.encode('utf-8'), label)
+
         filter_nick = self.request.params.get('nick')
         filter_name = self.request.params.get('name')
         filter_date = self.request.params.get('date')
@@ -521,9 +525,9 @@ class Off(View):
             filter_date = re.sub('[^\d+]', '', filter_date)
 
         requests = Request.get_active(self.session, filter_date)
-        data_name = dict([(req.user.name.lower(), req.type.encode('utf-8'))
+        data_name = dict([(req.user.name.lower(), fmt_req_type(req))
                           for req in requests])
-        data_nick = dict([(req.user.nickname, req.type.encode('utf-8'))
+        data_nick = dict([(req.user.nickname, fmt_req_type(req))
                           for req in requests])
 
         ret = val = None
