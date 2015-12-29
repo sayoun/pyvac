@@ -58,7 +58,7 @@
             {% endif %}
             <td>{{ req.days }} {{ req.label }}</td>
             <td class="type_message">{{ req.type }}
-                {% if req.vacation_type.id == 6 and req.message%}
+                {% if req.vacation_type.id == 6 and req.message %}
                   <pre>
                     {{ req.message }}
                   </pre>
@@ -67,7 +67,7 @@
             <td id="td_req_status_{{ req.id }}">{{ req.status }}
                 {% if req.status == 'ERROR' %}<br/>
                   <pre>
-                    {{ req.message }}
+                    {{ req.error_message }}
                   </pre>
                 {% endif %}
             </td>
@@ -163,7 +163,13 @@
             <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
             <td>{{ req.days }} {{ req.label }}</td>
             <td>{{ req.type }}</td>
-            <td id="td_req_status_{{ req.id }}">{{ req.status }}{% if req.status == 'ERROR' %}<br/>{{ req.message }}{% endif %}</td>
+            <td id="td_req_status_{{ req.id }}">{{ req.status }}
+                {% if req.status == 'ERROR' %}<br/>
+                  <pre>
+                    {{ req.error_message }}
+                  </pre>
+                {% endif %}
+            </td>
             {% if pyvac.user.is_manager %}
             <td>{{ req.created_at.strftime('%d/%m/%Y') }}</td>
             {% endif %}

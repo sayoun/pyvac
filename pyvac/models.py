@@ -578,6 +578,8 @@ class Request(Base):
     reason = Column(UnicodeText())
     # for future use
     label = Column(UnicodeText())
+    # in case of ERROR to store the error message
+    error_message = Column(UnicodeText())
     # actor who performed last action on request
     last_action_user_id = Column(Integer, nullable=True)
     # store caldav ics url
@@ -595,7 +597,7 @@ class Request(Base):
     def flag_error(self, message):
         """ Set request in ERROR and assign message """
         self.status = 'ERROR'
-        self.message = message
+        self.error_message = message
 
     @classmethod
     def by_manager(cls, session, manager, count=None):
