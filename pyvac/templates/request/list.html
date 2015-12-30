@@ -20,6 +20,9 @@
         <th>{% trans %}Type{% endtrans %}</th>
         <th>{% trans %}Status{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
+        {% if pyvac.user.is_super %}
+        <th>{% trans %}Pool{% endtrans %}</th>
+        {% endif %}
         {% if pyvac.user.is_manager %}
         <th data-sorter="period" data-dateFormat="ddmmyyyy">{% trans %}Submitted{% endtrans %}</th>
         {% endif %}
@@ -109,6 +112,12 @@
               -
               {% endif %}
             </td>
+            {% if pyvac.user.is_super %}
+            <td>{% if req.pool %}Left: {{ req.pool['left'] }}
+            {% else %}-
+            {% endif %}
+            </td>
+            {% endif %}
             {% if pyvac.user.is_manager %}
             <td>{{ req.created_at.strftime('%d/%m/%Y') }}</td>
             {% endif %}

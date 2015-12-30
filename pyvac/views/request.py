@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import json
 import logging
 from datetime import datetime
 
@@ -48,6 +49,7 @@ class Send(View):
                          and d not in holidays]
 
             days = float(len(submitted))
+            pool = None
 
             days_diff = (date_to - date_from).days
             if days_diff < 0:
@@ -103,7 +105,7 @@ class Send(View):
 
             # check RTT usage
             if vac_type.name == u'RTT':
-                rtt_data = self.user.get_rtt_usage(self.session)
+                pool = rtt_data = self.user.get_rtt_usage(self.session)
                 if rtt_data is not None and rtt_data['left'] <= 0:
                     msg = 'No RTT left to take.'
                     self.request.session.flash('error;%s' % msg)
@@ -148,6 +150,12 @@ class Send(View):
                         target_status = u'APPROVED_ADMIN'
                         target_notified = True
 
+            # save pool status when making the request
+            if pool:
+                pool_status = json.dumps(pool)
+            else:
+                pool_status = json.dumps({})
+
             request = Request(date_from=date_from,
                               date_to=date_to,
                               days=days,
@@ -157,6 +165,7 @@ class Send(View):
                               notified=target_notified,
                               label=label,
                               message=message,
+                              pool_status=pool_status,
                               )
             self.session.add(request)
             self.session.flush()

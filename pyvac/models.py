@@ -2,6 +2,7 @@
 
 import re
 import logging
+import json
 from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -584,6 +585,8 @@ class Request(Base):
     last_action_user_id = Column(Integer, nullable=True)
     # store caldav ics url
     ics_url = Column(UnicodeText())
+    # vacation_type pool counters when the action has been made
+    pool_status = Column(UnicodeText())
 
     notified = Column(Boolean, default=False)
     user_id = Column('user_id', ForeignKey(User.id))
@@ -901,6 +904,15 @@ class Request(Base):
         Get name of chosen vacation type.
         """
         return _(self.vacation_type.name, self.user.country)
+
+    @property
+    def pool(self):
+        """
+        Retrieve pool status stored in json
+        """
+        if self.pool_status:
+            return json.loads(self.pool_status)
+        return {}
 
     @property
     def summary(self):
