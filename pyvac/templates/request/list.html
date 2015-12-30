@@ -20,7 +20,6 @@
         <th>{% trans %}Type{% endtrans %}</th>
         <th>{% trans %}Status{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
-        <th>{% trans %}Notified{% endtrans %}</th>
         {% if pyvac.user.is_manager %}
         <th data-sorter="period" data-dateFormat="ddmmyyyy">{% trans %}Submitted{% endtrans %}</th>
         {% endif %}
@@ -59,16 +58,12 @@
             <td>{{ req.days }} {{ req.label }}</td>
             <td class="type_message">{{ req.type }}
                 {% if req.vacation_type.id == 6 and req.message %}
-                  <pre>
-                    {{ req.message }}
-                  </pre>
+                  <pre>{{ req.message }}</pre>
                 {% endif %}
             </td>
             <td id="td_req_status_{{ req.id }}">{{ req.status }}
                 {% if req.status == 'ERROR' %}<br/>
-                  <pre>
-                    {{ req.error_message }}
-                  </pre>
+                  <pre>{{ req.error_message }}</pre>
                 {% endif %}
             </td>
             <td id="td_req_buttons_{{ req.id }}">
@@ -77,7 +72,7 @@
 
                     {# for admin+managers and for all requests but without user requests #}
 
-                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small"
+                    <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-mini"
                     {% if pyvac.user.is_admin %}
                         {% if req.status == 'APPROVED_ADMIN' %}disabled="disabled"{% endif %}
                     {% else %}
@@ -86,12 +81,12 @@
                     >
                         ACCEPT
                     </a>
-                    <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-small"
+                    <a id="refuse-request" data-rid="{{ req.id }}" title="refuse" class="btn btn-danger btn-mini"
                     {% if req.status in ['DENIED', 'APPROVED_ADMIN'] %}disabled="disabled"{% endif %}>
                         DENY
                     </a>
                     {% if pyvac.user.is_admin and (req.user_id != pyvac.user.id) %}
-                      <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                      <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-mini"
                       {% if req.status in ['CANCELED', 'DENIED'] %}disabled="disabled"{% endif %}>
                         CANCEL
                       </a>
@@ -101,11 +96,11 @@
                     {# for normal users or user requests #}
 
                     {% if pyvac.user.is_admin and (req.user_id == pyvac.user.id) and (req.status == 'ACCEPTED_MANAGER') %}
-                      <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-small">
+                      <a id="accept-request" data-rid="{{ req.id }}" title="accept" class="btn btn-success btn-mini">
                           ACCEPT
                       </a>
                     {% endif %}
-                    <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-small"
+                    <a id="cancel-request" data-rid="{{ req.id }}" title="cancel" class="btn btn-info btn-mini"
                     {% if not pyvac.user.is_admin and req.status in ['CANCELED', 'APPROVED_ADMIN', 'DENIED'] %}disabled="disabled"{% endif %}>
                       CANCEL
                     </a>
@@ -114,7 +109,6 @@
               -
               {% endif %}
             </td>
-            <td>{{ req.notified }}</td>
             {% if pyvac.user.is_manager %}
             <td>{{ req.created_at.strftime('%d/%m/%Y') }}</td>
             {% endif %}
@@ -165,9 +159,7 @@
             <td>{{ req.type }}</td>
             <td id="td_req_status_{{ req.id }}">{{ req.status }}
                 {% if req.status == 'ERROR' %}<br/>
-                  <pre>
-                    {{ req.error_message }}
-                  </pre>
+                  <pre>{{ req.error_message }}</pre>
                 {% endif %}
             </td>
             {% if pyvac.user.is_manager %}
