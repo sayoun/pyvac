@@ -1,3 +1,11 @@
+pyvac (1.7.0-9) unstable; urgency=medium
+
+  * Update /off view for nick filtering
+    - Check if provided nick exists if not return 404
+    - Can disable partial nickname search if strict parameter is provided
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 31 Dec 2015 12:07:10 +0100
+
 pyvac (1.7.0-8) unstable; urgency=medium
 
   * Add pool feature to requests.
