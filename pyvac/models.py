@@ -814,10 +814,9 @@ class Request(Base):
         from calendar import monthrange
 
         date = datetime.now()
-        date = date.replace(month=month, year=year)
         # retrieve first day of the previous month
         # first_month_day = date.replace(day=1) - relativedelta(months=1)
-        first_month_day = date.replace(day=1)
+        first_month_day = date.replace(day=1, month=month, year=year)
         # set date at 00:00:00
         first_month_date = first_month_day.replace(hour=0, minute=0, second=0,
                                                    microsecond=0)
