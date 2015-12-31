@@ -14,7 +14,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 from pyramid.settings import asbool
 
-from pyvac.models import Request, VacationType, User
+from pyvac.models import Request, VacationType, User, RequestHistory
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
@@ -267,6 +267,13 @@ class Send(View):
                               )
             self.session.add(request)
             self.session.flush()
+            # create history entry
+            sudo_user = None
+            if sudo_use:
+                sudo_user = self.user
+            RequestHistory.new(self.session, request, '', target_status,
+                               target_user, pool, message=message,
+                               sudo_user=sudo_user)
 
             if request and not sudo_use:
                 msg = 'Request sent to your manager.'
@@ -286,7 +293,7 @@ class Send(View):
                     with open(settings['pyvac.celery.yaml']) as fdesc:
                         Conf = yaml.load(fdesc, YAMLLoader)
                     caldav_url = Conf.get('caldav').get('url')
-                    request.add_to_cal(caldav_url)
+                    request.add_to_cal(caldav_url, self.session)
                     msg = 'Request added to calendar and DB.'
                     self.request.session.flash('info;%s' % msg)
 
@@ -435,6 +442,10 @@ class Accept(View):
             only_manager = True
 
         if self.user.is_admin and not only_manager:
+            # create history entry
+            RequestHistory.new(self.session, req,
+                               req.status, 'APPROVED_ADMIN',
+                               self.user)
             req.update_status('APPROVED_ADMIN')
             # save who performed this action
             req.last_action_user_id = self.user.id
@@ -445,9 +456,14 @@ class Accept(View):
                 Conf = yaml.load(fdesc, YAMLLoader)
             data['caldav.url'] = Conf.get('caldav').get('url')
         else:
+            # create history entry
+            RequestHistory.new(self.session, req,
+                               req.status, 'ACCEPTED_MANAGER',
+                               self.user)
             req.update_status('ACCEPTED_MANAGER')
             # save who performed this action
             req.last_action_user_id = self.user.id
+
             task_name = 'worker_accepted'
 
         self.session.flush()
@@ -477,9 +493,13 @@ class Refuse(View):
         reason = self.request.params.get('reason')
 
         req.reason = reason
+        RequestHistory.new(self.session, req,
+                           req.status, 'DENIED',
+                           self.user, reason=reason)
         req.update_status('DENIED')
         # save who performed this action
         req.last_action_user_id = self.user.id
+
         self.session.flush()
 
         # call celery task directly, do not wait for polling
@@ -522,6 +542,9 @@ class Cancel(View):
             caldav_url = Conf.get('caldav').get('url')
             delFromCal(caldav_url, req.ics_url)
 
+        RequestHistory.new(self.session, req,
+                           req.status, 'CANCELED',
+                           self.user)
         req.update_status('CANCELED')
         # save who performed this action
         req.last_action_user_id = self.user.id
@@ -732,3 +755,30 @@ class PoolHistory(View):
                'consume_cp': vac_class.consume}
 
         return ret
+
+
+class History(View):
+    """
+    Display all history entries for given request
+    """
+    def render(self):
+        request = Request.by_id(self.session,
+                                int(self.request.matchdict['req_id']))
+
+        if self.user.has_no_role:
+            # can only see own requests
+            if request.user.id != self.user.id:
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        if self.user.is_manager:
+            # can only see own requests and managed user requests
+            if ((request.user.id != self.user.id)
+                    and (request.user.manager_id != self.user.id)):
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        if request:
+            return {u'history': request.history, 'req': request}
+
+        return {}

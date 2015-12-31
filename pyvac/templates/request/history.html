@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="previsions-contain">
+  <legend>History for request #{{ req.id }}</legend>
+
+    <ul>
+        <li>{{ req.summarymail }}</li>
+    </ul>
+
+  <table id="history" class="table table-bordered table-condensed table-striped table-hover tablesorter-blue">
+    <colgroup>
+       <col span="1" style="width: 20%;">
+       <col span="1" style="width: 20%;">
+       <col span="1" style="width: 10%;">
+       <col span="1" style="width: 10%;">
+       <col span="1" style="width: 10%;">
+       <col span="1" style="width: 30%;">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>{% trans %}Action date{% endtrans %}</th>
+        <th>{% trans %}Action made by user{% endtrans %}</th>
+        <th>{% trans %}Old status{% endtrans %}</th>
+        <th>{% trans %}New status{% endtrans %}</th>
+        <th>{% trans %}Pool{% endtrans %}</th>
+        <th>{% trans %}Message{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in history %}
+      <tr>
+            <td>{{ entry.created_at }}</td>
+            <td>{{ entry.user.name if entry.user else '-' }}<br/>
+            {% if entry.sudo_user %}
+            <b>Sudoed by</b>: {{ entry.sudo_user.name }}
+            {% endif %}
+            </td>
+            <td>{{ entry.old_status if entry.old_status else '-'}}</td>
+            <td>{{ entry.new_status }}</td>
+            <td>{% if entry.pool %}Left: {{ entry.pool['left'] }}
+            {% else %}-
+            {% endif %}
+            </td>
+            <td>
+              {% if entry.message or entry.reason or entry.error_message %}
+              <pre>{{ entry.message if entry.message else '' }}{{ entry.reason if entry.reason else '' }}{{ entry.error_message if entry.error_message else '' }}</pre>
+              {% else %}
+              -
+              {% endif %}
+            </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
