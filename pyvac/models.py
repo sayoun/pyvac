@@ -421,6 +421,15 @@ class User(Base):
         return self._country.name
 
     @classmethod
+    def get_all_nicknames(cls, session):
+        """
+        Retrieve all distinct available nicknames (uid field)
+        """
+        return [nick[0]
+                for nick in session.query(User.uid).distinct().all()
+                if nick[0]]
+
+    @classmethod
     def for_admin(cls, session, admin):
         """
         Get all users for an admin regarding his country

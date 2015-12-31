@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
 from ldap import dn
 from datetime import timedelta
+from pyramid.httpexceptions import HTTPNotFound
 
 
 def flash_type(message):
@@ -53,3 +55,13 @@ def extract_cn(user_dn):
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days + 1)):
         yield start_date + timedelta(n)
+
+
+def JsonHTTPNotFound(message=None):
+    response = HTTPNotFound()
+    response.content_type = 'application/json'
+    if message:
+        if isinstance(message, dict):
+            msg = json.dumps(message)
+        response.text = unicode(msg)
+    return response

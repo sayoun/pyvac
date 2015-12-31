@@ -15,7 +15,7 @@ from pyvac.models import Request, VacationType, User
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.holiday import get_holiday
-from pyvac.helpers.util import daterange
+from pyvac.helpers.util import daterange, JsonHTTPNotFound
 
 import yaml
 try:
@@ -529,9 +529,25 @@ class Off(View):
         filter_nick = self.request.params.get('nick')
         filter_name = self.request.params.get('name')
         filter_date = self.request.params.get('date')
+        # strict if provided will disable partial search for nicknames
+        strict = self.request.params.get('strict')
+
         # remove unwanted chars from filter_date
         if filter_date:
             filter_date = re.sub('[^\d+]', '', filter_date)
+
+        if filter_nick:
+            # retrieve all availables nicknames
+            all_nick = User.get_all_nicknames(self.session)
+            if strict:
+                match = filter_nick in all_nick
+            else:
+                match = set([nick for nick in all_nick
+                             if filter_nick in nick])
+            if not match:
+                # filter_nick does not match any known uid, stop here
+                return JsonHTTPNotFound({'message': ('%s not found'
+                                                     % filter_nick)})
 
         requests = Request.get_active(self.session, filter_date)
         data_name = dict([(req.user.name.lower(), fmt_req_type(req))
@@ -544,10 +560,12 @@ class Off(View):
             val = data_nick.get(filter_nick.lower())
             if val:
                 ret = {filter_nick: val}
-            else:
+            elif not strict:
                 val = dict([(k, v) for k, v in data_nick.items()
                             if filter_nick.lower() in k])
                 return val
+            else:
+                return {}
 
         if filter_name:
             val = data_name.get(filter_name.lower())
