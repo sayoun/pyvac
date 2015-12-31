@@ -1,6 +1,14 @@
 1.8
 ---
 
+- Add pool feature to requests.
+  * Request now store pool status for RTT vacation type upon creation
+  * Request list view now display Request pool Left number value when available
+- Update request list view:
+  * Remove notified column
+  * Use smaller button size for action
+  * Fixe <pre> content to remove unwanted whitespaces
+  * Exceptionnal message should appear in past table
 - Fixes issue #11: Send an ICS file with date information on vacation validation
   * The approved confirmation mail sent to the employee contains the .ics file as attachment
 - Add new vacation type: Exception
@@ -23,6 +31,7 @@
 - Fixes zh holidays list for 2016:
   * The holiday dates are changed by the Taiwanese governement each October
     so we must override workalendar return list to use the correct ones.
+- ZH users now use EN locales instead of FR
 
 1.7
 ---
