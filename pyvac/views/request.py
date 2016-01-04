@@ -133,6 +133,17 @@ class Send(View):
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 
+            # check Récupération reason field
+            if vac_type.name == u'Récupération':
+                message = self.request.params.get('exception_text')
+                message = message.strip() if message else message
+                # check size
+                if message and len(message) > 140:
+                    msg = ('%s reason must not exceed 140 characters' %
+                           vac_type.name)
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+
             # create the request
             # default values
             target_status = u'PENDING'

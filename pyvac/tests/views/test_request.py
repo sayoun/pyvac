@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from freezegun import freeze_time
 
 from pyvac.tests import case
@@ -533,6 +534,58 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Exceptionnel')
+        self.session.delete(last_req)
+
+    def test_post_send_recovery_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        msg = u"I need to see Star Wars, because I'm a really huge fan !!!"
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '4',
+                'breakdown': 'FULL',
+                'exception_text': msg,
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.type, u'Récupération')
+        self.assertEqual(last_req.message, msg)
+        self.session.delete(last_req)
+
+    def test_post_send_recovery_no_message_ok(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '12/11/2015 - 12/11/2015',
+                'type': '4',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.type, u'Récupération')
+        self.assertEqual(last_req.message, None)
         self.session.delete(last_req)
 
     def test_post_send_overlap_ko(self):

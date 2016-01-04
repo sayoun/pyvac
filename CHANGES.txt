@@ -9,6 +9,8 @@
   * Use smaller button size for action
   * Fixe <pre> content to remove unwanted whitespaces
   * Exceptionnal message should appear in past table
+- When requesting a Recovery vacation, user can now provide a reason using the same field
+  as Exception vacation.
 - Fixes issue #11: Send an ICS file with date information on vacation validation
   * The approved confirmation mail sent to the employee contains the .ics file as attachment
 - Add new vacation type: Exception
