@@ -549,12 +549,13 @@ class Off(View):
 
         if filter_nick:
             # retrieve all availables nicknames
-            all_nick = User.get_all_nicknames(self.session)
+            all_nick = [nick.lower()
+                        for nick in User.get_all_nicknames(self.session)]
             if strict:
-                match = filter_nick in all_nick
+                match = filter_nick.lower() in all_nick
             else:
                 match = set([nick for nick in all_nick
-                             if filter_nick in nick])
+                             if filter_nick.lower() in nick.lower()])
             if not match:
                 # filter_nick does not match any known uid, stop here
                 return JsonHTTPNotFound({'message': ('%s not found'
