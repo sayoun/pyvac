@@ -65,3 +65,8 @@ def JsonHTTPNotFound(message=None):
             msg = json.dumps(message)
         response.text = unicode(msg)
     return response
+
+
+def plusify(value):
+    prefix = '+' if value > 0 else ''
+    return '%s%s' % (prefix, value)
