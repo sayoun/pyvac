@@ -20,6 +20,7 @@
         {% endif %}
         <th>{% trans %}Group{% endtrans %}</th>
         <th>{% trans %}Action{% endtrans %}</th>
+        <th>{% trans %}Pool history{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
@@ -57,6 +58,13 @@
                 <a href="{{ route_url('delete_account', user_id=user.id) }}">
                     delete
                 </a>
+            </td>
+            <td>
+                {% if user.country == 'fr' %}
+                <a href="{{ route_url('pool_history', user_id=user.id) }}">RTT<a>
+                {% else %}
+                -
+                {% endif %}
             </td>
       </tr>
       {% endfor %}
