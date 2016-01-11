@@ -4,6 +4,8 @@
 - Add pool feature to requests.
   * Request now store pool status for RTT vacation type upon creation
   * Request list view now display Request pool Left number value when available
+- Update account list view:
+  * Admin can now see a user pool history balance changes
 - Update request list view:
   * Remove notified column
   * Use smaller button size for action
