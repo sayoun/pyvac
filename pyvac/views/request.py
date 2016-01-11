@@ -589,3 +589,36 @@ class Off(View):
                 return val
 
         return ret if ret else data_name
+
+
+class PoolHistory(View):
+    """
+    Display pool history balance changes for given user
+    """
+    def render(self):
+        user = User.by_id(self.session,
+                          int(self.request.matchdict['user_id']))
+
+        if self.user.has_no_role:
+            # can only see own requests
+            if user.id != self.user.id:
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        if self.user.is_manager:
+            # can only see own requests and managed user requests
+            if ((user.id != self.user.id)
+                    and (user.manager_id != self.user.id)):
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        today = datetime.now()
+        year = int(self.request.params.get('year', today.year))
+
+        start = datetime(2014, 5, 1)
+        years = [item for item in reversed(range(start.year, today.year + 1))]
+
+        pool_history = User.get_rtt_history(self.session, user, year)
+
+        return {'user': user, 'year': year, 'years': years,
+                'pool_history': pool_history}
