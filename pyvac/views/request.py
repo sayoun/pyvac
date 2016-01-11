@@ -535,7 +535,7 @@ class Off(View):
     def render(self):
         def fmt_req_type(req):
             label = ' %s' % req.label if req.label else ''
-            return '%s%s' % (req.type.encode('utf-8'), label)
+            return '%s%s' % (req.type, label)
 
         filter_nick = self.request.params.get('nick')
         filter_name = self.request.params.get('name')
