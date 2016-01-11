@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="pool-contain" class="span6">
+  <legend>RTT Pool history for {{ user.name }}</legend>
+
+  <form class="form-inline" method="GET">
+      <label>{% trans %}Select year:{% endtrans %}</label>
+      <select id="year_select" name="year">
+      {% for entry in years %}
+          <option value="{{ entry }}" {% if entry == year %}selected="selected"{% endif %}>{{ entry }}</option>
+      {% endfor %}
+       </select>
+  </form>
+
+  <table id="pool_history" class="table table-bordered table-condensed table-striped table-hover tablesorter-blue">
+    <thead>
+      <tr>
+        <th>{% trans %}Date{% endtrans %}</th>
+        <th>{% trans %}Change{% endtrans %}</th>
+        <th>{% trans %}Balance{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set pool_balance = 0 %}
+      {% for entry in pool_history %}
+        {% set pool_balance = pool_balance + entry.value %}
+        <tr>
+          <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ entry.value|plusify }}</td>
+          <td>{{ pool_balance }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+
+$("#year_select").change(function(){
+  this.form.submit();
+});
+
+</script>
+
+{% endblock %}
