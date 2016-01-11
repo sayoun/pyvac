@@ -472,6 +472,43 @@ class User(Base):
                'year': current_year, 'state': state}
         return ret
 
+    @classmethod
+    def get_rtt_acquired_history(cls, session, user, year):
+        """ Get RTT acquired history """
+        acquired = VacationType.by_name_country(session, name=u'RTT',
+                                                country=user.country,
+                                                user=user, dt=True,
+                                                year=year)
+        if acquired is None:
+            return
+
+        return [{'date': item, 'value': 1} for item in acquired]
+
+    @classmethod
+    def get_rtt_taken_history(cls, session, user, year):
+        """ Get RTT taken history """
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        entries = [req for req in user.requests
+                   if (req.vacation_type.name == u'RTT')
+                   and (req.status in valid_status)
+                   and (req.date_from.year == year)]
+
+        return [{'date': req.date_from, 'value': -req.days} for req in entries]
+
+    @classmethod
+    def get_rtt_history(cls, session, user, year):
+        """
+        Get RTT history for given user: taken + acquired, sorted by date
+        """
+        acquired = cls.get_rtt_acquired_history(session, user, year)
+        if acquired is None:
+            return []
+        taken = cls.get_rtt_taken_history(session, user, year)
+
+        history = sorted(acquired + taken)
+
+        return history
+
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('vacation_type_id', Integer,
@@ -505,11 +542,25 @@ class RTTVacation(BaseVacation):
         start_month = 1
         today = datetime.now()
 
+        # if we provided a year, this means we want to force the year to use
+        year = kwargs.get('year')
+        if year and year != today.year:
+            # go back to the end of the given year
+            today = datetime(year, 12, 1)
+
         user = kwargs.get('user')
         if user and (user.created_at.year == today.year):
             start_month = user.created_at.month
 
         except_months = [8, 12]
+
+        use_dt = kwargs.get('dt')
+        if use_dt:
+            # we want to return datetimes
+            return [datetime(today.year, i, 1)
+                    for i in xrange(start_month, today.month + 1)
+                    if i not in except_months]
+
         return len([i for i in xrange(start_month, today.month + 1)
                     if i not in except_months])
 
@@ -547,7 +598,7 @@ class VacationType(Base):
                         order_by=cls.id)
 
     @classmethod
-    def by_name_country(cls, session, name, country, user=None):
+    def by_name_country(cls, session, name, country, user=None, **kwargs):
         """
         Return allowed count of vacations per name and country
         """
@@ -555,7 +606,7 @@ class VacationType(Base):
         vac = cls.first(session, where=(cls.countries.contains(ctry),
                                         cls.name == name), order_by=cls.id)
 
-        return (cls._vacation_classes[vac.name].acquired(user=user)
+        return (cls._vacation_classes[vac.name].acquired(user=user, **kwargs)
                 if vac else None)
 
 
