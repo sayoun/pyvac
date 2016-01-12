@@ -47,7 +47,6 @@ class Send(View):
             submitted = [d for d in daterange(date_from, date_to)
                          if d.isoweekday() not in [6, 7]
                          and d not in holidays]
-
             days = float(len(submitted))
             pool = None
 
@@ -113,6 +112,14 @@ class Send(View):
                 # check that we have enough RTT to take
                 if rtt_data is not None and days > rtt_data['left']:
                     msg = 'You only have %s RTT to use.' % rtt_data['left']
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+                # check that we request vacations in the allowed year
+                if rtt_data is not None and (
+                        date_from.year != rtt_data['year'] or
+                        date_to.year != rtt_data['year']):
+                    msg = ('RTT can only be used for year %d.' %
+                           rtt_data['year'])
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 

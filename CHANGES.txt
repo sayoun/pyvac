@@ -36,6 +36,8 @@
 - Fixes zh holidays list for 2016:
   * The holiday dates are changed by the Taiwanese governement each October
     so we must override workalendar return list to use the correct ones.
+- Fixes RTT year bug:
+  * User can only request vacation for the same year where RTT is aquired
 - ZH users now use EN locales instead of FR
 
 1.7

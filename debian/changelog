@@ -1,3 +1,10 @@
+pyvac (1.7.0-15) unstable; urgency=medium
+
+  * User can only request vacation for the same year where RTT is
+    aquired
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 12 Jan 2016 10:36:06 +0100
+
 pyvac (1.7.0-14) unstable; urgency=medium
 
   * Add missing template

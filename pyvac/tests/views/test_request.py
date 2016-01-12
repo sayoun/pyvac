@@ -618,7 +618,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        with freeze_time('2016-10-01',
+        with freeze_time('2015-10-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             request = self.create_request({
@@ -631,6 +631,30 @@ class RequestTestCase(case.ViewTestCase):
 
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
+    def test_post_send_rtt_year_ko(self):
+        self.config.testing_securitypolicy(userid=u'janedoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2015-10-01',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 1,
+                'date_from': '06/05/2016 - 06/05/2016',
+                'type': '2',
+                'breakdown': 'AM',
+            })
+            view = Send(request)()
+
+        self.assertIsRedirect(view)
+        # no new requests were made
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+        expected = ['error;RTT can only be used for year 2015.']
+        self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_rtt_usage_empty_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
