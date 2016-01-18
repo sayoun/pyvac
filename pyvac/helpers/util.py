@@ -70,3 +70,11 @@ def JsonHTTPNotFound(message=None):
 def plusify(value):
     prefix = '+' if value > 0 else ''
     return '%s%s' % (prefix, value)
+
+
+def english_suffix(n):
+    if 4 <= n % 100 <= 20:
+        suffix = 'th'
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, 'th')
+    return '%s%s' % (n, suffix)
