@@ -20,7 +20,7 @@ END:VCALENDAR
 """
 
     client = caldav.DAVClient(url)
-    principal = caldav.Principal(client, url)
+    principal = client.principal()
     calendars = principal.calendars()
     if not len(calendars):
         return False
