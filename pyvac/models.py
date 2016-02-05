@@ -10,7 +10,7 @@ import cryptacular.bcrypt
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
                         UnicodeText, func)
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import relationship, synonym
 
 from .helpers.sqla import (Database, SessionFactory, ModelError,
@@ -907,30 +907,32 @@ class Request(Base):
     @classmethod
     def get_previsions(cls, session, end_date=None):
         """ Retrieve future validated requests per user """
-        end_statement = ''
-        if end_date:
-            end_statement = """
-                AND (date_from <= '%(end_date)s'
-                    OR (date_from > '%(end_date)s'
-                        AND date_to < '%(end_date)s'))
-            """ % {'end_date': end_date}
 
-        future_requests = session.execute("""
-            SELECT
-                request.user_id,
-                sum(request.days)
-            FROM
-                request
-            INNER JOIN "user" on "user".id = request.user_id
-            WHERE
-                (date_from >= NOW()
-                    OR (date_from < NOW() AND date_to >= NOW()))
-                %s
-                AND vacation_type_id = 1
-                AND status='APPROVED_ADMIN'
-            GROUP BY user_id
-            ORDER BY user_id;
-            """ % end_statement)
+        # Searching for requests with an timeframe
+        #         [NOW()] ---------- ([end_date])?
+        # exemples:
+        #      <f --r1---- t>
+        #                 <f --r2-- t>
+        #                       <f ------r3-------- t>
+        #      <f ----------- r4 -------------------- t>
+        # => Matching period are periods ending after NOW()
+        #   and if an end_date is specified periods starting before it:
+
+        if end_date:
+            future_requests = session.query(cls.user_id,func.sum(cls.days)).\
+                                filter(cls.date_to >= func.current_timestamp(),
+                                        cls.date_from < end_date,
+                                       cls.vacation_type_id == 1,
+                                       cls.status == 'APPROVED_ADMIN').\
+                                    group_by(cls.user_id).\
+                                    order_by(cls.user_id);
+        else:
+            future_requests = session.query(cls.user_id,func.sum(cls.days)).\
+                                filter(cls.date_to >= func.current_timestamp(),
+                                       cls.vacation_type_id == 1,
+                                       cls.status == 'APPROVED_ADMIN').\
+                                    group_by(cls.user_id).\
+                                    order_by(cls.user_id);
 
         ret = {}
         for user_id, total in future_requests:
