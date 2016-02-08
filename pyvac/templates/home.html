@@ -122,9 +122,9 @@
   $(function() {
     var cur = -1, prv = -1, days = 0;
 
-    var holidays = {{ holidays }};
-    var futures_pending = {{ futures_pending }};
-    var futures_approved = {{ futures_approved }};
+    var holidays = {% set comma=joiner() %}[ {% for day in holidays %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
+    var futures_pending = {% set comma=joiner() %}[ {% for day in futures_pending %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
+    var futures_approved = {% set comma=joiner() %}[ {% for day in futures_approved %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
 
     $.datepicker.regional['fr'] = {
         closeText: 'Fermer',
