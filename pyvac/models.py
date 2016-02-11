@@ -1,3 +1,4 @@
+"""This module contains all internal database objects and methods."""
 # -*- coding: utf-8 -*-
 
 import re
@@ -9,7 +10,7 @@ from dateutil.relativedelta import relativedelta
 import cryptacular.bcrypt
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
-                        UnicodeText, func)
+                        UnicodeText)
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import relationship, synonym
 
@@ -27,22 +28,25 @@ from pyvac.helpers.holiday import utcify
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
-DBSession = lambda: SessionFactory.get('pyvac')()
+DBSession = lambda: SessionFactory.get('pyvac')() # noqa
 Base = Database.register('pyvac')
 
 re_email = re.compile(r'^[^@]+@[a-z0-9]+[-.a-z0-9]+\.[a-z]+$', re.I)
 
 
 def create_engine(settings, prefix='sqlalchemy.', scoped=False):
+    """Create database engine."""
     return create_engine_base('pyvac', settings, prefix, scoped)
 
 
 def dispose_engine():
+    """Dispose database engine."""
     dispose_engine_base
 
 
 class Permission(Base):
-    """Describe a user permission"""
+    """Describe a user permission."""
+
     name = Column(Unicode(255), nullable=False, unique=True)
 
 
@@ -54,18 +58,15 @@ group__permission = Table('group__permission', Base.metadata,
 
 
 class Group(Base):
-    """
-    Describe user's groups.
-    """
+    """Describe user's groups."""
+
     name = Column(Unicode(255), nullable=False, unique=True)
     permissions = relationship(Permission, secondary=group__permission,
                                lazy='select')
 
     @classmethod
     def by_name(cls, session, name):
-        """
-        Get a group from a given name.
-        """
+        """Get a group from a given name."""
         return cls.first(session, where=(cls.name == name,))
 
 
@@ -76,16 +77,13 @@ user__group = Table('user__group', Base.metadata,
 
 
 class Countries(Base):
-    """
-    Describe allowed countries for user
-    """
+    """Describe allowed countries for user."""
+
     name = Column(Unicode(255), nullable=False)
 
     @classmethod
     def by_name(cls, session, name):
-        """
-        Get a country from a given name.
-        """
+        """Get a country from a given name."""
         return cls.first(session, where=(cls.name == name,))
 
 
@@ -124,6 +122,7 @@ class User(Base):
 
     @property
     def name(self):
+        """Internal helper to retrieve user name."""
         return u'%s %s' % (self.firstname.capitalize(),
                            self.lastname.capitalize())\
             if self.firstname and self.lastname else self.login
@@ -139,36 +138,36 @@ class User(Base):
 
     @property
     def is_super(self):
-        """ Check if user has rights to manage other users """
+        """Check if user has rights to manage other users."""
         return self.role in ('admin', 'manager')
 
     @property
     def is_admin(self):
-        """ Check if user has admin rights """
+        """Check if user has admin rights."""
         return self.role in ('admin',)
 
     @property
     def is_manager(self):
-        """ Check if user has admin rights """
+        """Check if user has admin rights."""
         return self.role in ('manager',)
 
     def is_sudoer(self, session):
-        """ Check if user has sudoer rights """
+        """Check if user has sudoer rights."""
         return Group.by_name(session, 'sudoer') in self.groups
 
     @property
     def has_no_role(self):
-        """ Check if user has no specific rights """
+        """Check if user has no specific rights."""
         return self.role in ('user',)
 
     @property
     def nickname(self):
-        """ Returns user nickname """
+        """Return user nickname."""
         return self.uid.lower() if self.uid else ''
 
     @property
     def manager_mail(self):
-        """ Get manager email for a user """
+        """Get manager email for a user."""
         if not self.ldap_user:
             return self.manager.email
         else:
@@ -178,7 +177,7 @@ class User(Base):
 
     @property
     def manager_name(self):
-        """ Get manager name for a user """
+        """Get manager name for a user."""
         if not self.ldap_user:
             return self.manager.name
         else:
@@ -188,9 +187,7 @@ class User(Base):
 
     @classmethod
     def by_login(cls, session, login):
-        """
-        Get a user from a given login.
-        """
+        """Get a user from a given login."""
         user = cls.first(session,
                          where=((cls.login == login),)
                          )
@@ -199,9 +196,7 @@ class User(Base):
 
     @classmethod
     def by_email(cls, session, email):
-        """
-        Get a user from a given email.
-        """
+        """Get a user from a given email."""
         user = cls.first(session,
                          where=((cls.email == email),)
                          )
@@ -210,9 +205,7 @@ class User(Base):
 
     @classmethod
     def by_credentials(cls, session, login, password, ldap=False):
-        """
-        Get a user from given credentials
-        """
+        """Get a user from given credentials."""
         if ldap:
             try:
                 return cls.by_ldap_credentials(session, login, password)
@@ -226,8 +219,8 @@ class User(Base):
                 return user
 
     def validate(self, session, ldap=False):
-        """
-        Validate that the current user can be saved.
+        """Validate that the current user can be saved.
+
         If ldap is active, do not handle passwords.
         """
         errors = []
@@ -251,23 +244,17 @@ class User(Base):
 
     @classmethod
     def by_role(cls, session, role):
-        """
-        Get a user from a given role.
-        """
+        """Get a user from a given role."""
         return cls.find(session, where=((cls.role == role),))
 
     @classmethod
     def by_country(cls, session, country_id):
-        """
-        Get users for a given country.
-        """
+        """Get users for a given country."""
         return cls.find(session, where=((cls.country_id == country_id),))
 
     @classmethod
     def get_admin_by_country(cls, session, country):
-        """
-        Get user with role admin for a specific country
-        """
+        """Get user with role admin for a specific country."""
         return cls.first(session,
                          join=(cls._country),
                          where=(Countries.name == country,
@@ -276,9 +263,7 @@ class User(Base):
 
     @classmethod
     def by_dn(cls, session, user_dn):
-        """
-        Get a user using ldap user dn
-        """
+        """Get a user using ldap user dn."""
         user = cls.first(session,
                          where=((cls.dn == user_dn),)
                          )
@@ -287,9 +272,7 @@ class User(Base):
 
     @classmethod
     def by_ldap_credentials(cls, session, login, password):
-        """
-        Get a user using ldap credentials
-        """
+        """Get a user using ldap credentials."""
         ldap = LdapCache()
         user_data = ldap.authenticate(login, password)
         if user_data is not None:
@@ -341,9 +324,7 @@ class User(Base):
 
     @classmethod
     def create_from_ldap(cls, session, data, group):
-        """
-        Create a new user in database using ldap data information
-        """
+        """Create a new user in database using ldap data information."""
         country = Countries.by_name(session, data['country'].decode('utf-8'))
 
         user = User(login=data['login'].decode('utf-8'),
@@ -371,8 +352,9 @@ class User(Base):
 
     @classmethod
     def sync_ldap_info(cls, session):
-        """
-        Resynchronize ldap information in database, for changes in role/units
+        """Resynchronize ldap information in database.
+
+        for changes in role/units.
         """
         ldap = LdapCache()
         managers = ldap.list_manager()
@@ -403,9 +385,7 @@ class User(Base):
                     user.groups.append(Group.by_id(session, group_id))
 
     def get_admin(self, session):
-        """
-        Get admin for country of user
-        """
+        """Get admin for country of user."""
         if not self.ldap_user:
             return self.get_admin_by_country(session, self.country)
         else:
@@ -415,25 +395,19 @@ class User(Base):
 
     @property
     def country(self):
-        """
-        Get name of associated country.
-        """
+        """Get name of associated country."""
         return self._country.name
 
     @classmethod
     def get_all_nicknames(cls, session):
-        """
-        Retrieve all distinct available nicknames (uid field)
-        """
+        """Retrieve all distinct available nicknames (uid field)."""
         return [nick[0]
                 for nick in session.query(User.uid).distinct().all()
                 if nick[0]]
 
     @classmethod
     def for_admin(cls, session, admin):
-        """
-        Get all users for an admin regarding his country
-        """
+        """Get all users for an admin regarding his country."""
         return cls.find(session,
                         where=(cls.country_id == admin.country_id,
                                cls.id != admin.id,
@@ -442,15 +416,15 @@ class User(Base):
                         order_by=cls.lastname)
 
     def get_rtt_taken_year(self, session, year):
-        """ Retrieve taken RTT for a user for current year """
+        """Retrieve taken RTT for a user for current year."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         return sum([req.days for req in self.requests
-                    if (req.vacation_type.name == u'RTT')
-                    and (req.status in valid_status)
-                    and (req.date_from.year == year)])
+                    if (req.vacation_type.name == u'RTT') and
+                    (req.status in valid_status) and
+                    (req.date_from.year == year)])
 
     def get_rtt_usage(self, session):
-        """ Get RTT usage for a user """
+        """Get RTT usage for a user."""
         allowed = VacationType.by_name_country(session, name=u'RTT',
                                                country=self.country,
                                                user=self)
@@ -474,7 +448,7 @@ class User(Base):
 
     @classmethod
     def get_rtt_acquired_history(cls, session, user, year):
-        """ Get RTT acquired history """
+        """Get RTT acquired history."""
         acquired = VacationType.by_name_country(session, name=u'RTT',
                                                 country=user.country,
                                                 user=user, dt=True,
@@ -486,20 +460,18 @@ class User(Base):
 
     @classmethod
     def get_rtt_taken_history(cls, session, user, year):
-        """ Get RTT taken history """
+        """Get RTT taken history."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         entries = [req for req in user.requests
-                   if (req.vacation_type.name == u'RTT')
-                   and (req.status in valid_status)
-                   and (req.date_from.year == year)]
+                   if (req.vacation_type.name == u'RTT') and
+                   (req.status in valid_status) and
+                   (req.date_from.year == year)]
 
         return [{'date': req.date_from, 'value': -req.days} for req in entries]
 
     @classmethod
     def get_rtt_history(cls, session, user, year):
-        """
-        Get RTT history for given user: taken + acquired, sorted by date
-        """
+        """Get RTT history for given user: taken + acquired, sorted by date."""
         acquired = cls.get_rtt_acquired_history(session, user, year)
         if acquired is None:
             return []
@@ -519,22 +491,24 @@ vacation_type__country = Table('vacation_type__country', Base.metadata,
 
 
 class BaseVacation(object):
+    """Base class to use to customize Vacation type behavior."""
 
     name = None
 
     @classmethod
     def acquired(cls, **kwargs):
-        """ Return acquired vacation this year to current day. """
+        """Return acquired vacation this year to current day."""
         raise NotImplementedError
 
 
 class RTTVacation(BaseVacation):
+    """Implement RTT vacation behavior."""
 
     name = u'RTT'
 
     @classmethod
     def acquired(cls, **kwargs):
-        """ Return acquired vacation this year to current day.
+        """Return acquired vacation this year to current day.
 
         We acquire one RTT at the start of each month except in august and
         december.
@@ -566,9 +540,8 @@ class RTTVacation(BaseVacation):
 
 
 class VacationType(Base):
-    """
-    Describe allowed type of vacation to request
-    """
+    """Describe allowed type of vacation to request."""
+
     name = Column(Unicode(255), nullable=False)
     visibility = Column(Unicode(255), nullable=True)
 
@@ -583,25 +556,19 @@ class VacationType(Base):
 
     @classmethod
     def by_name(cls, session, name):
-        """
-        Get a vacation type from a given name.
-        """
+        """Get a vacation type from a given name."""
         return cls.first(session, where=(cls.name == name,))
 
     @classmethod
     def by_country(cls, session, country):
-        """
-        Get vacation type from a given country.
-        """
+        """Get vacation type from a given country."""
         ctry = Countries.by_name(session, country)
         return cls.find(session, where=(cls.countries.contains(ctry),),
                         order_by=cls.id)
 
     @classmethod
     def by_name_country(cls, session, name, country, user=None, **kwargs):
-        """
-        Return allowed count of vacations per name and country
-        """
+        """Return allowed count of vacations per name and country."""
         ctry = Countries.by_name(session, country)
         vac = cls.first(session, where=(cls.countries.contains(ctry),
                                         cls.name == name), order_by=cls.id)
@@ -611,9 +578,7 @@ class VacationType(Base):
 
 
 class Request(Base):
-    """
-    Describe a user request for vacation.
-    """
+    """Describe a user request for vacation."""
 
     date_from = Column(DateTime, nullable=False)
     date_to = Column(DateTime, nullable=False)
@@ -653,20 +618,18 @@ class Request(Base):
     user = relationship(User, backref='requests')
 
     def update_status(self, status):
-        """ Reset notified flag when changing status """
+        """Reset notified flag when changing status."""
         self.status = status
         self.notified = False
 
     def flag_error(self, message):
-        """ Set request in ERROR and assign message """
+        """Set request in ERROR and assign message."""
         self.status = 'ERROR'
         self.error_message = message
 
     @classmethod
     def by_manager(cls, session, manager, count=None):
-        """
-        Get requests for users under given manager.
-        """
+        """Get requests for users under given manager."""
         if manager.ldap_user:
             return cls.by_manager_ldap(session, manager, count=count)
         # we only want to display less than 3 months data
@@ -681,9 +644,7 @@ class Request(Base):
 
     @classmethod
     def by_manager_ldap(cls, session, manager, count=None):
-        """
-        Get requests for users under given manager.
-        """
+        """Get requests for users under given manager."""
         # we only want to display less than 3 months data
         date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
@@ -696,9 +657,7 @@ class Request(Base):
 
     @classmethod
     def by_user(cls, session, user, count=None):
-        """
-        Get requests for given user.
-        """
+        """Get requests for given user."""
         # we only want to display less than 1 year data
         date_limit = datetime.now() - timedelta(days=366)
         return cls.find(session,
@@ -710,9 +669,7 @@ class Request(Base):
 
     @classmethod
     def by_user_future(cls, session, user, count=None):
-        """
-        Get requests for given user in the future.
-        """
+        """Get requests for given user in the future."""
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status != 'CANCELED',
@@ -724,8 +681,7 @@ class Request(Base):
 
     @classmethod
     def by_user_future_pending(cls, session, user, count=None):
-        """
-        Get pending requests for given user in the future
+        """Get pending requests for given user in the future.
 
         retrieve status = PENDING, ACCEPTED_MANAGER
         """
@@ -739,8 +695,7 @@ class Request(Base):
 
     @classmethod
     def by_user_future_approved(cls, session, user, count=None):
-        """
-        Get pending requests for given user in the future
+        """Get pending requests for given user in the future.
 
         retrieve status = APPROVED_ADMIN
         """
@@ -753,9 +708,7 @@ class Request(Base):
 
     @classmethod
     def by_status(cls, session, status, count=None, notified=False):
-        """
-        Get requests for given status.
-        """
+        """Get requests for given status."""
         return cls.find(session,
                         where=(cls.status == status,
                                cls.notified == notified),
@@ -764,9 +717,7 @@ class Request(Base):
 
     @classmethod
     def all_for_admin(cls, session, count=None):
-        """
-        Get all requests manageable by admin.
-        """
+        """Get all requests manageable by admin."""
         # we only want to display less than 3 months data
         date_limit = datetime.now() - timedelta(days=90)
         return cls.find(session,
@@ -778,9 +729,7 @@ class Request(Base):
 
     @classmethod
     def all_for_admin_per_country(cls, session, country, count=None):
-        """
-        Get all requests manageable by admin per country.
-        """
+        """Get all requests manageable by admin per country."""
         country_id = Countries.by_name(session, country).id
         # we only want to display less than 3 months data
         date_limit = datetime.now() - timedelta(days=90)
@@ -796,9 +745,9 @@ class Request(Base):
 
     @classmethod
     def in_conflict_manager(cls, session, req, count=None):
-        """
-        Get all requests conflicting on dates with given request,
-        and with common user manager.
+        """Get all requests conflicting on given request dates.
+
+        with common user manager.
         """
         return cls.find(session,
                         join=(cls.user),
@@ -820,9 +769,9 @@ class Request(Base):
 
     @classmethod
     def in_conflict_ou(cls, session, req, count=None):
-        """
-        Get all requests conflicting on dates with given request,
-        and with common user ou (organisational unit)
+        """Get all requests conflicting on given request dates.
+
+        with common user ou (organisational unit)
         """
         return cls.find(session,
                         join=(cls.user),
@@ -844,9 +793,7 @@ class Request(Base):
 
     @classmethod
     def in_conflict(cls, session, req, count=None):
-        """
-        Get all requests conflicting on dates with given request.
-        """
+        """Get all requests conflicting on dates with given request."""
         return cls.find(session,
                         join=(cls.user),
                         where=(or_(and_(cls.date_from >= req.date_from,
@@ -906,8 +853,7 @@ class Request(Base):
 
     @classmethod
     def get_previsions(cls, session, end_date=None):
-        """ Retrieve future validated requests per user """
-
+        """Retrieve future validated requests per user."""
         # Searching for requests with an timeframe
         #         [NOW()] ---------- ([end_date])?
         # exemples:
@@ -919,20 +865,22 @@ class Request(Base):
         #   and if an end_date is specified periods starting before it:
 
         if end_date:
-            future_requests = session.query(cls.user_id,func.sum(cls.days)).\
-                                filter(cls.date_to >= func.current_timestamp(),
-                                        cls.date_from < end_date,
-                                       cls.vacation_type_id == 1,
-                                       cls.status == 'APPROVED_ADMIN').\
-                                    group_by(cls.user_id).\
-                                    order_by(cls.user_id);
+            future_requests = session.query(
+                cls.user_id, func.sum(cls.days)).\
+                filter(cls.date_to >= func.current_timestamp(),
+                       cls.date_from < end_date,
+                       cls.vacation_type_id == 1,
+                       cls.status == 'APPROVED_ADMIN').\
+                group_by(cls.user_id).\
+                order_by(cls.user_id)
         else:
-            future_requests = session.query(cls.user_id,func.sum(cls.days)).\
-                                filter(cls.date_to >= func.current_timestamp(),
-                                       cls.vacation_type_id == 1,
-                                       cls.status == 'APPROVED_ADMIN').\
-                                    group_by(cls.user_id).\
-                                    order_by(cls.user_id);
+            future_requests = session.query(
+                cls.user_id, func.sum(cls.days)).\
+                filter(cls.date_to >= func.current_timestamp(),
+                       cls.vacation_type_id == 1,
+                       cls.status == 'APPROVED_ADMIN').\
+                group_by(cls.user_id).\
+                order_by(cls.user_id)
 
         ret = {}
         for user_id, total in future_requests:
@@ -942,8 +890,7 @@ class Request(Base):
 
     @classmethod
     def get_active(cls, session, date=None):
-        """
-        Get all active requests for give date
+        """Get all active requests for give date.
 
         default to today's date
         """
@@ -961,24 +908,21 @@ class Request(Base):
 
     @property
     def type(self):
-        """
-        Get name of chosen vacation type.
-        """
+        """Get name of chosen vacation type."""
         return _(self.vacation_type.name, self.user.country)
 
     @property
     def pool(self):
-        """
-        Retrieve pool status stored in json
-        """
+        """Retrieve pool status stored in json."""
         if self.pool_status:
             return json.loads(self.pool_status)
         return {}
 
     @property
     def summary(self):
-        """
-        Get a short string representation of a request, for tooltip.
+        """Get a short string representation of a request.
+
+        for tooltip.
         """
         return ('%s: %s - %s' %
                 (self.user.name,
@@ -987,8 +931,9 @@ class Request(Base):
 
     @property
     def summarycal(self):
-        """
-        Get a short string representation of a request, for calendar summary.
+        """Get a short string representation of a request.
+
+        for calendar summary.
         """
         label = ' %s' % self.label if self.label else ''
         return ('%s - %.1f %s%s' %
@@ -996,9 +941,7 @@ class Request(Base):
 
     @property
     def summarycsv(self):
-        """
-        Get a string representation in csv format of a request.
-        """
+        """Get a string representation in csv format of a request."""
         # name, datefrom, dateto, number of days, type of days, label, message
         label = '%s' % self.label if self.label else ''
         message = '%s' % self.message if self.message else ''
@@ -1014,8 +957,9 @@ class Request(Base):
 
     @property
     def summarymail(self):
-        """
-        Get a short string representation of a request, for mail summary.
+        """Get a short string representation of a request.
+
+        for mail summary.
         """
         label = ' %s' % self.label if self.label else ''
         return ('%s: %s - %s (%.1f %s%s)' %
@@ -1028,8 +972,7 @@ class Request(Base):
 
     @property
     def timestamps(self):
-        """
-        Return request dates as list of timestamps
+        """Return request dates as list of timestamps.
 
         timestamp are in javascript format
         """
@@ -1038,9 +981,7 @@ class Request(Base):
                 if date.isoweekday() not in [6, 7]]
 
     def add_to_cal(self, caldav_url):
-        """
-        Add entry in calendar for request
-        """
+        """Add entry in calendar for request."""
         if self.ics_url:
             log.info('Tried to add to cal request %d but ics_url already set'
                      % self.id)
@@ -1065,8 +1006,7 @@ class Request(Base):
             self.flag_error(str(err))
 
     def generate_vcal_entry(self):
-        """ Generate vcal entry for request"""
-
+        """Generate vcal entry for request."""
         vcal_entry = """\
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -1091,24 +1031,25 @@ END:VCALENDAR
         return vcal_entry
 
     def __eq__(self, other):
+        """Magic method to allow request comparison."""
         return (
-            isinstance(other, self.__class__)
-            and hasattr(self, 'id')
-            and hasattr(other, 'id')
-            and self.id == other.id)
+            isinstance(other, self.__class__) and
+            hasattr(self, 'id') and
+            hasattr(other, 'id') and
+            self.id == other.id)
 
     def __ne__(self, other):
+        """Magic method to allow request comparison."""
         return (
-            isinstance(other, self.__class__)
-            and hasattr(self, 'id')
-            and hasattr(other, 'id')
-            and self.id != other.id)
+            isinstance(other, self.__class__) and
+            hasattr(self, 'id') and
+            hasattr(other, 'id') and
+            self.id != other.id)
 
 
 class PasswordRecovery(Base):
-    """
-    Describe password recovery attempts
-    """
+    """Describe password recovery attempts."""
+
     hash = Column(Unicode(255), nullable=False, unique=True)
     date_end = Column(DateTime, nullable=False)
     user_id = Column('user_id', ForeignKey(User.id), nullable=False)
@@ -1116,29 +1057,25 @@ class PasswordRecovery(Base):
 
     @classmethod
     def by_hash(cls, session, hash):
-        """
-        Get a recovery entry from a given hash.
-        """
+        """Get a recovery entry from a given hash."""
         return cls.first(session, where=(cls.hash == hash,))
 
     @property
     def expired(self):
-        """
-        Check if a recovery entry have expired.
-        """
+        """Check if a recovery entry have expired."""
         from datetime import datetime
         return self.date_end < datetime.now()
 
 
 class Sudoer(Base):
-    """
-    To allow a user to have access to another user interface
-    """
+    """To allow a user to have access to another user interface."""
+
     source_id = Column(Integer, nullable=False)
     target_id = Column(Integer, nullable=False)
 
     @classmethod
     def alias(cls, session, user):
+        """Retrieve list of aliases for given user."""
         targets = cls.find(session, where=(cls.source_id == user.id,))
         if targets:
             return [User.by_id(session, target.target_id)
@@ -1147,4 +1084,5 @@ class Sudoer(Base):
 
     @classmethod
     def list(cls, session):
+        """Retrieve all sudoers entries."""
         return cls.find(session, order_by=cls.source_id)
