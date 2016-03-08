@@ -123,13 +123,14 @@ class RedirectView(View):
     def render(self):
         return self.redirect()
 
-    def redirect(self):
+    def redirect(self, redirect_route=None):
         settings = self.request.registry.settings
         if 'pyvac.force_scheme' in settings:
             scheme = settings.get('pyvac.force_scheme')
             self.redirect_kwargs['_scheme'] = scheme
 
-        return HTTPFound(location=route_url(self.redirect_route, self.request,
+        route = redirect_route or self.redirect_route
+        return HTTPFound(location=route_url(route, self.request,
                                             **self.redirect_kwargs))
 
 
@@ -186,6 +187,10 @@ class CreateView(RedirectView):
         log.debug('rendering %s' % self.__class__.__name__)
         errors = []
         model = self.get_model()
+
+        if not self.user.is_admin:
+            if model.id != self.user.id:
+                return self.redirect('home')
 
         if 'form.submitted' in self.request.params:
 
