@@ -1,3 +1,9 @@
+pyvac (1.8.0-1) unstable; urgency=medium
+
+  * New release 1.8
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 09 Mar 2016 19:38:13 +0100
+
 pyvac (1.7.0-15) unstable; urgency=medium
 
   * User can only request vacation for the same year where RTT is

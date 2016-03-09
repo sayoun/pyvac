@@ -38,7 +38,28 @@
     so we must override workalendar return list to use the correct ones.
 - Fixes RTT year bug:
   * User can only request vacation for the same year where RTT is aquired
+- Fix role check for permissions on Create/Edit view
+- Add feature flags toggles, activable per user login using a configuration file
+  defined in .ini file, key is pyvac.features.users_flagfile
+- Add CP Pool feature:
+  * handle Acquis/Restant different pool values, different expiration date in time
+  * can be initiated with starting values per user, using configuration file
+    defined in .ini file, key is pyvac.vacation.cp_class.base_file
+  * request list page now display CP pool values for manager/admin for each request
+  * pool history page now also display CP pool history
+  * add new view for admins, to see all users pool, to decide which user has to go
+    on vacation or not.
+  * update LDAP helper to retrieve user arrivalDate field
+  * update User model to handle arrival date, seniority and CP computation
+  * update home page to display employee next anniversary is available
+  * add constraint checks when a request CP is submitted
+- Add RTT pool exception months values in .ini file
+  key is pyvac.vacation.rtt_class.except_months and take a list of month which do not
+  grant an RTT
 - ZH users now use EN locales instead of FR
+- Various UI enhancements
+- Update calendar helper code to prevent 'path handling error' with some caldav server
+  like baikal
 
 1.7
 ---
