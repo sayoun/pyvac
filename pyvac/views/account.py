@@ -35,7 +35,7 @@ class List(View):
         users_teams = {}
         if use_ldap:
             # # synchronise user groups/roles
-            # User.sync_ldap_info(self.session)
+            User.sync_ldap_info(self.session)
             ldap = LdapCache()
 
             user_attr = ldap.get_users_units()
