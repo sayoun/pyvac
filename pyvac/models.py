@@ -4,8 +4,10 @@
 import re
 import logging
 import json
+import math
 from datetime import datetime, timedelta
 
+from pyramid.settings import asbool, aslist
 from dateutil.relativedelta import relativedelta
 import cryptacular.bcrypt
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
@@ -13,6 +15,12 @@ from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         UnicodeText)
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import relationship, synonym
+
+import yaml
+try:
+    from yaml import CSafeLoader as YAMLLoader
+except ImportError:
+    from yaml import SafeLoader as YAMLLoader
 
 from .helpers.sqla import (Database, SessionFactory, ModelError,
                            create_engine as create_engine_base,
@@ -32,6 +40,10 @@ DBSession = lambda: SessionFactory.get('pyvac')() # noqa
 Base = Database.register('pyvac')
 
 re_email = re.compile(r'^[^@]+@[a-z0-9]+[-.a-z0-9]+\.[a-z]+$', re.I)
+
+
+class FirstCycleException(Exception):
+    """Raised when impossible to retrieve cycle boundaries."""
 
 
 def create_engine(settings, prefix='sqlalchemy.', scoped=False):
@@ -120,6 +132,9 @@ class User(Base):
     ou = Column(Unicode(255), nullable=True)
     uid = Column(Unicode(255), nullable=True)
 
+    firm = None
+    feature_flags = {}
+
     @property
     def name(self):
         """Internal helper to retrieve user name."""
@@ -184,6 +199,47 @@ class User(Base):
             ldap = LdapCache()
             user_data = ldap.search_user_by_dn(self.manager_dn)
             return user_data['login']
+
+    @property
+    def arrival_date(self):
+        """Get arrival date in the company for a user."""
+        if not self.ldap_user:
+            return
+
+        ldap = LdapCache()
+        try:
+            user_data = ldap.search_user_by_dn(self.dn)
+            return user_data['arrivalDate']
+        except:
+            pass
+
+    @property
+    def seniority(self):
+        """Return how many years the user has been employed."""
+        arrival_date = self.arrival_date
+        if not arrival_date:
+            return 0
+
+        today = datetime.now()
+        nb_year = today.year - arrival_date.year
+        current_arrival_date = arrival_date.replace(year=today.year)
+        if today < current_arrival_date:
+            nb_year = nb_year - 1
+
+        return nb_year
+
+    @property
+    def anniversary(self):
+        """Return how many days left until next anniversary."""
+        arrival_date = self.arrival_date
+        if not arrival_date:
+            return (False, 0)
+
+        today = datetime.now()
+        current_arrival_date = arrival_date.replace(year=today.year)
+        delta = (today - current_arrival_date).days
+
+        return (True if delta == 0 else False, abs(delta))
 
     @classmethod
     def by_login(cls, session, login):
@@ -415,6 +471,22 @@ class User(Base):
                                ),
                         order_by=cls.lastname)
 
+    @classmethod
+    def load_feature_flags(cls, filename):
+        """Load features flag per users."""
+        try:
+            with open(filename) as fdesc:
+                conf = yaml.load(fdesc, YAMLLoader)
+            cls.feature_flags = conf.get('users_flags', {})
+            log.info('Loaded users feature flags file %s: %s' %
+                     (filename, cls.feature_flags))
+        except IOError:
+            log.warn('Cannot load users feature flags file %s' % filename)
+
+    def has_feature(self, feature):
+        """Check if user has a feature enabled."""
+        return feature in self.feature_flags.get(self.login, [])
+
     def get_rtt_taken_year(self, session, year):
         """Retrieve taken RTT for a user for current year."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
@@ -481,6 +553,148 @@ class User(Base):
 
         return history
 
+    @classmethod
+    def get_cp_acquired_history(cls, acquired, today=None):
+        """Get CP acquired history."""
+        today = today or datetime.now()
+        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
+
+        delta = relativedelta(cycle_start, today)
+        months = abs(delta.months)
+
+        return [{'date': cycle_start + relativedelta(months=idx),
+                 'value': CPVacation.coeff}
+                for idx, item in enumerate(xrange(months + 1))]
+
+    @classmethod
+    def get_cp_restant_history(cls, session, user, today=None):
+        """Get CP restant history."""
+        today = today or datetime.now()
+        cycle_start, cycle_end = CPVacation.get_cycle_boundaries(today)
+
+        thresholds = [cycle_start,
+                      cycle_start + relativedelta(months=7),
+                      cycle_end]
+
+        def get_restant(date):
+            data = CPVacation.acquired(user, date, session)
+            return data['restant']
+
+        ret = {}
+        for date in thresholds:
+            ret[date] = get_restant(date)
+        return ret
+
+    @classmethod
+    def get_cp_taken_history(cls, session, user, date):
+        """Get CP taken history."""
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        entries = [req for req in user.requests
+                   if (req.vacation_type.name == u'CP') and
+                   (req.status in valid_status) and
+                   (req.date_from >= date)]
+
+        # set taken to 12h hour so sorted history correctly put the acquired
+        # before the taken
+        return [{'date': req.date_from.replace(hour=12),
+                 'value': -req.days} for req in entries]
+
+    def get_cp_taken_year(self, session, date):
+        """Retrieve taken CP for a user for current year."""
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        return sum([req.days for req in self.requests
+                    if (req.vacation_type.name == u'CP') and
+                    (req.status in valid_status) and
+                    (req.date_from >= date)])
+
+    def get_cp_taken_cycle(self, session, date_start, date_end):
+        """Retrieve taken CP for a user for current cycle."""
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        return sum([req.days for req in self.requests
+                    if (req.vacation_type.name == u'CP') and
+                    (req.status in valid_status) and
+                    (req.date_from >= date_start) and
+                    (req.date_to <= date_end)])
+
+    @classmethod
+    def get_cp_history(cls, session, user, year):
+        """Get CP history for given user: taken + acquired, sorted by date."""
+        today = datetime.now().replace(year=year)
+        if today < CPVacation.epoch:
+            return [], []
+
+        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
+        if cycle_start < CPVacation.epoch:
+            cycle_start = CPVacation.epoch
+
+        allowed = VacationType.by_name_country(session, name=u'CP',
+                                               country=user.country,
+                                               user=user,
+                                               today=today)
+        if allowed is None:
+            return [], []
+
+        raw_restant = cls.get_cp_restant_history(session, user, today)
+        raw_acquired = cls.get_cp_acquired_history(allowed, today)
+        acquired = []
+        total = 0
+        for item in raw_acquired:
+            if item['date'] < cycle_start:
+                total += item['value']
+            else:
+                if total:
+                    item['value'] = total
+                    total = 0
+                acquired.append(item)
+        taken = cls.get_cp_taken_history(session, user, cycle_start)
+
+        history = sorted(acquired + taken)
+
+        def get_restant_val(date):
+            value = raw_restant.get(date)
+            if not value:
+                for item in raw_restant:
+                    if item > date:
+                        value = raw_restant[item]
+                        break
+            return value
+
+        restant = dict([(entry['date'], get_restant_val(entry['date']))
+                        for entry in history])
+
+        return history, restant
+
+    def get_cp_usage(self, session, today=None):
+        """Get CP usage for a user."""
+        allowed = VacationType.by_name_country(session, name=u'CP',
+                                               country=self.country,
+                                               user=self,
+                                               today=today)
+        if allowed is None:
+            return
+
+        cycle_start = allowed['cycle_start']
+        cycle_end = allowed['cycle_end']
+        cycle_end = allowed['cycle_end'].replace(year=cycle_end.year + 1)
+        taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end)
+        log.debug('taken %d for %s -> %s' % (taken, cycle_start, cycle_end))
+
+        left_restant, left_acquis = CPVacation.consume(taken,
+                                                       allowed['restant'],
+                                                       allowed['acquis'])
+
+        # must handle 2 pools: acquis and restant
+        ret_acquis = {
+            'allowed': allowed['acquis'],
+            'left': left_acquis,
+            'expire': cycle_end}
+        ret_restant = {
+            'allowed': allowed['restant'],
+            'left': left_restant,
+            'expire': allowed['cycle_end'] + relativedelta(months=7)}
+        return {'acquis': ret_acquis, 'restant': ret_restant,
+                'taken': taken}
+
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('vacation_type_id', Integer,
@@ -505,6 +719,13 @@ class RTTVacation(BaseVacation):
     """Implement RTT vacation behavior."""
 
     name = u'RTT'
+    except_months = []
+
+    @classmethod
+    def initialize(cls, except_months):
+        cls.except_months = [int(month) for month in except_months]
+        log.info('Initialize except_months for RTT vacation: %s ' %
+                 cls.except_months)
 
     @classmethod
     def acquired(cls, **kwargs):
@@ -526,17 +747,144 @@ class RTTVacation(BaseVacation):
         if user and (user.created_at.year == today.year):
             start_month = user.created_at.month
 
-        except_months = [8, 12]
-
         use_dt = kwargs.get('dt')
         if use_dt:
             # we want to return datetimes
             return [datetime(today.year, i, 1)
                     for i in xrange(start_month, today.month + 1)
-                    if i not in except_months]
+                    if i not in cls.except_months]
 
         return len([i for i in xrange(start_month, today.month + 1)
-                    if i not in except_months])
+                    if i not in cls.except_months])
+
+
+class CPVacation(BaseVacation):
+    """Implement CP vacation behavior."""
+
+    name = u'CP'
+    epoch = datetime(2015, 6, 1)
+    coeff = 2.08  # per month
+    users_base = {}
+
+    @classmethod
+    def initialize(cls, filename):
+        try:
+            with open(filename) as fdesc:
+                conf = yaml.load(fdesc, YAMLLoader)
+            cls.users_base = conf.get('users_base')
+            base_date = conf.get('date')
+            base_date = datetime.strptime(base_date, '%d/%m/%Y')
+            cls.epoch = base_date
+            log.info('Loaded user base file %s for CP vacation' % filename)
+        except IOError:
+            log.warn('Cannot load user base file %s for CP vacation' %
+                     filename)
+
+    @classmethod
+    def consume(cls, taken, restant, acquis):
+        """First remove taken CP from Restant pool then from Acquis pool."""
+        exceed = 0
+        left_restant = restant - abs(taken)
+        if left_restant < 0:
+            exceed = abs(left_restant)
+            left_restant = 0
+        left_acquis = acquis - exceed
+        return left_restant, left_acquis
+
+    @classmethod
+    def get_cycle_boundaries(cls, date, raising=None):
+        """Retrieve cycle start and end date for given date.
+
+        Will raise an exception if raising parameter is passed,
+        this is useful for stopping recursion calls.
+        """
+        if date >= datetime(date.year, 6, 1):
+            start = datetime(date.year, 5, 31)
+            end = datetime(date.year + 1, 5, 31)
+        else:
+            start = datetime(date.year - 1, 5, 31)
+            end = datetime(date.year, 5, 31)
+
+        if raising and ((start < cls.epoch) or (end < cls.epoch)):
+            raise FirstCycleException()
+
+        return start, end
+
+    @classmethod
+    def get_acquis(cls, user, starting_date, today=None):
+        """."""
+        today = today or datetime.now()
+
+        delta = relativedelta(starting_date, today)
+        months = abs(delta.months)
+        years = abs(delta.years)
+
+        acquis = None
+        cp_bonus = 0
+        # add bonus CP based on arrival_date, 1 more per year each 5 years
+        # cp bonus are added on the last acquisition day of previous cycle,
+        # so on 31/05 of year - 1
+        if years > 0:
+            cp_bonus = int(math.floor(user.seniority / 5))
+
+        if not months and years:
+            months = 12
+            acquis = 25 + cp_bonus
+
+        log.debug('%s: using coeff %s * months %s + (bonus %s)' %
+                  (user.login, cls.coeff, months, cp_bonus))
+        acquis = acquis or (months * cls.coeff)
+        return acquis
+
+    @classmethod
+    def acquired(cls, user, today=None, session=None, **kwargs):
+        """Return acquired vacation this year to current day.
+
+        We acquire a base of 25 CP per year.
+        A year period is not a normal year but from 31/05/year to 31/05/year+1
+        We call that a cycle.
+
+        CP values exists in 2 pools: restant and acquis.
+        restant = acquis from previous cycle, except for first cycle
+        where we retrieve them in a file if available otherwise we start
+        with restant = 0
+
+        WORKFLOW
+        - retrieve current cycle boundaries
+        - retrieve previous cycle boundaries
+        - if previous cycle is available (i.e we are not in the first cycle)
+        - retrieve amount of restant/acquis from previous cycle
+        - use acquis from previous cycle for restant of current one
+        """
+        today = today or datetime.now()
+        base_date, _ = cls.get_cycle_boundaries(today)
+
+        restant = 0
+        try:
+            start, end = cls.get_cycle_boundaries(today, raising=True)
+            acquis = cls.get_acquis(user, start, today)
+
+            previous_usage = user.get_cp_usage(session, today=start)
+            taken = user.get_cp_taken_cycle(session, start, end)
+            # add taken value as it is already consumed by get_cp_usage method
+            # so we don't consume it twice.
+            print 'previous_usage', previous_usage
+            restant_left = 0
+            # keep left restant value until 31/12 of current cycle
+            if today <= start + relativedelta(months=7):
+                restant_left = previous_usage['restant']['left']
+                print 'we keep restant left', restant_left
+            restant = previous_usage['acquis']['left'] + taken + restant_left
+
+        except FirstCycleException:
+            # cannot go back before first cycle, so use current cycle values
+            start, end = cls.get_cycle_boundaries(today)
+            acquis = cls.get_acquis(user, start, today)
+            restant = cls.users_base.get(user.login, 0)
+            start = cls.epoch
+
+        return {'acquis': acquis, 'restant': restant,
+                'cycle_start': start, 'cycle_end': end}
 
 
 class VacationType(Base):
@@ -573,7 +921,9 @@ class VacationType(Base):
         vac = cls.first(session, where=(cls.countries.contains(ctry),
                                         cls.name == name), order_by=cls.id)
 
-        return (cls._vacation_classes[vac.name].acquired(user=user, **kwargs)
+        return (cls._vacation_classes[vac.name].acquired(user=user,
+                                                         session=session,
+                                                         **kwargs)
                 if vac else None)
 
 
@@ -771,7 +1121,7 @@ class Request(Base):
     def in_conflict_ou(cls, session, req, count=None):
         """Get all requests conflicting on given request dates.
 
-        with common user ou (organisational unit)
+        and with common user ou (organisational unit)
         """
         return cls.find(session,
                         join=(cls.user),
@@ -890,7 +1240,8 @@ class Request(Base):
 
     @classmethod
     def get_active(cls, session, date=None):
-        """Get all active requests for give date.
+        """
+        Get all active requests for give date.
 
         default to today's date
         """
@@ -920,10 +1271,7 @@ class Request(Base):
 
     @property
     def summary(self):
-        """Get a short string representation of a request.
-
-        for tooltip.
-        """
+        """Get a short string representation of a request, for tooltip."""
         return ('%s: %s - %s' %
                 (self.user.name,
                  self.date_from.strftime('%d/%m/%Y'),
@@ -972,7 +1320,8 @@ class Request(Base):
 
     @property
     def timestamps(self):
-        """Return request dates as list of timestamps.
+        """
+        Return request dates as list of timestamps.
 
         timestamp are in javascript format
         """
@@ -1086,3 +1435,32 @@ class Sudoer(Base):
     def list(cls, session):
         """Retrieve all sudoers entries."""
         return cls.find(session, order_by=cls.source_id)
+
+
+def includeme(config):
+    """
+    Pyramid includeme file for the :class:`pyramid.config.Configurator`
+    """
+
+    settings = config.registry.settings
+
+    if 'pyvac.vacation.cp_class.enable' in settings:
+        cp_class = asbool(settings['pyvac.vacation.cp_class.enable'])
+        if cp_class:
+            if 'pyvac.vacation.cp_class.base_file' in settings:
+                file = settings['pyvac.vacation.cp_class.base_file']
+                CPVacation.initialize(file)
+
+    if 'pyvac.vacation.rtt_class.enable' in settings:
+        rtt_class = asbool(settings['pyvac.vacation.rtt_class.enable'])
+        if rtt_class:
+            if 'pyvac.vacation.rtt_class.except_months' in settings:
+                except_months = settings['pyvac.vacation.rtt_class.except_months'] # noqa
+                RTTVacation.initialize(aslist(except_months))
+
+    if 'pyvac.firm' in settings:
+        User.firm = settings['pyvac.firm']
+
+    if 'pyvac.features.users_flagfile' in settings:
+        file = settings['pyvac.features.users_flagfile']
+        User.load_feature_flags(file)

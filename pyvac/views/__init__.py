@@ -19,6 +19,7 @@ class Home(RedirectView):
         _ = self.request.translate
 
         self.user.rtt = self.user.get_rtt_usage(self.session)
+        self.user.cp = self.user.get_cp_usage(self.session)
 
         holidays = get_holiday(self.user)
 

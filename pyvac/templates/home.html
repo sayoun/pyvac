@@ -109,7 +109,14 @@
 <div class="span5">
     <legend>Informations</legend>
     <ul>
+        {% if pyvac.user.arrival_date %}
+        <li><b>{{ pyvac.user.anniversary[1] }}</b> days until your {{ (pyvac.user.seniority + 1)|english_suffix}} {% if pyvac.user.firm %}{{ pyvac.user.firm }}{% else %}anni{% endif %}versary ! ({{ pyvac.user.arrival_date.strftime('%d/%m/%Y') }})</li>
+        {% endif %}
         <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
+        {% if pyvac.user.has_feature('cp_class') %}
+        <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP Restant</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
+        <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP Acquis</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
+        {% endif %}
     </ul>
 </div>
 {% endif %}

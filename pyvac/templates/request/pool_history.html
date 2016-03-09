@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div id="pool-contain" class="span6">
-  <legend>RTT Pool history for {{ user.name }}</legend>
+<div id="header-pool" class="span12">
+  <legend>Pool history for {{ user.name }}</legend>
 
   <form class="form-inline" method="GET">
       <label>{% trans %}Select year:{% endtrans %}</label>
@@ -12,8 +12,12 @@
       {% endfor %}
        </select>
   </form>
+</div>
 
-  <table id="pool_history" class="table table-bordered table-condensed table-striped table-hover tablesorter-blue">
+<div id="pool-contain-rtt" class="span6">
+  <legend>RTT</legend>
+
+  <table id="pool_history_rtt" class="table table-bordered table-condensed table-striped table-hover tablesorter-blue">
     <thead>
       <tr>
         <th>{% trans %}Date{% endtrans %}</th>
@@ -23,7 +27,7 @@
     </thead>
     <tbody>
       {% set pool_balance = 0 %}
-      {% for entry in pool_history %}
+      {% for entry in pool_history['RTT'] %}
         {% set pool_balance = pool_balance + entry.value %}
         <tr>
           <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
@@ -34,6 +38,51 @@
     </tbody>
   </table>
 </div>
+
+{% if pyvac.user.has_feature('cp_class') %}
+
+<div id="pool-contain-cp" class="span6">
+  <legend>CP</legend>
+
+  <table id="pool_history_cp" class="table table-bordered table-condensed table-striped table-hover tablesorter-blue">
+    <thead>
+      <tr>
+        <th>{% trans %}Date{% endtrans %}</th>
+        <th>{% trans %}Change{% endtrans %}</th>
+        <th>{% trans %}Balance Restant{% endtrans %}</th>
+        <th>{% trans %}Balance Acquis{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set pool_balance_acquis = 0 %}
+      {% for entry in pool_history['CP']['history'] %}
+        {% if pool_balance_acquis == 0 %}
+          {% set init_acquis = True %}
+          {% set pool_balance_restant = pool_history['CP']['restant'][entry.date] %}
+        {% else %}
+          {% set init_acquis = False %}
+        {% endif %}
+
+        {% set last_acquis = pool_balance_acquis %}
+        {% set last_restant = pool_balance_restant %}
+        {% set pool_balance_restant = last_restant %}
+        {% if entry.value < 0 %}
+            {% set pool_balance_restant, pool_balance_acquis = consume_cp(entry.value, pool_balance_restant, pool_balance_acquis) %}
+        {% else %}
+            {% set pool_balance_acquis = pool_balance_acquis + entry.value %}
+        {% endif %}
+        <tr>
+          <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ entry.value|plusify if not init_acquis else '-'}}</td>
+          <td {% if not init_acquis and last_restant == pool_balance_restant%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_restant }}</td>
+          <td {% if not init_acquis and last_acquis == pool_balance_acquis%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_acquis }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
 
 {% endblock %}
 

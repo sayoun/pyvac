@@ -49,10 +49,9 @@ def add_urlhelpers(event):
     """
     event['static_url'] = lambda x: static_path(x, event['request'])
     event['route_url'] = lambda name, *args, **kwargs: route_path(
-                            name, event['request'], *args, **kwargs)
-    event['has_permission'] = lambda perm: has_permission(perm,
-                                                          event['request'].context,
-                                                          event['request'])
+        name, event['request'], *args, **kwargs)
+    event['has_permission'] = lambda perm: has_permission(
+        perm, event['request'].context, event['request'])
 
 
 def includeme(config):
@@ -68,6 +67,9 @@ def includeme(config):
         ldap = asbool(settings['pyvac.use_ldap'])
         if ldap:
             LdapCache.configure(settings['pyvac.ldap.yaml'])
+
+    # call includeme for models configuration
+    config.include('pyvac.models')
 
     # Jinja configuration
     # We don't use jinja2 filename, .html instead
@@ -175,6 +177,12 @@ def includeme(config):
     config.add_view(u'pyvac.views.account.List',
                     route_name=u'list_account',
                     renderer=u'templates/account/list.html',
+                    permission=u'admin_view')
+
+    config.add_route(u'list_user_pool', u'/pyvac/pool_users')
+    config.add_view(u'pyvac.views.account.ListPool',
+                    route_name=u'list_user_pool',
+                    renderer=u'templates/account/pool.html',
                     permission=u'admin_view')
 
     config.add_route(u'create_account', u'/pyvac/account/new')

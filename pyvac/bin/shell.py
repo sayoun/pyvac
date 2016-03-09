@@ -32,7 +32,7 @@ def main(argv=sys.argv):
 
     from pyvac.models import (Base, Permission, Group, User, Request,
                               Countries, VacationType, PasswordRecovery,
-                              Sudoer)
+                              Sudoer, CPVacation, RTTVacation)
 
     session = DBSession()
     try:

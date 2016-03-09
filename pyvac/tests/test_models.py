@@ -285,7 +285,8 @@ class VacationTypeTestCase(ModelTestCase):
 
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
-        self.assertEqual(VacationType._vacation_classes.keys(), [u'RTT'])
+        self.assertEqual(VacationType._vacation_classes.keys(),
+                         [u'RTT', u'CP'])
 
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType

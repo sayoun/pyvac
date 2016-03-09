@@ -4,6 +4,7 @@ import logging
 import random
 import string
 import yaml
+from datetime import datetime
 from passlib.hash import ldap_salted_sha1
 
 try:
@@ -89,7 +90,7 @@ class LdapWrapper(object):
 
     def _search_by_item(self, item):
         required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager',
-                           'ou', 'userPassword']
+                           'ou', 'userPassword', 'arrivalDate']
         res = self._search(self._filter % item, required_fields)
         if not res:
             raise UnknownLdapUser
@@ -119,6 +120,18 @@ class LdapWrapper(object):
             if rdn[0] == self.login_attr:
                 return rdn[1]
 
+    def _convert_date(self, date):
+        """ Convert a LDAP date entry into a python datetime
+
+        format GeneralizedTime LDAP 1.3.6.1.4.1.1466.115.121.1.24
+        example: 199412161032Z
+                 yyyyMMddHHmmss
+        """
+        if not date:
+            return
+
+        return datetime.strptime(date, '%Y%m%d%H%M%SZ')
+
     def parse_ldap_entry(self, user_dn, entry):
         """
         Format ldap entry and parse user_dn to output dict with expected values
@@ -146,11 +159,17 @@ class LdapWrapper(object):
         if 'uid' in entry:
             data['uid'] = entry['uid'].pop()
 
+        if 'arrivalDate' in entry:
+            data['arrivalDate'] = entry['arrivalDate'].pop()
+        else:
+            data['arrivalDate'] = None
+
         # save user dn
         data['dn'] = user_dn
         data['country'] = self._extract_country(user_dn)
         data['manager_cn'] = self._extract_country(data['manager_dn'])
         data['userPassword'] = entry['userPassword'].pop()
+        data['arrivalDate'] = self._convert_date(data['arrivalDate'])
 
         return data
 
@@ -360,6 +379,22 @@ class LdapWrapper(object):
         managers = entry['member']
         # only return unique entries
         return sorted(managers)
+
+    def list_arrivals(self):
+        """ Retrieve users arrival dates """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = ['arrivalDate']
+        item = 'cn=*'
+        res = self._conn.search_s('c=fr,%s' % self._base, ldap.SCOPE_SUBTREE,
+                                  self._filter % item, required)
+        arrivals = {}
+        for USER_DN, entry in res:
+            arrival = entry.get('arrivalDate', [None])[0]
+            arrivals[USER_DN] = self._convert_date(arrival)
+        # only return unique entries
+        return arrivals
 
     def get_users_units(self):
         """ Retrieve ou for all users """

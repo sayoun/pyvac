@@ -34,9 +34,10 @@ class List(View):
         user_attr = {}
         users_teams = {}
         if use_ldap:
-            # synchronise user groups/roles
-            User.sync_ldap_info(self.session)
+            # # synchronise user groups/roles
+            # User.sync_ldap_info(self.session)
             ldap = LdapCache()
+
             user_attr = ldap.get_users_units()
             users_teams = {}
             for team, members in ldap.list_teams().iteritems():
@@ -49,6 +50,36 @@ class List(View):
                 'ldap_info': user_attr,
                 'users_teams': users_teams,
                 }
+
+
+class ListPool(View):
+    """
+    List all user pool
+    """
+    def render(self):
+
+        country = Countries.by_name(self.session, 'fr')
+        users = User.by_country(self.session, country.id)
+
+        rtt_usage = {}
+        if self.user.has_feature('cp_class'):
+            cp_usage = {}
+        for user in users:
+            rtts = user.get_rtt_usage(self.session)
+            rtt_usage[user.login] = rtts['left']
+            if self.user.has_feature('cp_class'):
+                cps = user.get_cp_usage(self.session)
+                cp_usage[user.login] = (cps['restant']['left'] +
+                                        cps['acquis']['left'])
+
+        ret = {u'user_count': User.find(self.session, count=True),
+               u'users': users,
+               u'rtt_usage': rtt_usage}
+
+        if self.user.has_feature('cp_class'):
+            ret['cp_usage'] = cp_usage
+
+        return ret
 
 
 class AccountMixin:
