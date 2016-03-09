@@ -132,7 +132,7 @@ class User(Base):
     ou = Column(Unicode(255), nullable=True)
     uid = Column(Unicode(255), nullable=True)
 
-    firm = None
+    firm = ''
     feature_flags = {}
 
     @property
@@ -868,12 +868,10 @@ class CPVacation(BaseVacation):
             taken = user.get_cp_taken_cycle(session, start, end)
             # add taken value as it is already consumed by get_cp_usage method
             # so we don't consume it twice.
-            print 'previous_usage', previous_usage
             restant_left = 0
             # keep left restant value until 31/12 of current cycle
             if today <= start + relativedelta(months=7):
                 restant_left = previous_usage['restant']['left']
-                print 'we keep restant left', restant_left
             restant = previous_usage['acquis']['left'] + taken + restant_left
 
         except FirstCycleException:
@@ -966,6 +964,8 @@ class Request(Base):
     notified = Column(Boolean, default=False)
     user_id = Column('user_id', ForeignKey(User.id))
     user = relationship(User, backref='requests')
+
+    sender_mail = ''
 
     def update_status(self, status):
         """Reset notified flag when changing status."""
@@ -1365,8 +1365,8 @@ SUMMARY:%s
 DESCRIPTION:%s
 DTSTART;VALUE=DATE:%s
 DTEND;VALUE=DATE:%s
-ORGANIZER;CN=Gandi:MAILTO:pyvac@gandi.net
-LOCATION:Gandi
+ORGANIZER;CN=%s:MAILTO:%s
+LOCATION:%s
 SEQUENCE:0
 END:VEVENT
 END:VCALENDAR
@@ -1375,7 +1375,10 @@ END:VCALENDAR
             self.summarycal,
             self.summarycal,
             self.date_from.strftime('%Y%m%d'),
-            (self.date_to + relativedelta(days=1)).strftime('%Y%m%d'))
+            (self.date_to + relativedelta(days=1)).strftime('%Y%m%d'),
+            self.user.firm,
+            self.sender_mail,
+            self.user.firm)
 
         return vcal_entry
 
@@ -1464,3 +1467,6 @@ def includeme(config):
     if 'pyvac.features.users_flagfile' in settings:
         file = settings['pyvac.features.users_flagfile']
         User.load_feature_flags(file)
+
+    if 'pyvac.password.sender.mail' in settings:
+        Request.sender_mail = settings['pyvac.password.sender.mail']

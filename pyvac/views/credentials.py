@@ -108,8 +108,13 @@ class ResetPassword(View):
                 from celery.task import subtask
                 req_task = tasks['worker_mail']
 
+                settings = self.request.registry.settings
+                sender = 'pyvac@localhost'
+                if 'pyvac.password.sender.mail' in settings:
+                    sender = settings['pyvac.password.sender.mail']
+
                 data = {
-                    'sender': 'pyvac@gandi.net',
+                    'sender': sender,
                     'target': user.email,
                     'subject': 'Password Recovery',
                     'content': """Hello,
