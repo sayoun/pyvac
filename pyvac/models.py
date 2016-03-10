@@ -237,6 +237,9 @@ class User(Base):
 
         today = datetime.now()
         current_arrival_date = arrival_date.replace(year=today.year)
+        # if it's already past for this year
+        if current_arrival_date < today:
+            current_arrival_date += relativedelta(months=12)
         delta = (today - current_arrival_date).days
 
         return (True if delta == 0 else False, abs(delta))
