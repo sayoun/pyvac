@@ -1,3 +1,9 @@
+pyvac (1.8.0-3) unstable; urgency=medium
+
+  * Enable cp_class feature for everyone in FR country
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 11 Mar 2016 10:03:53 +0100
+
 pyvac (1.8.0-2) unstable; urgency=medium
 
   * Fixes anniversary formula when date is already past this year.
