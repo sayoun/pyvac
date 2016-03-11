@@ -62,22 +62,18 @@ class ListPool(View):
         users = User.by_country(self.session, country.id)
 
         rtt_usage = {}
-        if self.user.has_feature('cp_class'):
-            cp_usage = {}
+        cp_usage = {}
         for user in users:
             rtts = user.get_rtt_usage(self.session)
             rtt_usage[user.login] = rtts['left']
-            if self.user.has_feature('cp_class'):
-                cps = user.get_cp_usage(self.session)
-                cp_usage[user.login] = (cps['restant']['left'] +
-                                        cps['acquis']['left'])
+            cps = user.get_cp_usage(self.session)
+            cp_usage[user.login] = (cps['restant']['left'] +
+                                    cps['acquis']['left'])
 
         ret = {u'user_count': User.find(self.session, count=True),
                u'users': users,
-               u'rtt_usage': rtt_usage}
-
-        if self.user.has_feature('cp_class'):
-            ret['cp_usage'] = cp_usage
+               u'rtt_usage': rtt_usage,
+               u'cp_usage': cp_usage}
 
         return ret
 

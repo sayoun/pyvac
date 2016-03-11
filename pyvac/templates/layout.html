@@ -226,6 +226,10 @@
               <ul class="dropdown-menu">
                 <li><a href="{{route_url('edit_account', user_id=pyvac.user.id)}}"><i class="fa fa-gear fa-fw"></i> Profile</a></li>
                 <li><a href="{{route_url('logout')}}"><i class="fa fa-power-off fa-fw"></i> Logout</a></li>
+                {% if pyvac.user.country == 'fr' %}
+                    <li class="divider"></li>
+                    <li><a href="{{route_url('pool_history', user_id=pyvac.user.id)}}"><i class="fa fa-calendar fa-fw"></i> Users Pool</a></li>
+                {% endif %}
                 {% if has_permission('admin_view') %}
                 <li class="divider"></li>
                 <!-- <li><a href="#"><i class="fa fa-th fa-fw"></i> Manage Teams</a></li> -->
@@ -235,6 +239,7 @@
                     {% if pyvac.user.country == 'fr' %}
                     <li><a href="{{route_url('list_user_pool')}}"><i class="fa fa-calendar fa-fw"></i> Users Pool</a></li>
                     {% endif %}
+
                 {% endif %}
               </ul>
               </li>

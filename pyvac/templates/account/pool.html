@@ -10,9 +10,7 @@
         <th>{% trans %}Login{% endtrans %}</th>
         <th>{% trans %}Name{% endtrans %}</th>
         <th>{% trans %}Manager{% endtrans %}</th>
-        {% if pyvac.user.has_feature('cp_class') %}
         <th>{% trans %}CP Pool{% endtrans %}</th>
-        {% endif %}
         <th>{% trans %}RTT Pool{% endtrans %}</th>
       </tr>
     </thead>
@@ -31,11 +29,9 @@
                   {% endif %}
                 {% endif %}
             </td>
-            {% if pyvac.user.has_feature('cp_class') %}
             <td>
                 {{ cp_usage[user.login] }}
             </td>
-            {% endif %}
             <td>
                 {{ rtt_usage[user.login] }}
             </td>

@@ -657,17 +657,15 @@ class PoolHistory(View):
         pool_history = {}
         pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
+        pool_history['CP'] = {}
+        history, restant = User.get_cp_history(self.session, user, year)
+        pool_history['CP']['history'] = history
+        pool_history['CP']['restant'] = restant
+
         ret = {'user': user,
                'year': year,
                'years': years,
-               'pool_history': pool_history}
-
-        if self.user.has_feature('cp_class'):
-            pool_history['CP'] = {}
-            history, restant = User.get_cp_history(self.session, user, year)
-            pool_history['CP']['history'] = history
-            pool_history['CP']['restant'] = restant
-
-            ret['consume_cp'] = CPVacation.consume
+               'pool_history': pool_history,
+               'consume_cp': CPVacation.consume}
 
         return ret
