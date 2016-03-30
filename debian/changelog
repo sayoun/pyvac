@@ -1,3 +1,10 @@
+pyvac (1.8.0-4) unstable; urgency=medium
+
+  * Restrict acces to cp_class feature to valid fr users
+  * Correctly use user arrival_date as cycle starting date
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 30 Mar 2016 13:28:40 +0200
+
 pyvac (1.8.0-3) unstable; urgency=medium
 
   * Enable cp_class feature for everyone in FR country
