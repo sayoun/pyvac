@@ -67,8 +67,11 @@ class ListPool(View):
             rtts = user.get_rtt_usage(self.session)
             rtt_usage[user.login] = rtts['left']
             cps = user.get_cp_usage(self.session)
-            cp_usage[user.login] = (cps['restant']['left'] +
-                                    cps['acquis']['left'])
+            if cps:
+                cp_usage[user.login] = (cps['restant']['left'] +
+                                        cps['acquis']['left'])
+            else:
+                cp_usage[user.login] = 0
 
         ret = {u'user_count': User.find(self.session, count=True),
                u'users': users,
