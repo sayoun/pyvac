@@ -1,3 +1,9 @@
+pyvac (1.8.0-5) unstable; urgency=medium
+
+  * Fixes bug on users list pool view for user without CP Pool available
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 30 Mar 2016 13:41:56 +0200
+
 pyvac (1.8.0-4) unstable; urgency=medium
 
   * Restrict acces to cp_class feature to valid fr users
