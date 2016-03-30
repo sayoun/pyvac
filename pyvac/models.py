@@ -859,12 +859,29 @@ class CPVacation(BaseVacation):
         - retrieve amount of restant/acquis from previous cycle
         - use acquis from previous cycle for restant of current one
         """
+
+        # if user is not in france, discard
+        if user.country not in ('fr'):
+            log.info('user %s not in country fr, discarding' % user.login)
+            return
+
+        # if user has no arrival_date, discard
+        if not user.arrival_date:
+            log.info('user %s has no arrival_date, discarding' % user.login)
+            return
+
         today = today or datetime.now()
-        base_date, _ = cls.get_cycle_boundaries(today)
+        # if user is not yet active, discard
+        if user.arrival_date > today:
+            log.info('user %s is not yet active, discarding' % user.login)
+            return
 
         restant = 0
         try:
             start, end = cls.get_cycle_boundaries(today, raising=True)
+            # use user arrival_date if after starting cycle date
+            if user.arrival_date > start:
+                start = user.arrival_date
             acquis = cls.get_acquis(user, start, today)
 
             previous_usage = user.get_cp_usage(session, today=start)
@@ -880,6 +897,9 @@ class CPVacation(BaseVacation):
         except FirstCycleException:
             # cannot go back before first cycle, so use current cycle values
             start, end = cls.get_cycle_boundaries(today)
+            # use user arrival_date if after starting cycle date
+            if user.arrival_date > start:
+                start = user.arrival_date
             acquis = cls.get_acquis(user, start, today)
             restant = cls.users_base.get(user.login, 0)
             start = cls.epoch
