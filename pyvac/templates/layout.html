@@ -228,7 +228,7 @@
                 <li><a href="{{route_url('logout')}}"><i class="fa fa-power-off fa-fw"></i> Logout</a></li>
                 {% if pyvac.user.country == 'fr' %}
                     <li class="divider"></li>
-                    <li><a href="{{route_url('pool_history', user_id=pyvac.user.id)}}"><i class="fa fa-calendar fa-fw"></i> Users Pool</a></li>
+                    <li><a href="{{route_url('pool_history', user_id=pyvac.user.id)}}"><i class="fa fa-calendar fa-fw"></i> Pool history</a></li>
                 {% endif %}
                 {% if has_permission('admin_view') %}
                 <li class="divider"></li>
