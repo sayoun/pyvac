@@ -31,7 +31,24 @@
     <tbody>
       {% for req in next %}
       <tr id="tr_req_{{ req.id }}">
-            <td>{{ req.user.name }}</td>
+            <td>
+            {% if pyvac.user.is_super and req.pool and req.type == 'CP'%}
+              {% set pool_total = req.pool['restant']['left'] + req.pool['acquis']['left'] %}
+              {% if (pool_total < 0) or (req.days > pool_total) %}
+                {% if (req.days > pool_total) %}
+                  {% set warning_message = 'Only have %s CP to use.' % pool_total|abs %}
+                {% endif %}
+
+                {% if (pool_total < 0) %}
+                  {% set warning_message = 'No CP left to take.' %}
+                {% endif %}
+                <a class="text-error" id="req_warning" href="#" data-toggle="tooltip" title="" data-original-title="{{ warning_message }}">
+                  <i class="fa fa-exclamation-circle"></i>
+                </a>
+              {% endif %}
+            {% endif %}
+            {{ req.user.name }}
+            </td>
             {% if pyvac.user.is_super %}
             <td>{% if req.user.manager_dn %}
                   {{ req.user.manager_dn|extract_cn }}
@@ -214,13 +231,8 @@
 
 {% block js %}
 <script>
-    {% if pyvac.user.is_super %}
-    {% for id in conflicts %}
-      {% for team in conflicts[id] %}
-        $("#td_conflict_req_{{id}}_{{team.replace('&', '\\\\&')|safe}}").tooltip({});
-      {% endfor %}
-    {% endfor %}
-    {% endif %}
+    // activate all tooltips on page
+    $('[data-toggle="tooltip"]').tooltip();
 
     ajax_refuse_request = function() {
           // retrieve reason from textarea

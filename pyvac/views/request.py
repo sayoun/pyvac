@@ -154,19 +154,6 @@ class Send(View):
             # check CP usage
             if vac_type.name == u'CP':
                 pool = cp_data = self.user.get_cp_usage(self.session)
-                if cp_data is not None:
-                    total_left = (cp_data['acquis']['left'] +
-                                  cp_data['restant']['left'])
-
-                if cp_data is not None and total_left <= 0:
-                    msg = 'No CP left to take.'
-                    self.request.session.flash('error;%s' % msg)
-                    return HTTPFound(location=route_url('home', self.request))
-                # check that we have enough CP to take
-                if cp_data is not None and days > total_left:
-                    msg = 'You only have %s CP to use.' % total_left
-                    self.request.session.flash('error;%s' % msg)
-                    return HTTPFound(location=route_url('home', self.request))
                 # check that we request vacations in the allowed cycle
                 if cp_data is not None and (
                         not (date_from <= date_to <=
