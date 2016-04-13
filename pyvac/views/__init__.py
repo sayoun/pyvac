@@ -35,6 +35,9 @@ class Home(RedirectView):
 
         if self.user.is_admin:
             ret_dict['sudo_users'] = User.for_admin(self.session, self.user)
+            managed_users = User.managed_users(self.session, self.user)
+            if managed_users:
+                ret_dict['sudo_users'].extend(managed_users)
 
         futures_pending = [timestamp
                            for req in

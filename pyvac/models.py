@@ -475,6 +475,16 @@ class User(Base):
                         order_by=cls.lastname)
 
     @classmethod
+    def managed_users(cls, session, manager):
+        """Get all users for a manager without regarding his country."""
+        return cls.find(session,
+                        where=(cls.id != manager.id,
+                               cls.ldap_user == manager.ldap_user,
+                               cls.manager_dn == manager.dn,
+                               ),
+                        order_by=cls.lastname)
+
+    @classmethod
     def load_feature_flags(cls, filename):
         """Load features flag per users."""
         try:
