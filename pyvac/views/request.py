@@ -309,6 +309,10 @@ class List(View):
 
         # split requests by past/next
         today = datetime.now()
+        if self.user.is_admin:
+            # for admin, display request from 1st of month
+            today = today.replace(day=1)
+
         past_req = [req for req in req_list['requests']
                     if req.date_to < today and req.status not in
                     ['PENDING', 'ACCEPTED_MANAGER']]

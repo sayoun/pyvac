@@ -99,8 +99,11 @@ class View(ViewBase):
 
                 # only count next requests
                 today = datetime.now()
+                if self.user.is_admin:
+                    # for admin, display request from 1st of month
+                    today = today.replace(day=1)
                 requests_count = len([req for req in req_list['requests']
-                                      if req.date_from >= today])
+                                      if req.date_to >= today])
 
                 global_['pyvac']['requests_count'] = requests_count
 
