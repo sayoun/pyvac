@@ -3,6 +3,7 @@ import re
 import json
 import logging
 from datetime import datetime
+from collections import OrderedDict
 
 from .base import View
 
@@ -615,6 +616,7 @@ class Off(View):
                             if filter_name.lower() in k])
                 return val
 
+        data_name = OrderedDict(sorted(data_name.items(), key=lambda t: t[0]))
         return ret if ret else data_name
 
 
