@@ -101,6 +101,6 @@ class HomeTestCase(case.ViewTestCase):
             self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
             self.assertTrue(view_user.rtt)
-            expected = {'allowed': 2, 'left': -1.0, 'state': 'error',
+            expected = {'allowed': 1, 'left': -2.0, 'state': 'error',
                         'taken': 3.0, 'year': 2016}
             self.assertEqual(view_user.rtt, expected)
