@@ -29,6 +29,15 @@ log = logging.getLogger(__name__)
 
 class Send(View):
 
+    def get_target_user(self, logged_user):
+        if self.user.is_admin:
+            sudo_user_id = int(self.request.params.get('sudo_user'))
+            if sudo_user_id != -1:
+                user = User.by_id(self.session, sudo_user_id)
+                if user:
+                    return user
+        return logged_user
+
     def render(self):
         try:
             form_date_from = self.request.params.get('date_from')
@@ -69,8 +78,10 @@ class Send(View):
                 return HTTPFound(location=route_url('home', self.request))
 
             # retrieve future requests for user so we can check overlap
+            # check if user is sudoed
+            check_user = self.get_target_user(self.user)
             futures = [d for req in
-                       Request.by_user_future(self.session, self.user)
+                       Request.by_user_future(self.session, check_user)
                        for d in daterange(req.date_from, req.date_to)]
 
             intersect = set(futures) & set(submitted)
