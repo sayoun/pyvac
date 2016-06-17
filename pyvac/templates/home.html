@@ -114,6 +114,7 @@
         {% endif %}
         <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
         {% if pyvac.user.arrival_date and pyvac.user.cp %}
+        <li>You have <b>{{pyvac.user.cp['n_1']['left']}} CP N-1</b> to use before {{pyvac.user.cp['n_1']['expire'].strftime('%d/%m/%Y')}}</li>
         <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP restants</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
         <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP en acquisition</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
         {% endif %}

@@ -572,6 +572,10 @@ class User(Base):
         today = today or datetime.now()
         cycle_start, _ = CPVacation.get_cycle_boundaries(today)
 
+        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
+        if cycle_start < CPVacation.epoch:
+            cycle_start = CPVacation.epoch
+
         delta = relativedelta(cycle_start, today)
         months = abs(delta.months)
 
@@ -585,13 +589,15 @@ class User(Base):
         today = today or datetime.now()
         cycle_start, cycle_end = CPVacation.get_cycle_boundaries(today)
 
-        thresholds = [cycle_start,
-                      cycle_start + relativedelta(months=7),
-                      cycle_end]
+        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
+        if cycle_start < CPVacation.epoch:
+            cycle_start = CPVacation.epoch
+
+        thresholds = [cycle_start, cycle_end]
 
         def get_restant(date):
             data = CPVacation.acquired(user, date, session)
-            return data['restant']
+            return data['restant'] + data['n_1']
 
         ret = {}
         for date in thresholds:
@@ -688,24 +694,32 @@ class User(Base):
 
         cycle_start = allowed['cycle_start']
         cycle_end = allowed['cycle_end']
-        cycle_end = allowed['cycle_end'].replace(year=cycle_end.year + 1)
         taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end)
         log.debug('taken %d for %s -> %s' % (taken, cycle_start, cycle_end))
 
-        left_restant, left_acquis = CPVacation.consume(taken,
-                                                       allowed['restant'],
-                                                       allowed['acquis'])
+        restant = allowed['restant']
+        n_1 = allowed['n_1']
+        acquis = allowed['acquis']
 
-        # must handle 2 pools: acquis and restant
+        left_n_1, left_restant, left_acquis = CPVacation.consume(taken, n_1,
+                                                                 restant,
+                                                                 acquis)
+
+        # must handle 3 pools: acquis, restant, and N-1
+        ret_n_1 = {
+            'allowed': allowed['n_1'],
+            'left': left_n_1,
+            'expire': cycle_end - relativedelta(months=5)}
         ret_acquis = {
             'allowed': allowed['acquis'],
             'left': left_acquis,
-            'expire': cycle_end}
+            'expire': cycle_end.replace(year=cycle_end.year + 1)}
         ret_restant = {
             'allowed': allowed['restant'],
             'left': left_restant,
-            'expire': allowed['cycle_end'] + relativedelta(months=7)}
+            'expire': allowed['cycle_end']}
         return {'acquis': ret_acquis, 'restant': ret_restant,
+                'n_1': ret_n_1,
                 'taken': taken}
 
 
@@ -794,15 +808,28 @@ class CPVacation(BaseVacation):
                      filename)
 
     @classmethod
-    def consume(cls, taken, restant, acquis):
-        """First remove taken CP from Restant pool then from Acquis pool."""
+    def consume(cls, taken, n_1, restant, acquis):
+        """Remove taken CP from N-1 pool then Restant pool then Acquis pool."""
         exceed = 0
-        left_restant = restant - abs(taken)
+        if n_1 < 0:
+            restant = restant + n_1
+            left_n_1 = 0
+            n_1 = 0
+
+        left_n_1 = n_1 - abs(taken)
+        if left_n_1 < 0:
+            exceed = abs(left_n_1)
+            left_n_1 = 0
+
+        left_restant = restant - exceed
         if left_restant < 0:
             exceed = abs(left_restant)
             left_restant = 0
-        left_acquis = acquis - exceed
-        return left_restant, left_acquis
+            left_acquis = acquis - exceed
+        else:
+            left_acquis = acquis
+
+        return left_n_1, left_restant, left_acquis
 
     @classmethod
     def get_cycle_boundaries(cls, date, raising=None):
@@ -886,6 +913,7 @@ class CPVacation(BaseVacation):
             log.info('user %s is not yet active, discarding' % user.login)
             return
 
+        n_1 = 0
         restant = 0
         try:
             start, end = cls.get_cycle_boundaries(today, raising=True)
@@ -893,16 +921,11 @@ class CPVacation(BaseVacation):
             if user.arrival_date > start:
                 start = user.arrival_date
             acquis = cls.get_acquis(user, start, today)
-
             previous_usage = user.get_cp_usage(session, today=start)
             taken = user.get_cp_taken_cycle(session, start, end)
             # add taken value as it is already consumed by get_cp_usage method
             # so we don't consume it twice.
-            restant_left = 0
-            # keep left restant value until 31/12 of current cycle
-            if today <= start + relativedelta(months=7):
-                restant_left = previous_usage['restant']['left']
-            restant = previous_usage['acquis']['left'] + taken + restant_left
+            restant = previous_usage['acquis']['left'] + taken
 
         except FirstCycleException:
             # cannot go back before first cycle, so use current cycle values
@@ -911,10 +934,14 @@ class CPVacation(BaseVacation):
             if user.arrival_date > start:
                 start = user.arrival_date
             acquis = cls.get_acquis(user, start, today)
-            restant = cls.users_base.get(user.login, 0)
+            epoch_restants = cls.users_base.get(user.login,
+                                                {'restants': 0, 'n_1': 0})
+            restant = epoch_restants['restants']
+            n_1 = epoch_restants['n_1']
             start = cls.epoch
 
         return {'acquis': acquis, 'restant': restant,
+                'n_1': n_1,
                 'cycle_start': start, 'cycle_end': end}
 
 

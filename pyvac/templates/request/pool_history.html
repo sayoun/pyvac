@@ -65,7 +65,7 @@
         {% set last_restant = pool_balance_restant %}
         {% set pool_balance_restant = last_restant %}
         {% if entry.value < 0 %}
-            {% set pool_balance_restant, pool_balance_acquis = consume_cp(entry.value, pool_balance_restant, pool_balance_acquis) %}
+            {% set pool_n_1, pool_balance_restant, pool_balance_acquis = consume_cp(entry.value, 0, pool_balance_restant, pool_balance_acquis) %}
         {% else %}
             {% set pool_balance_acquis = pool_balance_acquis + entry.value %}
         {% endif %}
