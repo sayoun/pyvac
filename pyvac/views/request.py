@@ -573,8 +573,13 @@ class Off(View):
         """ Do nothing """
 
     def render(self):
+        duration = self.request.params.get('duration')
+
         def fmt_req_type(req):
             label = ' %s' % req.label if req.label else ''
+            if duration and req.days > 1:
+                label = '%s (until %s)' % (label,
+                                           req.date_to.strftime('%d/%m/%Y'))
             return '%s%s' % (req.type, label)
 
         filter_nick = self.request.params.get('nick')
