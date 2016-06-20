@@ -176,6 +176,7 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
                 if pool:
                     # remove expire datetimes as it's not json serializable
+                    pool['n_1'].pop('expire', None)
                     pool['acquis'].pop('expire', None)
                     pool['restant'].pop('expire', None)
 

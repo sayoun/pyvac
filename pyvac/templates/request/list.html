@@ -133,7 +133,7 @@
             <td>
             {% if req.pool %}
                 {% if req.type == 'CP' %}
-                  {{ req.pool['restant']['left'] + req.pool['acquis']['left'] }} CP
+                  {{ req.pool.get('n_1', {}).get('left', 0) + req.pool['restant']['left'] + req.pool['acquis']['left'] }} CP
                 {% else %}
                   {{ req.pool['left'] }} RTT
                 {% endif %}
