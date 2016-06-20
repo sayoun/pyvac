@@ -936,7 +936,9 @@ class CPVacation(BaseVacation):
             acquis = cls.get_acquis(user, start, today)
             epoch_restants = cls.users_base.get(user.login,
                                                 {'restants': 0, 'n_1': 0})
-            restant = epoch_restants['restants']
+            # add seniority CP bonus for the 1st cycle
+            cp_bonus = int(math.floor(user.seniority / 5))
+            restant = epoch_restants['restants'] + cp_bonus
             n_1 = epoch_restants['n_1']
             start = cls.epoch
 
