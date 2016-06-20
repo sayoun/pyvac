@@ -1,3 +1,11 @@
+pyvac (1.8.2) unstable; urgency=medium
+
+  * Take count of N-1 for Pool request creation and display in list
+  * Add seniority bonus CP to users for 1st cycle
+  * Add new parameter to Off route, to display duration 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 20 Jun 2016 15:18:39 +0200
+
 pyvac (1.8.1) unstable; urgency=medium
 
   * Recoded/Updated CP Pool feature
