@@ -38,6 +38,11 @@ class Home(RedirectView):
             managed_users = User.managed_users(self.session, self.user)
             if managed_users:
                 ret_dict['sudo_users'].extend(managed_users)
+            # special case where LU admin need to have RTT option
+            rtt_vacation = VacationType.by_name(self.session, 'RTT')
+            rtt_type = {'name': _('RTT'), 'id': rtt_vacation.id}
+            if rtt_type not in ret_dict['types']:
+                ret_dict['types'].append(rtt_type)
 
         futures_pending = [timestamp
                            for req in

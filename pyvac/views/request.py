@@ -93,12 +93,13 @@ class Send(View):
             vac_type = VacationType.by_id(self.session,
                                           int(self.request.params.get('type')))
 
-            # check if vacation requires user role
-            if (vac_type.visibility
-                    and self.user.role not in vac_type.visibility):
-                msg = 'You are not allowed to use type: %s' % vac_type.name
-                self.request.session.flash('error;%s' % msg)
-                return HTTPFound(location=route_url('home', self.request))
+            if not self.user.is_admin:
+                # check if vacation requires user role
+                if (vac_type.visibility
+                        and self.user.role not in vac_type.visibility):
+                    msg = 'You are not allowed to use type: %s' % vac_type.name
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
 
             # label field is used when requesting half day
             label = u''

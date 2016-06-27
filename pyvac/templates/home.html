@@ -30,7 +30,7 @@
                 {% if type['id'] in [1, 2, 3, 4] %}
                 <label class="radio inline">
                   <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}" {% if loop.first %}checked=""{% endif %}
-                  {% if type['id'] == 2 and pyvac.user.rtt['left'] <= 0 %}disabled="disabled"{% endif %}>{{ type['name'] }}
+                  {% if type['id'] == 2 and pyvac.user.rtt and pyvac.user.rtt['left'] <= 0 %}disabled="disabled"{% endif %}>{{ type['name'] }}
                 </label>
                 {% endif %}
             {% endfor %}
