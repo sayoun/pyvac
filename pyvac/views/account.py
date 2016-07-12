@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
 import logging
+from datetime import datetime
 
 from pyramid.settings import asbool
+from pyramid.httpexceptions import HTTPFound
+from pyramid.url import route_url
 
 from .base import View, CreateView, EditView, DeleteView
 
@@ -57,27 +60,33 @@ class ListPool(View):
     List all user pool
     """
     def render(self):
+        if self.user and not self.user.is_admin:
+            return HTTPFound(location=route_url('home', self.request))
 
-        country = Countries.by_name(self.session, 'fr')
+        country = Countries.by_name(self.session, self.user.country)
         users = User.by_country(self.session, country.id)
 
         rtt_usage = {}
         cp_usage = {}
         for user in users:
-            rtts = user.get_rtt_usage(self.session)
-            rtt_usage[user.login] = rtts['left']
+            if self.user.country == 'fr':
+                rtts = user.get_rtt_usage(self.session)
+                rtt_usage[user.login] = rtts['left']
+
             cps = user.get_cp_usage(self.session)
+            total = 0
             if cps:
-                cp_usage[user.login] = (cps['n_1']['left'] +
-                                        cps['restant']['left'] +
-                                        cps['acquis']['left'])
-            else:
-                cp_usage[user.login] = 0
+                total = cps['restant']['left'] + cps['acquis']['left']
+                if self.user.country == 'fr':
+                    total = total + cps['n_1']['left']
+            cp_usage[user.login] = total
 
         ret = {u'user_count': User.find(self.session, count=True),
                u'users': users,
-               u'rtt_usage': rtt_usage,
                u'cp_usage': cp_usage}
+
+        if self.user.country == 'fr':
+            ret['rtt_usage'] = rtt_usage
 
         return ret
 
@@ -237,8 +246,15 @@ class Edit(AccountMixin, EditView):
             if 'unit' in r.params and r.params['unit']:
                 unit = r.params['unit']
 
+            arrival_date = None
+            if 'arrival_date' in r.params and r.params['arrival_date']:
+                # cast to datetime
+                arrival_date = datetime.strptime(r.params['arrival_date'],
+                                                 '%d/%m/%Y')
+
             ldap = LdapCache()
-            ldap.update_user(account, password=password, unit=unit)
+            ldap.update_user(account, password=password, unit=unit,
+                             arrival_date=arrival_date)
 
             # update teams
             uteams = {}

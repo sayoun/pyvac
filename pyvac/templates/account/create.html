@@ -132,6 +132,13 @@
         {% else %}
             {% if has_permission('admin_view') %}
                 <div class="control-group">
+                    <label class="control-label" for="inputArrivalDate">{% trans %}arrival date:{% endtrans %}</label>
+                    <div class="controls">
+                       <input type="text" name="arrival_date" id="inputArrivalDate" value="{% if user.arrival_date %}{{user.arrival_date.strftime('%d/%m/%Y')|default('', true)}}{% endif %}" placeholder="DD/MM/YYYY"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <label class="control-label">{% trans %}teams:{% endtrans %}</label>
                     <div class="controls">
                     <select id="teams" name="teams" multiple="multiple">
@@ -208,6 +215,8 @@ $(document).ready(function(){
     });
 
     $('#teams').multiselect();
+
+    $("#inputArrivalDate").datepicker({dateFormat: 'dd/mm/yy'});
 });
 </script>
 {% endblock %}

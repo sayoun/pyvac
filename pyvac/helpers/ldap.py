@@ -132,6 +132,18 @@ class LdapWrapper(object):
 
         return datetime.strptime(date, '%Y%m%d%H%M%SZ')
 
+    def _cast_arrivaldate(self, date):
+        """ Convert a python datetime into a LDAP date entry
+
+        format GeneralizedTime LDAP 1.3.6.1.4.1.1466.115.121.1.24
+        example: 199412161032Z
+                 yyyyMMddHHmmss
+        """
+        if not date:
+            return
+
+        return date.strftime('%Y%m%d%H%M%SZ')
+
     def parse_ldap_entry(self, user_dn, entry):
         """
         Format ldap entry and parse user_dn to output dict with expected values
@@ -216,7 +228,7 @@ class LdapWrapper(object):
         # return password to display it to the administrator
         return dn
 
-    def update_user(self, user, password=None, unit=None):
+    def update_user(self, user, password=None, unit=None, arrival_date=None):
         """ Update user params in ldap directory """
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
@@ -232,13 +244,16 @@ class LdapWrapper(object):
         if unit:
             fields['ou'] = [unit.encode('utf-8')]
 
+        fields['arrivalDate'] = [self._cast_arrivaldate(arrival_date)]
+
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
         log.info('updating user %s from ldap' % dn)
 
         # retrieve current user information
         required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
-                    'manager', 'mail', 'ou', 'uid', 'userPassword']
+                    'manager', 'mail', 'ou', 'uid', 'userPassword',
+                    'arrivalDate']
         item = 'cn=*%s*' % user.login
         res = self._search(self._filter % item, required)
         USER_DN, entry = res[0]
