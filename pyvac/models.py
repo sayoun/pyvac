@@ -510,9 +510,14 @@ class User(Base):
 
     def get_rtt_usage(self, session):
         """Get RTT usage for a user."""
-        allowed = VacationType.by_name_country(session, name=u'RTT',
-                                               country=self.country,
-                                               user=self)
+        kwargs = {'name': u'RTT',
+                  'country': self.country,
+                  'user': self,
+                  'session': session}
+        vac = VacationType.by_name_country(**kwargs)
+        if not vac:
+            return
+        allowed = vac.acquired(**kwargs)
         if allowed is None:
             return
 
@@ -534,11 +539,17 @@ class User(Base):
     @classmethod
     def get_rtt_acquired_history(cls, session, user, year):
         """Get RTT acquired history."""
-        acquired = VacationType.by_name_country(session, name=u'RTT',
-                                                country=user.country,
-                                                user=user, dt=True,
-                                                year=year)
-        if acquired is None:
+        kwargs = {'name': u'RTT',
+                  'country': user.country,
+                  'user': user,
+                  'session': session,
+                  'year': year,
+                  'dt': True}
+        vac = VacationType.by_name_country(**kwargs)
+        if not vac:
+            return
+        acquired = vac.acquired(**kwargs)
+        if not acquired:
             return
 
         return [{'date': item, 'value': 1} for item in acquired]
@@ -567,37 +578,37 @@ class User(Base):
         return history
 
     @classmethod
-    def get_cp_acquired_history(cls, acquired, today=None):
+    def get_cp_acquired_history(cls, vac, acquired, today=None):
         """Get CP acquired history."""
         today = today or datetime.now()
-        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
+        cycle_start, _ = vac.get_cycle_boundaries(today)
 
-        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
-        if cycle_start < CPVacation.epoch:
-            cycle_start = CPVacation.epoch
+        cycle_start, _ = vac.get_cycle_boundaries(today)
+        if cycle_start < vac.epoch:
+            cycle_start = vac.epoch
 
         delta = relativedelta(cycle_start, today)
         months = abs(delta.months)
 
         return [{'date': cycle_start + relativedelta(months=idx),
-                 'value': CPVacation.coeff}
+                 'value': vac.coeff}
                 for idx, item in enumerate(xrange(months + 1))]
 
     @classmethod
-    def get_cp_restant_history(cls, session, user, today=None):
+    def get_cp_restant_history(cls, vac, session, user, today=None):
         """Get CP restant history."""
         today = today or datetime.now()
-        cycle_start, cycle_end = CPVacation.get_cycle_boundaries(today)
+        cycle_start, cycle_end = vac.get_cycle_boundaries(today)
 
-        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
-        if cycle_start < CPVacation.epoch:
-            cycle_start = CPVacation.epoch
+        cycle_start, _ = vac.get_cycle_boundaries(today)
+        if cycle_start < vac.epoch:
+            cycle_start = vac.epoch
 
         thresholds = [cycle_start, cycle_end]
 
         def get_restant(date):
-            data = CPVacation.acquired(user, date, session)
-            return data['restant'] + data['n_1']
+            data = vac.acquired(user, date, session)
+            return data['restant'] + data.get('n_1', 0)
 
         ret = {}
         for date in thresholds:
@@ -639,22 +650,26 @@ class User(Base):
     def get_cp_history(cls, session, user, year):
         """Get CP history for given user: taken + acquired, sorted by date."""
         today = datetime.now().replace(year=year)
-        if today < CPVacation.epoch:
+        kwargs = {'session': session,
+                  'name': u'CP',
+                  'country': user.country,
+                  'user': user,
+                  'today': today}
+        vac = VacationType.by_name_country(**kwargs)
+        if not vac:
+            return [], []
+        if today < vac.epoch:
+            return [], []
+        allowed = vac.acquired(**kwargs)
+        if not allowed:
             return [], []
 
-        cycle_start, _ = CPVacation.get_cycle_boundaries(today)
-        if cycle_start < CPVacation.epoch:
-            cycle_start = CPVacation.epoch
+        cycle_start, _ = vac.get_cycle_boundaries(today)
+        if cycle_start < vac.epoch:
+            cycle_start = vac.epoch
 
-        allowed = VacationType.by_name_country(session, name=u'CP',
-                                               country=user.country,
-                                               user=user,
-                                               today=today)
-        if allowed is None:
-            return [], []
-
-        raw_restant = cls.get_cp_restant_history(session, user, today)
-        raw_acquired = cls.get_cp_acquired_history(allowed, today)
+        raw_restant = cls.get_cp_restant_history(vac, session, user, today)
+        raw_acquired = cls.get_cp_acquired_history(vac, allowed, today)
         acquired = []
         total = 0
         for item in raw_acquired:
@@ -685,11 +700,16 @@ class User(Base):
 
     def get_cp_usage(self, session, today=None):
         """Get CP usage for a user."""
-        allowed = VacationType.by_name_country(session, name=u'CP',
-                                               country=self.country,
-                                               user=self,
-                                               today=today)
-        if allowed is None:
+        kwargs = {'session': session,
+                  'name': u'CP',
+                  'country': self.country,
+                  'user': self,
+                  'today': today}
+        vac = VacationType.by_name_country(**kwargs)
+        if not vac:
+            return
+        allowed = vac.acquired(**kwargs)
+        if not allowed:
             return
 
         cycle_start = allowed['cycle_start']
@@ -697,30 +717,15 @@ class User(Base):
         taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end)
         log.debug('taken %d for %s -> %s' % (taken, cycle_start, cycle_end))
 
-        restant = allowed['restant']
-        n_1 = allowed['n_1']
-        acquis = allowed['acquis']
+        return vac.get_left(taken, allowed)
 
-        left_n_1, left_restant, left_acquis = CPVacation.consume(taken, n_1,
-                                                                 restant,
-                                                                 acquis)
-
-        # must handle 3 pools: acquis, restant, and N-1
-        ret_n_1 = {
-            'allowed': allowed['n_1'],
-            'left': left_n_1,
-            'expire': cycle_end - relativedelta(months=5)}
-        ret_acquis = {
-            'allowed': allowed['acquis'],
-            'left': left_acquis,
-            'expire': cycle_end.replace(year=cycle_end.year + 1)}
-        ret_restant = {
-            'allowed': allowed['restant'],
-            'left': left_restant,
-            'expire': allowed['cycle_end']}
-        return {'acquis': ret_acquis, 'restant': ret_restant,
-                'n_1': ret_n_1,
-                'taken': taken}
+    def get_cp_class(self, session):
+        kwargs = {'session': session,
+                  'name': u'CP',
+                  'country': self.country,
+                  'user': self}
+        vac = VacationType.by_name_country(**kwargs)
+        return vac
 
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
@@ -741,11 +746,26 @@ class BaseVacation(object):
         """Return acquired vacation this year to current day."""
         raise NotImplementedError
 
+    @classmethod
+    def get_left(cls, taken, allowed):
+        """Return how much vacation is left after taken has been accounted."""
+        raise NotImplementedError
+
+    @classmethod
+    def validate_request(cls, user, pool, days, date_from, date_to):
+        """Validate request for user for this vacation type."""
+        raise NotImplementedError
+
+    @classmethod
+    def convert_days(cls, days):
+        return days
+
 
 class RTTVacation(BaseVacation):
     """Implement RTT vacation behavior."""
 
     name = u'RTT'
+    country = u'fr'
     except_months = []
 
     @classmethod
@@ -789,6 +809,7 @@ class CPVacation(BaseVacation):
     """Implement CP vacation behavior."""
 
     name = u'CP'
+    country = u'fr'
     epoch = datetime(2015, 6, 1)
     coeff = 2.08  # per month
     users_base = {}
@@ -806,6 +827,35 @@ class CPVacation(BaseVacation):
         except IOError:
             log.warn('Cannot load user base file %s for CP vacation' %
                      filename)
+
+    @classmethod
+    def get_left(cls, taken, allowed):
+        """Return how much vacation is left after taken has been accounted."""
+        cycle_end = allowed['cycle_end']
+        restant = allowed['restant']
+        n_1 = allowed['n_1']
+        acquis = allowed['acquis']
+
+        left_n_1, left_restant, left_acquis = cls.consume(taken, n_1,
+                                                          restant,
+                                                          acquis)
+
+        # must handle 3 pools: acquis, restant, and N-1
+        ret_n_1 = {
+            'allowed': allowed['n_1'],
+            'left': left_n_1,
+            'expire': cycle_end - relativedelta(months=5)}
+        ret_acquis = {
+            'allowed': allowed['acquis'],
+            'left': left_acquis,
+            'expire': cycle_end.replace(year=cycle_end.year + 1)}
+        ret_restant = {
+            'allowed': allowed['restant'],
+            'left': left_restant,
+            'expire': allowed['cycle_end']}
+        return {'acquis': ret_acquis, 'restant': ret_restant,
+                'n_1': ret_n_1,
+                'taken': taken}
 
     @classmethod
     def consume(cls, taken, n_1, restant, acquis):
@@ -946,6 +996,215 @@ class CPVacation(BaseVacation):
                 'n_1': n_1,
                 'cycle_start': start, 'cycle_end': end}
 
+    @classmethod
+    def validate_request(cls, user, pool, days, date_from, date_to):
+        """Validate request regarding user pool."""
+        # check that we request vacations in the allowed cycle
+        if pool is not None and (
+                not (date_from <= date_to <=
+                     pool['acquis']['expire'])):
+            msg = ('CP can only be used until %s.' %
+                   pool['acquis']['expire'].strftime('%d/%m/%Y'))
+            return msg
+
+
+class CPLUVacation(BaseVacation):
+    """Implement CP vacation behavior for Luxembourg."""
+
+    name = u'CP'
+    country = u'lu'
+    epoch = datetime(2016, 1, 1)
+    coeff = 2.083 * 8  # per month 16.664 hours
+    users_base = {}
+
+    @classmethod
+    def initialize(cls, filename):
+        try:
+            with open(filename) as fdesc:
+                conf = yaml.load(fdesc, YAMLLoader)
+            cls.users_base = conf.get('users_base')
+            base_date = conf.get('date')
+            base_date = datetime.strptime(base_date, '%d/%m/%Y')
+            cls.epoch = base_date
+            log.info('Loaded user base file %s for CP vacation' % filename)
+        except IOError:
+            log.warn('Cannot load user base file %s for CP vacation' %
+                     filename)
+
+    @classmethod
+    def get_left(cls, taken, allowed):
+        """Return how much vacation is left after taken has been accounted."""
+        cycle_end = allowed['cycle_end']
+        restant = allowed['restant']
+        acquis = allowed['acquis']
+
+        left_restant, left_acquis = cls.consume(taken, restant, acquis)
+
+        # must handle 2 pools: acquis, restant
+        ret_acquis = {
+            'allowed': allowed['acquis'],
+            'left': left_acquis,
+            'expire': cycle_end.replace(year=cycle_end.year)}
+        ret_restant = {
+            'allowed': allowed['restant'],
+            'left': left_restant,
+            # add 3 months here
+            'expire': allowed['cycle_end'].replace(year=cycle_end.year - 1) + relativedelta(months=3)} # noqa
+        return {'acquis': ret_acquis, 'restant': ret_restant,
+                'taken': taken}
+
+    @classmethod
+    def consume(cls, taken, restant, acquis):
+        """First remove taken CP from Restant pool then from Acquis pool."""
+        exceed = 0
+        left_restant = restant - abs(taken)
+        if left_restant < 0:
+            exceed = abs(left_restant)
+            left_restant = 0
+        left_acquis = acquis - exceed
+        return left_restant, left_acquis
+
+    @classmethod
+    def get_cycle_boundaries(cls, date, raising=None):
+        """Retrieve cycle start and end date for given date.
+
+        Will raise an exception if raising parameter is passed,
+        this is useful for stopping recursion calls.
+        """
+        start = datetime(date.year, 1, 1)
+        end = datetime(date.year, 12, 31)
+
+        if raising and ((start < cls.epoch) or (end < cls.epoch)):
+            raise FirstCycleException()
+
+        return start, end
+
+    @classmethod
+    def get_acquis(cls, user, starting_date, today=None):
+        """."""
+        today = today or datetime.now()
+
+        delta = relativedelta(starting_date, today)
+        months = abs(delta.months)
+        years = abs(delta.years)
+
+        acquis = None
+        cp_bonus = 0
+        # add bonus CP based on arrival_date, 1 more per year each 5 years
+        # cp bonus are added on the last acquisition day of previous cycle,
+        # so on 31/05 of year - 1
+        if years > 0:
+            cp_bonus = int(math.floor(user.seniority / 5))
+
+        if not months and years:
+            months = 12
+            acquis = 25 + cp_bonus
+
+        log.debug('%s: using coeff %s * months %s + (bonus %s)' %
+                  (user.login, cls.coeff, months, cp_bonus))
+        acquis = acquis or (months * cls.coeff)
+        return acquis
+
+    @classmethod
+    def acquired(cls, user, today=None, session=None, **kwargs):
+        """Return acquired vacation this year to current day.
+
+        We acquire a base of 200 hours per year.
+        A year period is a normal year, we call that a cycle.
+
+        WORKFLOW
+        - retrieve current cycle boundaries
+        - retrieve previous cycle boundaries
+        - if previous cycle is available (i.e we are not in the first cycle)
+        - retrieve amount of CP from previous cycle
+        """
+
+        # if user is not in luxembourg, discard
+        if user.country not in ('lu'):
+            log.info('user %s not in country lu, discarding' % user.login)
+            return
+
+        # if user has no arrival_date, discard
+        if not user.arrival_date:
+            log.info('user %s has no arrival_date, discarding' % user.login)
+            return
+
+        today = today or datetime.now()
+        # if user is not yet active, discard
+        if user.arrival_date > today:
+            log.info('user %s is not yet active, discarding' % user.login)
+            return
+
+        restant = 0
+        try:
+            start, end = cls.get_cycle_boundaries(today, raising=True)
+            # use user arrival_date if after starting cycle date
+            if user.arrival_date > start:
+                start = user.arrival_date
+            acquis = 200
+            dt = start - relativedelta(days=1)
+            taken = user.get_cp_taken_cycle(session, start, end)
+            previous_usage = user.get_cp_usage(session, today=dt)
+            if not previous_usage:
+                left_acquis = 0
+            else:
+                left_acquis = previous_usage['acquis']['left']
+                # previous acquis are only valid 3 months
+                if today > previous_usage['acquis']['expire'] + relativedelta(months=3): # noqa
+                    left_acquis = 0
+            # add taken value as it is already consumed by get_cp_usage method
+            # so we don't consume it twice.
+            restant = left_acquis + taken
+        except FirstCycleException:
+            # cannot go back before first cycle, so use current cycle values
+            start, end = cls.get_cycle_boundaries(today)
+            start = cls.epoch
+            # use user arrival_date if after starting cycle date
+            if user.arrival_date > start:
+                start = user.arrival_date
+            acquis = cls.users_base.get(user.login, 200)
+            start = cls.epoch
+
+        return {'acquis': acquis, 'restant': restant,
+                'cycle_start': start, 'cycle_end': end}
+
+    @classmethod
+    def validate_request(cls, user, pool, days, date_from, date_to):
+        """Validate request regarding user pool."""
+        if pool is not None:
+            total_left = (pool['acquis']['left'] +
+                          pool['restant']['left'])
+
+        if pool is not None and total_left <= 0:
+            msg = 'No CP left to take.'
+            return msg
+
+        # check that we have enough CP to take
+        if pool is not None and days > total_left:
+            msg = 'You only have %d CP to use.' % total_left
+            return msg
+
+        # check that we request vacations in the allowed cycle
+        if pool is not None and (
+                not (date_from <= date_to <=
+                     pool['acquis']['expire'])):
+            msg = ('CP can only be used until %s.' %
+                   pool['acquis']['expire'].strftime('%d/%m/%Y'))
+            return msg
+
+        # check that the user has at least 3 months of seniority
+        if user.arrival_date:
+            today = datetime.now()
+            delta = today - user.arrival_date
+            if delta.days < (3 * 31):
+                msg = 'You need 3 months of seniority before using your CP'
+                return msg
+
+    @classmethod
+    def convert_days(cls, days):
+        """Return value in hours"""
+        return days * 8
+
 
 class VacationType(Base):
     """Describe allowed type of vacation to request."""
@@ -960,7 +1219,8 @@ class VacationType(Base):
 
     # save internal map of loaded module classes
     for subclass in BaseVacation.__subclasses__():
-        _vacation_classes[subclass.name] = subclass
+        _vac_id = '%s_%s' % (subclass.name, subclass.country)
+        _vacation_classes[_vac_id] = subclass
 
     @classmethod
     def by_name(cls, session, name):
@@ -981,10 +1241,11 @@ class VacationType(Base):
         vac = cls.first(session, where=(cls.countries.contains(ctry),
                                         cls.name == name), order_by=cls.id)
 
-        return (cls._vacation_classes[vac.name].acquired(user=user,
-                                                         session=session,
-                                                         **kwargs)
-                if vac else None)
+        if not vac:
+            return
+
+        vacation_name = '%s_%s' % (vac.name, country)
+        return cls._vacation_classes.get(vacation_name)
 
 
 class Request(Base):
@@ -1515,6 +1776,13 @@ def includeme(config):
             if 'pyvac.vacation.cp_class.base_file' in settings:
                 file = settings['pyvac.vacation.cp_class.base_file']
                 CPVacation.initialize(file)
+
+    if 'pyvac.vacation.cp_lu_class.enable' in settings:
+        cp_lu_class = asbool(settings['pyvac.vacation.cp_lu_class.enable'])
+        if cp_lu_class:
+            if 'pyvac.vacation.cp_lu_class.base_file' in settings:
+                file = settings['pyvac.vacation.cp_lu_class.base_file']
+                CPLUVacation.initialize(file)
 
     if 'pyvac.vacation.rtt_class.enable' in settings:
         rtt_class = asbool(settings['pyvac.vacation.rtt_class.enable'])

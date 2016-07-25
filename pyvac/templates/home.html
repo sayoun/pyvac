@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div class="span{% if pyvac.user.country == 'fr' %}7{%else%}12{% endif %}">
+<div class="span{% if pyvac.user.country in ['fr', 'lu'] %}7{%else%}12{% endif %}">
 <form action="{{ route_url('request_send') }}" method="post" id="todoForm" class="form-horizontal">
 
     <fieldset>
@@ -105,18 +105,27 @@
 
 </form>
 </div>
-{% if pyvac.user.country == 'fr' %}
+{% if pyvac.user.country in ['fr', 'lu'] %}
 <div class="span5">
     <legend>Informations</legend>
     <ul>
         {% if pyvac.user.arrival_date %}
         <li><b>{{ pyvac.user.anniversary[1] }}</b> days until your {{ (pyvac.user.seniority + 1)|english_suffix}} {% if pyvac.user.firm %}{{ pyvac.user.firm }}{% else %}anni{% endif %}versary ! ({{ pyvac.user.arrival_date.strftime('%d/%m/%Y') }})</li>
         {% endif %}
-        <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
-        {% if pyvac.user.arrival_date and pyvac.user.cp %}
-        <li>You have <b>{{pyvac.user.cp['n_1']['left']}} CP N-1</b> to use before {{pyvac.user.cp['n_1']['expire'].strftime('%d/%m/%Y')}}</li>
-        <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP restants</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
-        <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP en acquisition</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
+
+        {% if pyvac.user.country == 'fr' %}
+          <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
+          {% if pyvac.user.arrival_date and pyvac.user.cp %}
+          <li>You have <b>{{pyvac.user.cp['n_1']['left']}} CP N-1</b> to use before {{pyvac.user.cp['n_1']['expire'].strftime('%d/%m/%Y')}}</li>
+          <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP restants</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
+          <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP en acquisition</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
+          {% endif %}
+        {% endif %}
+        {% if pyvac.user.country == 'lu' %}
+          {% if pyvac.user.arrival_date and pyvac.user.cp %}
+          <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP REPORT</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
+          <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP LÉGAUX</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
+          {% endif %}
         {% endif %}
     </ul>
 </div>

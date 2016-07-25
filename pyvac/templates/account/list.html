@@ -27,7 +27,7 @@
       {% for user in users %}
       <tr>
             <td>
-                <a href="{{ route_url('edit_account', user_id=user.id) }}">
+                <a href="{{ route_url('edit_account', user_id=user.id) }}" {% if user.login not in active_users %}class="unknown_user"{% endif %}>
                     {{ user.login }}
                 </a>
             </td>

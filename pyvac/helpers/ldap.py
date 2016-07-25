@@ -411,6 +411,24 @@ class LdapWrapper(object):
         # only return unique entries
         return arrivals
 
+    def list_active_users(self):
+        """ Retrieve available teams """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all users so we can extract OU
+        required = ['cn']
+        item = '|(c:dn:=zh)(c:dn:=fr)(c:dn:=lu)(c:dn:=us)'
+        res = self._conn.search_s('%s' % self._base,
+                                  ldap.SCOPE_SUBTREE,
+                                  self._filter % item, required)
+
+        users = []
+        for USER_DN, entry in res:
+            cn = entry.get('cn', [None])[0]
+            users.append(cn)
+        # only return unique entries
+        return users
+
     def get_users_units(self):
         """ Retrieve ou for all users """
         # rebind with system dn

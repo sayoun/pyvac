@@ -36,8 +36,9 @@ class List(View):
 
         user_attr = {}
         users_teams = {}
+        active_users = []
         if use_ldap:
-            # # synchronise user groups/roles
+            # synchronise user groups/roles
             User.sync_ldap_info(self.session)
             ldap = LdapCache()
 
@@ -47,11 +48,14 @@ class List(View):
                 for member in members:
                     users_teams.setdefault(member, []).append(team)
 
+            active_users = ldap.list_active_users()
+
         return {u'user_count': User.find(self.session, count=True),
                 u'users': User.find(self.session, order_by=[User.dn]),
                 'use_ldap': use_ldap,
                 'ldap_info': user_attr,
                 'users_teams': users_teams,
+                'active_users': active_users,
                 }
 
 

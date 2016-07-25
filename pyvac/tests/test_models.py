@@ -1,5 +1,7 @@
 from datetime import datetime
 from freezegun import freeze_time
+from dateutil.relativedelta import relativedelta
+from mock import patch, PropertyMock
 
 from .case import ModelTestCase
 
@@ -112,7 +114,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             requests = Request.by_manager(self.session, manager1)
-        self.assertEqual(len(requests), 8)
+        self.assertEqual(len(requests), 10)
         # take the first
         request = requests.pop()
         self.assertIsInstance(request, Request)
@@ -176,7 +178,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 19)
+        self.assertEqual(nb_requests, 21)
 
     def test_in_conflict_manager(self):
         from pyvac.models import Request
@@ -267,9 +269,10 @@ class VacationTypeTestCase(ModelTestCase):
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
-            vac = VacationType.by_name_country(self.session, u'RTT',
-                                               jdoe.country)
-            self.assertEqual(vac, 10)
+            kwargs = {'session': self.session,
+                      'name': u'RTT', 'country': jdoe.country}
+            vac = VacationType.by_name_country(**kwargs)
+            self.assertEqual(vac.acquired(**kwargs), 10)
 
     def test_by_name_country_rtt_truncated_ok(self):
         from pyvac.models import User, VacationType
@@ -278,19 +281,20 @@ class VacationTypeTestCase(ModelTestCase):
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
-            vac = VacationType.by_name_country(self.session, u'RTT',
-                                               jdoe.country,
-                                               jdoe)
-            self.assertEqual(vac, 3)
+            kwargs = {'session': self.session,
+                      'name': u'RTT', 'country': jdoe.country,
+                      'user': jdoe}
+            vac = VacationType.by_name_country(**kwargs)
+            self.assertEqual(vac.acquired(**kwargs), 3)
 
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
         self.assertEqual(VacationType._vacation_classes.keys(),
-                         [u'RTT', u'CP'])
+                         [u'CP_lu', u'CP_fr', u'RTT_fr'])
 
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType
-        sub = VacationType._vacation_classes[u'RTT']
+        sub = VacationType._vacation_classes[u'RTT_fr']
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -306,6 +310,104 @@ class VacationTypeTestCase(ModelTestCase):
         self.assertEqual(vac_type.visibility, 'admin')
         vac_type = VacationType.by_id(self.session, 1)
         self.assertEqual(vac_type.visibility, None)
+
+
+class CPVacationTestCase(ModelTestCase):
+
+    def test_lu_validate_request(self):
+        from pyvac.models import CPLUVacation, User
+        user = User.by_login(self.session, u'sarah.doe')
+        self.assertIsInstance(user, User)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            days = 3
+            date_from = datetime.now()
+            date_to = datetime.now() + relativedelta(days=3)
+            err = CPLUVacation.validate_request(user, pool, days,
+                                                date_from, date_to)
+            self.assertEqual(err, None)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=2)
+            pool = user.get_cp_usage(self.session)
+            days = 3
+            date_from = datetime.now()
+            date_to = datetime.now() + relativedelta(days=3)
+            err = CPLUVacation.validate_request(user, pool, days,
+                                                date_from, date_to)
+            msg = 'You need 3 months of seniority before using your CP'
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            days = 3
+            date_from = datetime.now().replace(year=datetime.now().year + 1)
+            date_to = date_from + relativedelta(days=3)
+            err = CPLUVacation.validate_request(user, pool, days,
+                                                date_from, date_to)
+            msg = 'CP can only be used until 31/12/%d.' % pool['acquis']['expire'].year # noqa
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            days = 250
+            date_from = datetime.now()
+            date_to = datetime.now() + relativedelta(days=3)
+            err = CPLUVacation.validate_request(user, pool, days,
+                                                date_from, date_to)
+            msg = 'You only have 200 CP to use.'
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            # lower the amount of pool left
+            pool['acquis']['left'] = 0
+            pool['restant']['left'] = 0
+            days = 20
+            date_from = datetime.now()
+            date_to = datetime.now() + relativedelta(days=3)
+            err = CPLUVacation.validate_request(user, pool, days,
+                                                date_from, date_to)
+            msg = 'No CP left to take.'
+            self.assertEqual(err, msg)
+
+    def test_cp_validate_request(self):
+        from pyvac.models import CPVacation, User
+        user = User.by_login(self.session, u'jdoe')
+        self.assertIsInstance(user, User)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            days = 3
+            date_from = datetime.now()
+            date_to = datetime.now() + relativedelta(days=3)
+            err = CPVacation.validate_request(user, pool, days,
+                                              date_from, date_to)
+            self.assertEqual(err, None)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            pool = user.get_cp_usage(self.session)
+            days = 3
+            date_from = datetime.now().replace(year=datetime.now().year + 2)
+            date_to = date_from + relativedelta(days=3)
+            err = CPVacation.validate_request(user, pool, days,
+                                              date_from, date_to)
+            msg = 'CP can only be used until 31/05/%d.' % pool['acquis']['expire'].year # noqa
+            self.assertEqual(err, msg)
 
 
 class SudoerTestCase(ModelTestCase):

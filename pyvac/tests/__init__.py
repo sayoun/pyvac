@@ -28,6 +28,7 @@ def setUpModule():
 
     fr_country = Countries.by_name(session, u'fr')
     us_country = Countries.by_name(session, u'us')
+    lu_country = Countries.by_name(session, u'lu')
 
     manager1 = User(login=u'manager1',
                     password=common_password,
@@ -88,6 +89,17 @@ def setUpModule():
     session.flush()
     sudoer = Sudoer(source_id=user2.id, target_id=1)
     session.add(sudoer)
+
+    user3 = User(login=u'sarah.doe',
+                 password=common_password,
+                 email=u'sarah@example.net',
+                 manager=manager1,
+                 firstname=u'Sarah',
+                 lastname=u'Doe',
+                 _country=lu_country,
+                 )
+    user3.groups.append(user_group)
+    session.add(user3)
 
     date_from = datetime.strptime('10/04/2015', '%d/%m/%Y')
     date_to = datetime.strptime('14/04/2015', '%d/%m/%Y')

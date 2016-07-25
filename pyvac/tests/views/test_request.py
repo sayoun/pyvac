@@ -390,7 +390,7 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        with freeze_time('2016-10-01',
+        with freeze_time('2016-12-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             request = self.create_request({
@@ -783,3 +783,39 @@ class RequestTestCase(case.ViewTestCase):
         expected = ['error;You only have 0.5 RTT to use.']
         self.assertEqual(request.session.pop_flash(), expected)
         User.get_rtt_usage = orig_get_rtt_usage
+
+    def test_post_send_cp_lu_full_ok(self):
+        self.config.testing_securitypolicy(userid=u'sarah.doe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        request = self.create_request({
+            'days': 4,
+            'date_from': '05/10/2016 - 10/10/2016',
+            'type': '1',
+            'breakdown': 'FULL',
+        })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.days, 32.0)
+
+    def test_post_send_cp_lu_half_ok(self):
+        self.config.testing_securitypolicy(userid=u'sarah.doe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+        request = self.create_request({
+            'days': 0.5,
+            'date_from': '17/10/2016 - 17/10/2016',
+            'type': '1',
+            'breakdown': 'AM',
+        })
+        view = Send(request)()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+        last_req = Request.find(self.session)[-1]
+        self.assertEqual(last_req.days, 4.0)

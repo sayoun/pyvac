@@ -11,7 +11,9 @@
         <th>{% trans %}Name{% endtrans %}</th>
         <th>{% trans %}Manager{% endtrans %}</th>
         <th>{% trans %}CP Pool{% endtrans %}</th>
-        <th>{% trans %}RTT Pool{% endtrans %}</th>
+        {% if pyvac.user.country == 'fr' %}
+          <th>{% trans %}RTT Pool{% endtrans %}</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -32,10 +34,12 @@
             <td>
                 {{ cp_usage[user.login] }}
             </td>
-            <td>
-                {{ rtt_usage[user.login] }}
-            </td>
-      </tr>
+            {% if pyvac.user.country == 'fr' %}
+              <td>
+                  {{ rtt_usage[user.login] }}
+              </td>
+              {% endif %}
+          </tr>
       {% endfor %}
     </tbody>
   </table>

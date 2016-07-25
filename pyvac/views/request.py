@@ -3,7 +3,10 @@ import re
 import json
 import logging
 from datetime import datetime
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    OrderedDict = dict
 
 from .base import View
 
@@ -11,7 +14,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 from pyramid.settings import asbool
 
-from pyvac.models import Request, VacationType, User, CPVacation
+from pyvac.models import Request, VacationType, User
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
@@ -166,18 +169,22 @@ class Send(View):
 
             # check CP usage
             if vac_type.name == u'CP':
-                pool = cp_data = self.user.get_cp_usage(self.session)
-                # check that we request vacations in the allowed cycle
-                if cp_data is not None and (
-                        not (date_from <= date_to <=
-                             cp_data['acquis']['expire'])):
-                    msg = ('CP can only be used until %s.' %
-                           cp_data['acquis']['expire'].strftime('%d/%m/%Y'))
-                    self.request.session.flash('error;%s' % msg)
+                cp_class = self.user.get_cp_class(self.session)
+                pool = self.user.get_cp_usage(self.session)
+
+                # convert days to hours for LU if needed
+                days = cp_class.convert_days(days)
+
+                error = cp_class.validate_request(self.user, pool, days,
+                                                  date_from, date_to)
+                if error is not None:
+                    self.request.session.flash('error;%s' % error)
                     return HTTPFound(location=route_url('home', self.request))
+
                 if pool:
                     # remove expire datetimes as it's not json serializable
-                    pool['n_1'].pop('expire', None)
+                    if 'n_1' in pool:
+                        pool['n_1'].pop('expire', None)
                     pool['acquis'].pop('expire', None)
                     pool['restant'].pop('expire', None)
 
@@ -673,10 +680,12 @@ class PoolHistory(View):
         pool_history['CP']['history'] = history
         pool_history['CP']['restant'] = restant
 
+        vac_class = user.get_cp_class(self.session)
+
         ret = {'user': user,
                'year': year,
                'years': years,
                'pool_history': pool_history,
-               'consume_cp': CPVacation.consume}
+               'consume_cp': vac_class.consume}
 
         return ret
