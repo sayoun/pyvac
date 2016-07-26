@@ -1,3 +1,10 @@
+pyvac (1.8.4) unstable; urgency=medium
+
+  * Add CP for Luxembourg country
+  * Admins can now set arrival_date for LDAP users 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 26 Jul 2016 09:23:28 +0200
+
 pyvac (1.8.3) unstable; urgency=medium
 
   * Admins are able to use any type of vacation when sudoing.
