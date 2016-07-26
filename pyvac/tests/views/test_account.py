@@ -30,7 +30,7 @@ class AccountTestCase(case.ViewTestCase):
         view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
                          set(['pyvac', 'user_count', 'users', 'users_teams',
-                              'use_ldap', 'ldap_info']))
+                              'use_ldap', 'ldap_info', 'active_users']))
         self.assertEqual(view['user_count'], 8)
         self.assertEqual(len(view['users']), 8)
         self.assertIsInstance(view['users'][0], User)
