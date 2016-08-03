@@ -172,14 +172,18 @@ class Send(View):
                 cp_class = self.user.get_cp_class(self.session)
                 pool = self.user.get_cp_usage(self.session)
 
-                # convert days to hours for LU if needed
-                days = cp_class.convert_days(days)
+                if cp_class:
+                    # only FR and LU have a dedicated CP class to use
 
-                error = cp_class.validate_request(self.user, pool, days,
-                                                  date_from, date_to)
-                if error is not None:
-                    self.request.session.flash('error;%s' % error)
-                    return HTTPFound(location=route_url('home', self.request))
+                    # convert days to hours for LU if needed
+                    days = cp_class.convert_days(days)
+
+                    error = cp_class.validate_request(self.user, pool, days,
+                                                      date_from, date_to)
+                    if error is not None:
+                        self.request.session.flash('error;%s' % error)
+                        return HTTPFound(location=route_url('home',
+                                                            self.request))
 
                 if pool:
                     # remove expire datetimes as it's not json serializable

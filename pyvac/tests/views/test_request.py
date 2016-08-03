@@ -386,9 +386,15 @@ class RequestTestCase(case.ViewTestCase):
     def test_post_send_rtt_holiday_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
-        from pyvac.models import Request
+        from pyvac.models import Request, User
         from pyvac.views.request import Send
+
         total_req = Request.find(self.session, count=True)
+
+        janedoe = User.by_login(self.session, u'janedoe')
+        old_created_at = janedoe.created_at
+        janedoe.created_at = janedoe.created_at.replace(month=1)
+        janedoe.get_rtt_usage(self.session)
 
         with freeze_time('2016-12-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
@@ -406,6 +412,7 @@ class RequestTestCase(case.ViewTestCase):
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.status, u'PENDING')
         self.assertEqual(last_req.days, 4.0)
+        janedoe.created_at = old_created_at
 
     def test_post_send_holiday_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
