@@ -50,6 +50,7 @@ class LdapWrapper(object):
         self.system_password = conf['system_pass']
 
         self.team_dn = conf['team_dn']
+        self.default_user = conf.get('default_user', self.system_DN)
 
         self._conn = ldap.initialize(self._url)
         self._bind(self.system_DN, self.system_password)
@@ -455,6 +456,39 @@ class LdapWrapper(object):
         res = self._search_team(item, required)
         _, entry = res[0]
         return entry['member']
+
+    def create_team(self, team):
+        """Create a team."""
+        if not team:
+            log.error('cannot create empty team')
+            return
+
+        # member field cannot be empty so we always assign a default user
+        entry = {
+            'objectClass': ['groupOfNames', 'top'],
+            'cn': '%s' % team,
+            'member': [self.default_user],
+        }
+        ladd = modlist.addModlist(entry)
+        team_dn = 'cn=%s,dc=teams,dc=origin,dc=gandi,dc=net' % team
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # Do the actual synchronous add-operation to the ldapserver
+        self._conn.add_s(team_dn, ladd)
+        log.info('team %s created' % team)
+
+    def delete_team(self, team):
+        """Delete a team."""
+        if not team:
+            log.error('cannot delete empty team')
+            return
+
+        team_dn = 'cn=%s,dc=teams,dc=origin,dc=gandi,dc=net' % team
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # Do the actual synchronous add-operation to the ldapserver
+        self._conn.delete_s(team_dn)
+        log.info('team %s deleted' % team)
 
 
 class LdapCache(object):
