@@ -1,3 +1,9 @@
+pyvac (1.8.5) unstable; urgency=medium
+
+  * Fix bug: only FR and LU have a dedicated CP class to use
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 03 Aug 2016 09:56:15 +0200
+
 pyvac (1.8.4) unstable; urgency=medium
 
   * Add CP for Luxembourg country
