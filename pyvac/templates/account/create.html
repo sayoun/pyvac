@@ -1,10 +1,13 @@
 {% extends "layout.html" %}
 
 {% block body %}
+<div class="span12">
+        <legend>User</legend>
+</div>
+<div class="span6">
 <form action="" method="post" id="createUserForm" class="form-horizontal">
 
     <fieldset>
-        <legend>User</legend>
         <input type="hidden" name="user_id" value="{{user.id|default('', true)}}"/>
         <input type="hidden" name="user.ldap_user" value="{{use_ldap|int}}"/>
         <input name="_csrf" type="hidden" value="{{ csrf_token }}">
@@ -198,6 +201,12 @@
         </div>
     </fieldset>
 
+</div>
+<div class="span6">
+    {% if ldap_user.photo %}
+    <image src="data:image/png;base64,{{ ldap_user.photo }}"/>
+    {% endif %}
+</div>
 </form>
 
 {% endblock %}

@@ -98,7 +98,7 @@ class LdapWrapper(object):
 
     def _search_by_item(self, item):
         required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager',
-                           'ou', 'userPassword', 'arrivalDate']
+                           'ou', 'userPassword', 'arrivalDate', 'jpegPhoto']
         res = self._search(self._filter % item, required_fields)
         if not res:
             raise UnknownLdapUser
@@ -183,6 +183,9 @@ class LdapWrapper(object):
             data['arrivalDate'] = entry['arrivalDate'].pop()
         else:
             data['arrivalDate'] = None
+
+        if 'jpegPhoto' in entry:
+            data['jpegPhoto'] = entry['jpegPhoto'].pop()
 
         # save user dn
         data['dn'] = user_dn

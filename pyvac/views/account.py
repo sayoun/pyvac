@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import base64
 import logging
 from datetime import datetime
 
@@ -141,6 +142,10 @@ class AccountMixin:
             view['password'] = password
             view['view_name'] = self.__class__.__name__.lower()
             view['myself'] = (self.user.id == self.get_model().id)
+
+            jpeg = view['ldap_user'].get('jpegPhoto')
+            if jpeg:
+                view['ldap_user']['photo'] = base64.b64encode(jpeg)
 
     def append_groups(self, account):
         exists = []
