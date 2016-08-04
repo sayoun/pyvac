@@ -79,3 +79,19 @@ def get_holiday(user, year=None, use_datetime=False):
                         for dt in holiday_next_raw]
 
     return holiday_current + holiday_next
+
+
+def get_lu_recovered_holiday(year, start, end):
+    """Retrieve holidays for current year which must be recovered
+
+    for Luxembourg each holiday which is on a Saturday or Sunday have to be
+    recovered and consumed.
+    """
+    cal = Luxembourg()
+
+    # retrieve Dates from workalendar
+    holidays = [dt for dt, _ in cal.holidays(year)
+                if dt.isoweekday() in [6, 7] and
+                start <= dt < end]
+
+    return len(holidays)

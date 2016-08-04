@@ -31,7 +31,7 @@ from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.util import daterange
-from pyvac.helpers.holiday import utcify
+from pyvac.helpers.holiday import utcify, get_lu_recovered_holiday
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -1037,6 +1037,12 @@ class CPLUVacation(BaseVacation):
         cycle_end = allowed['cycle_end']
         restant = allowed['restant']
         acquis = allowed['acquis']
+
+        # add CP to be recovered if a passed holiday was a Saturday or Sunday
+        recovered_cp = get_lu_recovered_holiday(allowed['cycle_start'].year,
+                                                allowed['cycle_start'].date(),
+                                                datetime.now().date())
+        acquis = acquis + cls.convert_days(recovered_cp)
 
         left_restant, left_acquis = cls.consume(taken, restant, acquis)
 

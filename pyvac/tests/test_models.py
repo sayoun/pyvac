@@ -314,6 +314,22 @@ class VacationTypeTestCase(ModelTestCase):
 
 class CPVacationTestCase(ModelTestCase):
 
+    def test_lu_holidays_recovered(self):
+        from pyvac.models import User
+        user = User.by_login(self.session, u'sarah.doe')
+        self.assertIsInstance(user, User)
+
+        with freeze_time('2016-08-15',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            with patch('pyvac.models.User.arrival_date',
+                       new_callable=PropertyMock) as mockfoo:
+                mockfoo.return_value = datetime.now() - relativedelta(months=5)
+                pool = user.get_cp_usage(self.session)
+                # there is a holiday on 1st may which should be recovered
+                # so +8 hours
+                self.assertEqual(pool['acquis']['left'], 208)
+
     def test_lu_validate_request(self):
         from pyvac.models import CPLUVacation, User
         user = User.by_login(self.session, u'sarah.doe')
@@ -363,7 +379,7 @@ class CPVacationTestCase(ModelTestCase):
             date_to = datetime.now() + relativedelta(days=3)
             err = CPLUVacation.validate_request(user, pool, days,
                                                 date_from, date_to)
-            msg = 'You only have 200 CP to use.'
+            msg = 'You only have 208 CP to use.'
             self.assertEqual(err, msg)
 
         with patch('pyvac.models.User.arrival_date',
