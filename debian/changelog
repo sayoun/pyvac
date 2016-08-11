@@ -1,3 +1,9 @@
+pyvac (1.8.6) unstable; urgency=medium
+
+  * Convert CP LU to hours when needed
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 11 Aug 2016 18:30:01 +0200
+
 pyvac (1.8.5) unstable; urgency=medium
 
   * Fix bug: only FR and LU have a dedicated CP class to use
