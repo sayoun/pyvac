@@ -1769,6 +1769,35 @@ class Sudoer(Base):
         return cls.find(session, order_by=cls.source_id)
 
 
+class Reminder(Base):
+    """Describe reminder to send per user/settings.
+
+    Entry is created when the notification reminder has been sent"""
+
+    # type of reminder
+    type = Column(Enum('trial_threshold',
+                  name='enum_reminder_type'),
+                  nullable=False)
+
+    # parameters of reminder
+    parameters = Column(UnicodeText(), nullable=False)
+
+    @classmethod
+    def by_type(cls, session, type):
+        """Get a reminder entry for a given type."""
+        return cls.find(session, where=(cls.type == type,))
+
+    @classmethod
+    def by_type_param(cls, session, type, parameters):
+        """Get recovery entry for a given type and parameters."""
+        return cls.first(session, where=(cls.type == type,
+                                         cls.parameters == parameters))
+
+    def __repr__(self):
+        return "<Reminder #%d: %s (%s)>" % (self.id, self.type,
+                                            self.parameters)
+
+
 def includeme(config):
     """
     Pyramid includeme file for the :class:`pyramid.config.Configurator`

@@ -396,14 +396,15 @@ class LdapWrapper(object):
         # only return unique entries
         return sorted(managers)
 
-    def list_arrivals(self):
+    def list_arrivals_country(self, country):
         """ Retrieve users arrival dates """
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         # retrieve all users so we can extract OU
         required = ['arrivalDate']
         item = 'cn=*'
-        res = self._conn.search_s('c=fr,%s' % self._base, ldap.SCOPE_SUBTREE,
+        res = self._conn.search_s('c=%s,%s' % (country, self._base),
+                                  ldap.SCOPE_SUBTREE,
                                   self._filter % item, required)
         arrivals = {}
         for USER_DN, entry in res:

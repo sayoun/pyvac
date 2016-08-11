@@ -11,6 +11,7 @@ from celery.task import Task, subtask
 from pyvac.models import DBSession, Request, User
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.mail import SmtpCache
+from pyvac.helpers.conf import ConfCache
 
 try:
     from yaml import CSafeLoader as YAMLLoader
@@ -50,6 +51,10 @@ class BaseWorker(Task):
         ics_content = request.generate_vcal_entry()
         self.smtp.send_mail_multipart(sender, target, subject, content,
                                       newpart=ics_content)
+
+    def send_mail_custom(self, subject, sender, target, content):
+        """ Send a mail """
+        self.smtp.send_mail(sender, target, subject, content)
 
     def get_admin_mail(self, admin):
         """ Return admin email from ldap dict or model """
@@ -294,6 +299,34 @@ class WorkerMail(BaseWorker):
         target = data['target']
         subject = data['subject']
         content = data['content']
+
+        try:
+            self.smtp.send_mail(sender, target, subject, content)
+        except Exception:
+            self.log.exception('Error while sending mail')
+
+
+class WorkerTrialReminder(BaseWorker):
+
+    name = 'worker_trial_reminder'
+
+    def process(self, data):
+        """send a trial reminder mail for a user to his admin"""
+        user = User.by_id(self.session, data['user_id'])
+        duration = data['duration']
+
+        conf = ConfCache()
+        sender = conf.get('reminder', {}).get('sender', 'pyvac')
+        # send mail to user country admin (HR)
+        subject = 'Trial period reminder: %s' % user.name
+        admin = user.get_admin(self.session)
+        target = self.get_admin_mail(admin)
+        content = """Hello,
+
+This is a reminder that %s trial period has been running for %d months.
+Arrival date: %s
+
+""" % (user.name, duration, user.arrival_date.strftime('%d/%m/%Y'))
 
         try:
             self.smtp.send_mail(sender, target, subject, content)

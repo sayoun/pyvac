@@ -6,6 +6,7 @@ from celery.signals import worker_process_init
 from pyvac.helpers.sqla import create_engine
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.mail import SmtpCache
+from pyvac.helpers.conf import ConfCache
 
 try:
     from yaml import CSafeLoader as YAMLLoader
@@ -25,3 +26,6 @@ def configure_workers(sender=None, conf=None, **kwargs):
     if conf.get('ldap'):
         LdapCache.configure(conf.get('ldap').get('conf'))
     SmtpCache.configure(conf.get('smtp'))
+
+    # initialize configuration singleton
+    ConfCache.configure(conf)
