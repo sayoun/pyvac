@@ -120,7 +120,7 @@ class Send(View):
 
             # check RTT usage
             if vac_type.name == u'RTT':
-                pool = rtt_data = self.user.get_rtt_usage(self.session)
+                pool = rtt_data = check_user.get_rtt_usage(self.session)
                 if rtt_data is not None and rtt_data['left'] <= 0:
                     msg = 'No RTT left to take.'
                     self.request.session.flash('error;%s' % msg)
@@ -169,8 +169,8 @@ class Send(View):
 
             # check CP usage
             if vac_type.name == u'CP':
-                cp_class = self.user.get_cp_class(self.session)
-                pool = self.user.get_cp_usage(self.session)
+                cp_class = check_user.get_cp_class(self.session)
+                pool = check_user.get_cp_usage(self.session)
 
                 if cp_class:
                     # only FR and LU have a dedicated CP class to use
@@ -178,7 +178,7 @@ class Send(View):
                     # convert days to hours for LU if needed
                     days = cp_class.convert_days(days)
 
-                    error = cp_class.validate_request(self.user, pool, days,
+                    error = cp_class.validate_request(check_user, pool, days,
                                                       date_from, date_to)
                     if error is not None:
                         self.request.session.flash('error;%s' % error)

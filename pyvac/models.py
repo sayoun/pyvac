@@ -637,9 +637,17 @@ class User(Base):
                     (req.status in valid_status) and
                     (req.date_from >= date)])
 
-    def get_cp_taken_cycle(self, session, date_start, date_end):
+    def get_cp_taken_cycle(self, session, date_start, date_end,
+                           return_req=False):
         """Retrieve taken CP for a user for current cycle."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        if return_req:
+            return [req for req in self.requests
+                    if (req.vacation_type.name == u'CP') and
+                    (req.status in valid_status) and
+                    (req.date_from >= date_start) and
+                    (req.date_to <= date_end)]
+
         return sum([req.days for req in self.requests
                     if (req.vacation_type.name == u'CP') and
                     (req.status in valid_status) and
@@ -714,10 +722,12 @@ class User(Base):
 
         cycle_start = allowed['cycle_start']
         cycle_end = allowed['cycle_end']
-        taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end)
+        req_taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end,
+                                            return_req=True)
+        taken = sum([req.days for req in req_taken])
         log.debug('taken %d for %s -> %s' % (taken, cycle_start, cycle_end))
 
-        return vac.get_left(taken, allowed)
+        return vac.get_left(taken, allowed, req_taken)
 
     def get_cp_class(self, session):
         kwargs = {'session': session,
@@ -747,7 +757,7 @@ class BaseVacation(object):
         raise NotImplementedError
 
     @classmethod
-    def get_left(cls, taken, allowed):
+    def get_left(cls, taken, allowed, req_taken):
         """Return how much vacation is left after taken has been accounted."""
         raise NotImplementedError
 
@@ -829,7 +839,7 @@ class CPVacation(BaseVacation):
                      filename)
 
     @classmethod
-    def get_left(cls, taken, allowed):
+    def get_left(cls, taken, allowed, req_taken):
         """Return how much vacation is left after taken has been accounted."""
         cycle_end = allowed['cycle_end']
         restant = allowed['restant']
@@ -1032,7 +1042,7 @@ class CPLUVacation(BaseVacation):
                      filename)
 
     @classmethod
-    def get_left(cls, taken, allowed):
+    def get_left(cls, taken, allowed, req_taken):
         """Return how much vacation is left after taken has been accounted."""
         cycle_end = allowed['cycle_end']
         restant = allowed['restant']
@@ -1043,6 +1053,16 @@ class CPLUVacation(BaseVacation):
                                                 allowed['cycle_start'].date(),
                                                 datetime.now().date())
         acquis = acquis + cls.convert_days(recovered_cp)
+
+        # compute taken values regarding epoch for converting if necessary
+        tot_taken = 0
+        for req in req_taken:
+            # this is the date when the feature has been released
+            if req.created_at < datetime(2016, 7, 26):
+                tot_taken += cls.convert_days(req.days)
+            else:
+                tot_taken += req.days
+        taken = tot_taken
 
         left_restant, left_acquis = cls.consume(taken, restant, acquis)
 
@@ -1622,12 +1642,18 @@ class Request(Base):
         # name, datefrom, dateto, number of days, type of days, label, message
         label = '%s' % self.label if self.label else ''
         message = '%s' % self.message if self.message else ''
+        days = self.days
+        # XXX: must convert CPLU vacation to hours until 2017 cycle
+        if (self.user.country == 'lu' and self.type == 'CP' and
+                (self.created_at < datetime(2016, 7, 26))):
+            days = CPLUVacation.convert_days(days)
+
         return ('%s,%s,%s,%s,%.1f,%s,%s,%s' %
                 (self.user.lastname,
                  self.user.firstname,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
-                 self.days,
+                 days,
                  self.type,
                  label,
                  message))
