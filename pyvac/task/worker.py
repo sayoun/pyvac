@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 import sys
 import yaml
+import json
 
 from datetime import datetime
 import logging
 import transaction
+try:
+    from collections import OrderedDict
+except ImportError:
+    OrderedDict = dict
 
 from celery.task import Task, subtask
 
-from pyvac.models import DBSession, Request, User
+from pyvac.models import DBSession, Request, User, Reminder
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.mail import SmtpCache
 from pyvac.helpers.conf import ConfCache
@@ -330,5 +335,13 @@ Arrival date: %s
 
         try:
             self.smtp.send_mail(sender, target, subject, content)
+
+            data = {'user_id': user.id}
+            parameters = json.dumps(OrderedDict(data))
+            rem = Reminder(type='trial_threshold', parameters=parameters)
+            self.session.add(rem)
+            self.session.flush()
+            transaction.commit()
+
         except Exception:
             self.log.exception('Error while sending mail')
