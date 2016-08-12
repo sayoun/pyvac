@@ -75,7 +75,7 @@
                 {% endif %}
             </td>
             {% endif %}
-            <td>{{ req.days }} {{ req.label }}</td>
+            <td>{% if req.is_oldcplu %}{{ req.days * 8}}{% else %}{{ req.days }}{% endif %} {{ req.label }}</td>
             <td class="type_message">{% if req.type == 'CP' and req.user.country == 'lu' %}CP Heures{% else %}{{ req.type }}{% endif %}
                 {% if req.vacation_type.id in [4, 6] and req.message %}
                   <pre>{{ req.message }}</pre>
@@ -188,7 +188,7 @@
             </td>
             {% endif %}
             <td>{{ req.date_from.strftime('%d/%m/%Y') }} - {{ req.date_to.strftime('%d/%m/%Y') }}</td>
-            <td>{{ req.days }} {{ req.label }}</td>
+            <td>{% if req.is_oldcplu %}{{ req.days * 8}}{% else %}{{ req.days }}{% endif %} {{ req.label }}</td>
             <td class="type_message">{% if req.type == 'CP' and req.user.country == 'lu' %}CP Heures{% else %}{{ req.type }}{% endif %}
                 {% if req.vacation_type.id in [4, 6] and req.message %}
                   <pre>{{ req.message }}</pre>

@@ -1674,6 +1674,15 @@ class Request(Base):
                  label))
 
     @property
+    def is_oldcplu(self):
+        # XXX: must convert CPLU vacation to hours until 2017 cycle
+        if (self.user.country == 'lu' and self.type == 'CP' and
+                (self.created_at < datetime(2016, 7, 26))):
+            return True
+
+        return False
+
+    @property
     def timestamps(self):
         """
         Return request dates as list of timestamps.
