@@ -1,3 +1,10 @@
+pyvac (1.8.8) unstable; urgency=medium
+
+  * Small improvment on display for export page
+  * Convert request days value to hours when needed on request list page 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 12 Aug 2016 11:11:30 +0200
+
 pyvac (1.8.7) unstable; urgency=medium
 
   * Fix reminder trial task to save reminder to DB
