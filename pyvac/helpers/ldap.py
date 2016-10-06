@@ -245,7 +245,8 @@ class LdapWrapper(object):
         if unit:
             fields['ou'] = [unit.encode('utf-8')]
 
-        fields['arrivalDate'] = [self._cast_arrivaldate(arrival_date)]
+        if arrival_date:
+            fields['arrivalDate'] = [self._cast_arrivaldate(arrival_date)]
 
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
