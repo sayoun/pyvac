@@ -1,3 +1,9 @@
+pyvac (1.8.9) unstable; urgency=medium
+
+  * Do not update arrival_date for ldap user when not provided
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 06 Oct 2016 15:24:30 +0200
+
 pyvac (1.8.8) unstable; urgency=medium
 
   * Small improvment on display for export page
