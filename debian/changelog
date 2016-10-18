@@ -1,3 +1,9 @@
+pyvac (1.8.10) unstable; urgency=medium
+
+  * Overlap request check should handle half day requests correctly
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 18 Oct 2016 21:36:23 +0200
+
 pyvac (1.8.9) unstable; urgency=medium
 
   * Do not update arrival_date for ldap user when not provided
