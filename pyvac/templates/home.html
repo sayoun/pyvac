@@ -142,6 +142,7 @@
     var holidays = {% set comma=joiner() %}[ {% for day in holidays %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
     var futures_pending = {% set comma=joiner() %}[ {% for day in futures_pending %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
     var futures_approved = {% set comma=joiner() %}[ {% for day in futures_approved %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
+    var futures_breakdown = {% set comma=joiner() %}[ {% for day in futures_breakdown %}{{ comma() }}{{ "%s"|format(day) }}{% endfor %} ];
 
     $.datepicker.regional['fr'] = {
         closeText: 'Fermer',
@@ -192,11 +193,20 @@ function DateDiff(date1, date2) {
         }
         /* do not select future pending or approved */
         if (futures_pending.indexOf(date.getTime()) != -1) {
-          return [false, 'date-range-future-pending'];
+          clickable = false
+          if (futures_breakdown.indexOf(date.getTime()) != -1) {
+            clickable = true
+          }
+          return [clickable, 'date-range-future-pending'];
         }
         if (futures_approved.indexOf(date.getTime()) != -1) {
-          return [false, 'date-range-future-approved'];
+          clickable = false
+          if (futures_breakdown.indexOf(date.getTime()) != -1) {
+            clickable = true
+          }
+          return [clickable, 'date-range-future-approved'];
         }
+
         var day = date.getDay();
         /* do not select weekend days */
         var isWeekend = (day == 6) || (day == 0);

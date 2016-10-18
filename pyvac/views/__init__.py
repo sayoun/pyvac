@@ -44,6 +44,12 @@ class Home(RedirectView):
             if rtt_type not in ret_dict['types']:
                 ret_dict['types'].append(rtt_type)
 
+        futures_breakdown = [timestamp
+                             for req in
+                             Request.by_user_future_breakdown(self.session,
+                                                              self.user)
+                             for timestamp in req.timestamps]
+        ret_dict['futures_breakdown'] = futures_breakdown
         futures_pending = [timestamp
                            for req in
                            Request.by_user_future_pending(self.session,

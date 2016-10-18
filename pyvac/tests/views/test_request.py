@@ -320,6 +320,48 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
+    def test_post_send_half_day_ko(self):
+        self.config.testing_securitypolicy(userid=u'jdoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2011-07-14',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 0.5,
+                'date_from': '24/08/2011 - 24/08/2011',
+                'type': '1',
+                'breakdown': 'AM',
+            })
+            view = Send(request)()
+        self.assertIsRedirect(view)
+        expected = ['error;Invalid period: days already requested.']
+        self.assertEqual(request.session.pop_flash(), expected)
+        self.assertEqual(Request.find(self.session, count=True), total_req)
+
+    def test_post_send_half_day_other_half_ok(self):
+        self.config.testing_securitypolicy(userid=u'jdoe',
+                                           permissive=True)
+        from pyvac.models import Request
+        from pyvac.views.request import Send
+        total_req = Request.find(self.session, count=True)
+
+        with freeze_time('2011-07-14',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+            request = self.create_request({
+                'days': 0.5,
+                'date_from': '24/08/2011 - 24/08/2011',
+                'type': '1',
+                'breakdown': 'PM',
+            })
+            view = Send(request)()
+        self.assertIsRedirect(view)
+        self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
     def test_post_send_sudo_default_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)

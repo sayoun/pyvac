@@ -52,6 +52,7 @@ class Send(View):
             dates = self.request.params.get('date_from').split(' - ')
             date_from = datetime.strptime(dates[0], '%d/%m/%Y')
             date_to = datetime.strptime(dates[1], '%d/%m/%Y')
+            breakdown = self.request.params.get('breakdown')
 
             # retrieve holidays for user so we can remove them from selection
             holidays = get_holiday(self.user, year=date_from.year,
@@ -80,18 +81,38 @@ class Send(View):
                 self.request.session.flash('error;%s' % msg)
                 return HTTPFound(location=route_url('home', self.request))
 
-            # retrieve future requests for user so we can check overlap
             # check if user is sudoed
             check_user = self.get_target_user(self.user)
+            # retrieve future requests for user so we can check overlap
             futures = [d for req in
                        Request.by_user_future(self.session, check_user)
                        for d in daterange(req.date_from, req.date_to)]
-
             intersect = set(futures) & set(submitted)
             if intersect:
-                msg = 'Invalid period: days already requested.'
-                self.request.session.flash('error;%s' % msg)
-                return HTTPFound(location=route_url('home', self.request))
+                err_intersect = True
+                # must check for false warning in case of half day requests
+                if len(intersect) == 1:
+                    # only one date in conflict, check if it's for an half-day
+                    dt = intersect.pop()
+                    # retrieve the request for this date
+                    req = [req for req in
+                           Request.by_user_future(self.session, check_user)
+                           for d in daterange(req.date_from, req.date_to)
+                           if d == dt]
+                    if len(req) < 2:
+                        req = req.pop()
+                        if req.label != breakdown:
+                            # intersect is false, it's not the same halfday
+                            err_intersect = False
+                            log.debug('False positive on intersect '
+                                      'for %s (%s): request: %d (%s)' %
+                                      (date_from, breakdown, req.id,
+                                       req.label))
+
+                if err_intersect:
+                    msg = 'Invalid period: days already requested.'
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
 
             vac_type = VacationType.by_id(self.session,
                                           int(self.request.params.get('type')))
@@ -106,7 +127,6 @@ class Send(View):
 
             # label field is used when requesting half day
             label = u''
-            breakdown = self.request.params.get('breakdown')
             if breakdown != 'FULL':
                 # handle half day
                 if (days > 1):
