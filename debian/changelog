@@ -1,3 +1,10 @@
+pyvac (1.8.12) unstable; urgency=medium
+
+  * We added 3 months to expiration date for CPLU vacation so remove
+    dead code
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 08 Nov 2016 17:35:14 +0100
+
 pyvac (1.8.11) unstable; urgency=medium
 
   * Luxembourg vacation can be used until march of next year
