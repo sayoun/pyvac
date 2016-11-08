@@ -367,7 +367,7 @@ class CPVacationTestCase(ModelTestCase):
             date_to = date_from + relativedelta(days=3)
             err = CPLUVacation.validate_request(user, pool, days,
                                                 date_from, date_to)
-            msg = 'CP can only be used until 31/12/%d.' % pool['acquis']['expire'].year # noqa
+            msg = 'CP can only be used until 31/03/%d.' % pool['acquis']['expire'].year # noqa
             self.assertEqual(err, msg)
 
         with patch('pyvac.models.User.arrival_date',
@@ -404,7 +404,7 @@ class CPVacationTestCase(ModelTestCase):
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
-            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            mock_foo.return_value = datetime.now() - relativedelta(months=7)
             pool = user.get_cp_usage(self.session)
             days = 3
             date_from = datetime.now()
@@ -415,7 +415,7 @@ class CPVacationTestCase(ModelTestCase):
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
-            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            mock_foo.return_value = datetime.now() - relativedelta(months=7)
             pool = user.get_cp_usage(self.session)
             days = 3
             date_from = datetime.now().replace(year=datetime.now().year + 2)

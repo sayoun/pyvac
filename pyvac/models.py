@@ -1070,7 +1070,7 @@ class CPLUVacation(BaseVacation):
         ret_acquis = {
             'allowed': allowed['acquis'],
             'left': left_acquis,
-            'expire': cycle_end.replace(year=cycle_end.year)}
+            'expire': cycle_end.replace(year=cycle_end.year) + relativedelta(months=3)} # noqa
         ret_restant = {
             'allowed': allowed['restant'],
             'left': left_restant,
