@@ -1070,6 +1070,7 @@ class CPLUVacation(BaseVacation):
         ret_acquis = {
             'allowed': allowed['acquis'],
             'left': left_acquis,
+            # add 3 months here
             'expire': cycle_end.replace(year=cycle_end.year) + relativedelta(months=3)} # noqa
         ret_restant = {
             'allowed': allowed['restant'],
@@ -1176,7 +1177,7 @@ class CPLUVacation(BaseVacation):
             else:
                 left_acquis = previous_usage['acquis']['left']
                 # previous acquis are only valid 3 months
-                if today > previous_usage['acquis']['expire'] + relativedelta(months=3): # noqa
+                if today > previous_usage['acquis']['expire']:
                     left_acquis = 0
             # add taken value as it is already consumed by get_cp_usage method
             # so we don't consume it twice.
