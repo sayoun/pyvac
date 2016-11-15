@@ -290,7 +290,7 @@ class VacationTypeTestCase(ModelTestCase):
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
         self.assertEqual(VacationType._vacation_classes.keys(),
-                         [u'CP_lu', u'CP_fr', u'RTT_fr'])
+                         [u'CP_lu', u'CP_fr', u'RTT_fr', u'Compensatoire_lu'])
 
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType
@@ -319,19 +319,16 @@ class CPVacationTestCase(ModelTestCase):
         user = User.by_login(self.session, u'sarah.doe')
         self.assertIsInstance(user, User)
 
-        with freeze_time('2016-08-15',
-                         ignore=['celery', 'psycopg2', 'sqlalchemy',
-                                 'icalendar']):
-            with patch('pyvac.models.User.arrival_date',
-                       new_callable=PropertyMock) as mockfoo:
-                mockfoo.return_value = datetime.now() - relativedelta(months=5)
-                pool = user.get_cp_usage(self.session)
-                # there is a holiday on 1st may which should be recovered
-                # so +8 hours
-                self.assertEqual(pool['acquis']['left'], 208)
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mockfoo:
+            mockfoo.return_value = datetime.now() - relativedelta(months=5)
+            to_recover = user.get_lu_holiday(datetime(2017, 1, 25, 0, 0))
+            # there is a holiday on 25 dec. which should be available
+            self.assertEqual(to_recover, [datetime(2016, 12, 25, 0, 0),
+                                          datetime(2017, 1, 1, 0, 0)])
 
     def test_lu_validate_request(self):
-        from pyvac.models import CPLUVacation, User
+        from pyvac.models import CPLUVacation, CompensatoireVacation, User
         user = User.by_login(self.session, u'sarah.doe')
         self.assertIsInstance(user, User)
 
@@ -395,6 +392,38 @@ class CPVacationTestCase(ModelTestCase):
             err = CPLUVacation.validate_request(user, pool, days,
                                                 date_from, date_to)
             msg = 'No CP left to take.'
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            days = 3
+            date_from = datetime(2016, 12, 25)
+            err = CompensatoireVacation.validate_request(user, None, days,
+                                                         date_from, None)
+            msg = ('You can only use 1 Compensatory holiday at a time, '
+                   'for a full day.')
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            days = 0.5
+            date_from = datetime(2016, 12, 25)
+            err = CompensatoireVacation.validate_request(user, None, days,
+                                                         date_from, None)
+            msg = ('You can only use 1 Compensatory holiday at a time, '
+                   'for a full day.')
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            days = 1
+            date_from = datetime(2016, 12, 30)
+            err = CompensatoireVacation.validate_request(user, None, days,
+                                                         date_from, None)
+            msg = '30/12/2016 is not a valid value for Compensatory vacation'
             self.assertEqual(err, msg)
 
     def test_cp_validate_request(self):

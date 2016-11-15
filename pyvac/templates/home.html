@@ -58,6 +58,30 @@
                 {% endif %}
             {% endfor %}
             </div>
+
+            <div class="controls">
+            {% for type in types %}
+                {% if type['id'] in [7] %}
+                <label class="radio inline">
+                  <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}">{{ type['name'] }}
+                  <a id="recovered_info" href="#" data-toggle="tooltip" title="" data-original-title="{{ recovered_info_tooltip }}">
+                    <span class="badge badge-small">?</span>
+                  </a>
+                  &nbsp;
+                  <select name="recovered_holiday" id="recovered_holiday" disabled="disabled">
+                    <option value="-1">-- none --</option>
+
+                {% for h in recovered_cp %}
+                    <option value="{{ h.strftime('%d/%m/%Y') }}">
+                    {{ h.strftime('%d/%m/%Y') }}
+                    </option>
+                {% endfor %}
+                 </select>
+                </label>
+                {% endif %}
+            {% endfor %}
+            </div>
+
         </div>
 
         <div class="control-group-no-bottom">
@@ -280,11 +304,13 @@ function DateDiff(date1, date2) {
             if (days == 1) {
                 $('#breakdownAM').prop('disabled', false);
                 $('#breakdownPM').prop('disabled', false);
+                $('#recovered_holiday').prop('disabled', false);
             }
             else {
                 $("#breakdownFULL").prop("checked", true);
                 $('#breakdownAM').prop('disabled', true);
                 $('#breakdownPM').prop('disabled', true);
+                $('#recovered_holiday').prop('disabled', true);
             }
           }
        },
@@ -304,12 +330,17 @@ function DateDiff(date1, date2) {
                   $('#exception_text').prop('required', true);
               }
           }
+          else if ($(this).val() == '7') {
+              $('#recovered_holiday').prop('disabled', false);
+          }
           else {
               $('#exception_text').prop('disabled', true);
+              $('#recovered_holiday').prop('disabled', true);
           }
       });
 
   $("#exception_info").tooltip({});
+  $("#recovered_info").tooltip({});
 
   </script>
 

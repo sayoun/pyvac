@@ -20,6 +20,7 @@ class HomeTestCase(case.ViewTestCase):
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
                               u'exception_info_tooltip',
+                              u'recovered_info_tooltip', u'recovered_cp',
                               u'futures_approved', u'futures_pending',
                               u'futures_breakdown']))
         self.assertEqual(len(view[u'types']), 6)
@@ -33,6 +34,7 @@ class HomeTestCase(case.ViewTestCase):
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
                               u'exception_info_tooltip',
+                              u'recovered_info_tooltip', u'recovered_cp',
                               u'futures_approved', u'futures_pending',
                               u'futures_breakdown']))
         self.assertEqual(len(view[u'types']), 4)
@@ -49,6 +51,7 @@ class HomeTestCase(case.ViewTestCase):
                          set([u'matched_route', u'types', u'csrf_token',
                               u'pyvac', u'holidays', u'sudo_users',
                               u'exception_info_tooltip',
+                              u'recovered_info_tooltip', u'recovered_cp',
                               u'futures_approved', u'futures_pending',
                               u'futures_breakdown']))
         self.assertEqual(len(view[u'types']), 5)
@@ -66,6 +69,7 @@ class HomeTestCase(case.ViewTestCase):
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
                                   u'exception_info_tooltip',
+                                  u'recovered_info_tooltip', u'recovered_cp',
                                   u'futures_approved', u'futures_pending',
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)
@@ -83,6 +87,7 @@ class HomeTestCase(case.ViewTestCase):
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
                                   u'exception_info_tooltip',
+                                  u'recovered_info_tooltip', u'recovered_cp',
                                   u'futures_approved', u'futures_pending',
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)
@@ -102,6 +107,7 @@ class HomeTestCase(case.ViewTestCase):
                              set([u'matched_route', u'types', u'csrf_token',
                                   u'pyvac', u'holidays', u'sudo_users',
                                   u'exception_info_tooltip',
+                                  u'recovered_info_tooltip', u'recovered_cp',
                                   u'futures_approved', u'futures_pending',
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)

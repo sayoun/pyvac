@@ -31,7 +31,7 @@ from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import translate as _
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.util import daterange
-from pyvac.helpers.holiday import utcify, get_lu_recovered_holiday
+from pyvac.helpers.holiday import utcify, get_holiday
 
 log = logging.getLogger(__file__)
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -737,6 +737,22 @@ class User(Base):
         vac = VacationType.by_name_country(**kwargs)
         return vac
 
+    def get_lu_holiday(self, today=None):
+        """Return list of datetimes in last 3 months for LU user."""
+        # retrieve Compensatoire taken history
+        valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
+        taken = [datetime.strptime(req.message, '%d/%m/%Y')
+                 for req in self.requests
+                 if (req.vacation_type.name == u'Compensatoire') and
+                 (req.status in valid_status)]
+
+        now = today or datetime.now()
+        compensatory = [dt for dt in get_holiday(self, use_datetime=True)
+                        if (dt not in taken) and
+                        (dt.isoweekday() in [6, 7]) and
+                        (now - relativedelta(months=3) <= dt < now)]
+        return compensatory
+
 
 vacation_type__country = Table('vacation_type__country', Base.metadata,
                                Column('vacation_type_id', Integer,
@@ -769,6 +785,37 @@ class BaseVacation(object):
     @classmethod
     def convert_days(cls, days):
         return days
+
+
+class CompensatoireVacation(BaseVacation):
+    """Implement Compensatoire vacation behavior."""
+
+    name = u'Compensatoire'
+    country = u'lu'
+
+    @classmethod
+    def acquired(cls, **kwargs):
+        """Return acquired vacation this year to current day."""
+        raise NotImplementedError
+
+    @classmethod
+    def get_left(cls, taken, allowed, req_taken):
+        """Return how much vacation is left after taken has been accounted."""
+        raise NotImplementedError
+
+    @classmethod
+    def validate_request(cls, user, pool, days, date_from, date_to):
+        """Validate request for user for this vacation type."""
+        # check that we request vacations in the allowed period
+        if days != 1:
+            return ('You can only use 1 Compensatory holiday at a time, '
+                    'for a full day.')
+
+        compensatory = user.get_lu_holiday()
+        if date_from not in compensatory:
+            msg = ('%s is not a valid value for Compensatory vacation' %
+                   date_from.strftime('%d/%m/%Y'))
+            return msg
 
 
 class RTTVacation(BaseVacation):
@@ -1048,12 +1095,6 @@ class CPLUVacation(BaseVacation):
         restant = allowed['restant']
         acquis = allowed['acquis']
 
-        # add CP to be recovered if a passed holiday was a Saturday or Sunday
-        recovered_cp = get_lu_recovered_holiday(allowed['cycle_start'].year,
-                                                allowed['cycle_start'].date(),
-                                                datetime.now().date())
-        acquis = acquis + cls.convert_days(recovered_cp)
-
         # compute taken values regarding epoch for converting if necessary
         tot_taken = 0
         for req in req_taken:
@@ -1273,6 +1314,10 @@ class VacationType(Base):
 
         vacation_name = '%s_%s' % (vac.name, country)
         return cls._vacation_classes.get(vacation_name)
+
+    def get_class(self, country):
+        vacation_name = '%s_%s' % (self.name, country)
+        return self._vacation_classes.get(vacation_name)
 
 
 class Request(Base):

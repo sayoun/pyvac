@@ -44,6 +44,9 @@ class Home(RedirectView):
             if rtt_type not in ret_dict['types']:
                 ret_dict['types'].append(rtt_type)
 
+        # LU can use their CP if it was on a non working day
+        ret_dict['recovered_cp'] = self.user.get_lu_holiday()
+
         futures_breakdown = [timestamp
                              for req in
                              Request.by_user_future_breakdown(self.session,
@@ -70,6 +73,14 @@ wedding, funeral, etc.
 Providing a reason for this request is mandatory.
 """
         ret_dict['exception_info_tooltip'] = _(exception_info_tooltip)
+
+        recovered_info_tooltip = """\
+This type is for holidays which were on a non working day.
+
+You can use them up to 3 months after their date to make a leave request.
+Request must be only for 1 day at a time, and not partial (only Full).
+"""
+        ret_dict['recovered_info_tooltip'] = _(recovered_info_tooltip)
 
         if self.request.matched_route:
             matched_route = self.request.matched_route.name

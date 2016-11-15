@@ -176,6 +176,25 @@ class Send(View):
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 
+            # check for Compensatoire type (LU holiday recovery)
+            if vac_type.name == u'Compensatoire':
+                to_recover = self.request.params.get('recovered_holiday')
+                if to_recover == '-1':
+                    msg = 'You must select a date for %s' % vac_type.name
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+
+                recover_date = datetime.strptime(to_recover, '%d/%m/%Y')
+                vac_class = vac_type.get_class(check_user.country)
+                if vac_class:
+                    error = vac_class.validate_request(check_user, None, days,
+                                                       recover_date, None)
+                    if error is not None:
+                        self.request.session.flash('error;%s' % error)
+                        return HTTPFound(location=route_url('home',
+                                                            self.request))
+                    message = to_recover
+
             # check Récupération reason field
             if vac_type.name == u'Récupération':
                 message = self.request.params.get('exception_text')

@@ -77,7 +77,7 @@
             {% endif %}
             <td>{% if req.is_oldcplu %}{{ req.days * 8}}{% else %}{{ req.days }}{% endif %} {{ req.label }}</td>
             <td class="type_message">{% if req.type == 'CP' and req.user.country == 'lu' %}CP Heures{% else %}{{ req.type }}{% endif %}
-                {% if req.vacation_type.id in [4, 6] and req.message %}
+                {% if req.vacation_type.id in [4, 6, 7] and req.message %}
                   <pre>{{ req.message }}</pre>
                 {% endif %}
             </td>
