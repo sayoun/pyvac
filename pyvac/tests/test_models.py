@@ -426,6 +426,29 @@ class CPVacationTestCase(ModelTestCase):
             msg = '30/12/2016 is not a valid value for Compensatory vacation'
             self.assertEqual(err, msg)
 
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            days = 1
+            date_to = datetime(2016, 12, 20)
+            date_from = datetime(2016, 12, 25)
+            err = CompensatoireVacation.validate_request(user, None, days,
+                                                         date_from, date_to)
+            msg = 'You must request a date after 25/12/2016'
+            self.assertEqual(err, msg)
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5)
+            days = 1
+            date_to = datetime(2017, 4, 1)
+            date_from = datetime(2016, 12, 25)
+            err = CompensatoireVacation.validate_request(user, None, days,
+                                                         date_from, date_to)
+            msg = ('You must request a date in the following 3 months '
+                   'after 25/12/2016')
+            self.assertEqual(err, msg)
+
     def test_cp_validate_request(self):
         from pyvac.models import CPVacation, User
         user = User.by_login(self.session, u'jdoe')

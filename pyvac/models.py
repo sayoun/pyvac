@@ -750,7 +750,7 @@ class User(Base):
         compensatory = [dt for dt in get_holiday(self, use_datetime=True)
                         if (dt not in taken) and
                         (dt.isoweekday() in [6, 7]) and
-                        (now - relativedelta(months=3) <= dt < now)]
+                        (dt - relativedelta(months=3) <= now <= (dt + relativedelta(months=3)))]  # noqa
         return compensatory
 
 
@@ -804,17 +804,30 @@ class CompensatoireVacation(BaseVacation):
         raise NotImplementedError
 
     @classmethod
-    def validate_request(cls, user, pool, days, date_from, date_to):
+    def validate_request(cls, user, pool, days, holiday_date, request_date):
         """Validate request for user for this vacation type."""
         # check that we request vacations in the allowed period
         if days != 1:
             return ('You can only use 1 Compensatory holiday at a time, '
                     'for a full day.')
 
+        # check that the holiday date is a valid one
         compensatory = user.get_lu_holiday()
-        if date_from not in compensatory:
+        if holiday_date not in compensatory:
             msg = ('%s is not a valid value for Compensatory vacation' %
-                   date_from.strftime('%d/%m/%Y'))
+                   holiday_date.strftime('%d/%m/%Y'))
+            return msg
+
+        # check for holiday date < requested date
+        if request_date < holiday_date:
+            msg = ('You must request a date after %s' %
+                   holiday_date.strftime('%d/%m/%Y'))
+            return msg
+
+        # check for requested date within holiday date + 3 months
+        if request_date > (holiday_date + relativedelta(months=3)):
+            msg = ('You must request a date in the following 3 months after %s'
+                   % holiday_date.strftime('%d/%m/%Y'))
             return msg
 
 

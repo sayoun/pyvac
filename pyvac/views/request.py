@@ -188,7 +188,7 @@ class Send(View):
                 vac_class = vac_type.get_class(check_user.country)
                 if vac_class:
                     error = vac_class.validate_request(check_user, None, days,
-                                                       recover_date, None)
+                                                       recover_date, date_to)
                     if error is not None:
                         self.request.session.flash('error;%s' % error)
                         return HTTPFound(location=route_url('home',
