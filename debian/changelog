@@ -1,3 +1,9 @@
+pyvac (1.8.13) unstable; urgency=medium
+
+  * Add new vacation type for Lu: Compensatoire
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 21 Nov 2016 08:32:32 +0100
+
 pyvac (1.8.12) unstable; urgency=medium
 
   * We added 3 months to expiration date for CPLU vacation so remove
