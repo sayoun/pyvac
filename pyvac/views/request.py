@@ -250,7 +250,9 @@ class Send(View):
 
             # save pool status when making the request
             if pool:
-                pool = json.dumps(pool)
+                pool_status = json.dumps(pool)
+            else:
+                pool_status = json.dumps({})
 
             request = Request(date_from=date_from,
                               date_to=date_to,
@@ -261,7 +263,7 @@ class Send(View):
                               notified=target_notified,
                               label=label,
                               message=message,
-                              pool_status=pool,
+                              pool_status=pool_status,
                               )
             self.session.add(request)
             self.session.flush()
@@ -270,7 +272,7 @@ class Send(View):
             if sudo_use:
                 sudo_user = self.user
             RequestHistory.new(self.session, request, '', target_status,
-                               target_user, pool, message=message,
+                               target_user, pool_status, message=message,
                                sudo_user=sudo_user)
 
             if request and not sudo_use:
