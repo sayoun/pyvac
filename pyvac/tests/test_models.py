@@ -178,7 +178,7 @@ class RequestTestCase(ModelTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             nb_requests = Request.all_for_admin(self.session, count=True)
-        self.assertEqual(nb_requests, 21)
+        self.assertEqual(nb_requests, 17)
 
     def test_in_conflict_manager(self):
         from pyvac.models import Request
