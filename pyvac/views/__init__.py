@@ -43,6 +43,8 @@ class Home(RedirectView):
             rtt_type = {'name': _('RTT'), 'id': rtt_vacation.id}
             if rtt_type not in ret_dict['types']:
                 ret_dict['types'].append(rtt_type)
+            # remove duplicate entries
+            ret_dict['sudo_users'] = list(set(ret_dict['sudo_users']))
 
         # LU can use their CP if it was on a non working day
         ret_dict['recovered_cp'] = self.user.get_lu_holiday()
