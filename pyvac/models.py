@@ -1460,7 +1460,8 @@ class Request(Base):
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status == 'APPROVED_ADMIN',
-                               cls.date_from >= datetime.now(),),
+                               cls.date_from >= datetime.now().replace(day=1),
+                               ),
                         count=count,
                         order_by=(cls.user_id, cls.date_from.desc()))
 
