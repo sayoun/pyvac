@@ -147,8 +147,8 @@
         {% endif %}
         {% if pyvac.user.country == 'lu' %}
           {% if pyvac.user.arrival_date and pyvac.user.cp %}
-          <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP REPORT</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
-          <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP LÉGAUX</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
+          <li>You have <b>{{pyvac.user.cp['restant']['left']}} hours CP REPORT</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
+          <li>You have <b>{{pyvac.user.cp['acquis']['left']|int }} hours CP LÉGAUX</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
           {% endif %}
         {% endif %}
     </ul>
