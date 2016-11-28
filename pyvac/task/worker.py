@@ -47,12 +47,12 @@ class BaseWorker(Task):
 
     def send_mail(self, sender, target, request, content):
         """ Send a mail """
-        subject = 'Request %s' % request.status
+        subject = 'Request %s (%s)' % (request.status, request.user.name)
         self.smtp.send_mail(sender, target, subject, content)
 
     def send_mail_ics(self, sender, target, request, content):
         """ Send a multipart mail with ics file as attachment """
-        subject = 'Request %s' % request.status
+        subject = 'Request %s (%s)' % (request.status, request.user.name)
         ics_content = request.generate_vcal_entry()
         self.smtp.send_mail_multipart(sender, target, subject, content,
                                       newpart=ics_content)
