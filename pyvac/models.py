@@ -1695,6 +1695,15 @@ class Request(Base):
         return {}
 
     @property
+    def sudoed(self):
+        """Retrieve is request was sudoed."""
+        if self.status == 'APPROVED_ADMIN':
+            if len(self.history) == 1:
+                for entry in self.history:
+                    if entry.sudo_user_id:
+                        return entry.sudo_user
+
+    @property
     def summary(self):
         """Get a short string representation of a request, for tooltip."""
         return ('%s: %s - %s' %

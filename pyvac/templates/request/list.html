@@ -48,6 +48,11 @@
                 </a>
               {% endif %}
             {% endif %}
+            {% if pyvac.user.is_super and req.sudoed %}
+            <a class="text-error" id="req_sudo" href="#" data-toggle="tooltip" title="" data-original-title="Sudo request by {{ req.sudoed.name }}">
+              <i class="fa fa-share"></i>
+            </a>
+            {% endif %}
             {{ req.user.name }}
             </td>
             {% if pyvac.user.is_super %}
@@ -177,7 +182,14 @@
     <tbody>
       {% for req in past %}
       <tr id="tr_req_{{ req.id }}">
-            <td>{{ req.user.name }}</td>
+            <td>
+            {% if pyvac.user.is_super and req.sudoed %}
+            <a class="text-error" id="req_sudo" href="#" data-toggle="tooltip" title="" data-original-title="Sudo request by {{ req.sudoed.name }}">
+              <i class="fa fa-share"></i>
+            </a>
+            {% endif %}
+            {{ req.user.name }}
+            </td>
             {% if pyvac.user.is_super %}
             <td>{% if req.user.manager_dn %}
                   {{ req.user.manager_dn|extract_cn }}
