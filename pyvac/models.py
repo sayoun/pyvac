@@ -1933,10 +1933,12 @@ class RequestHistory(Base):
     new_status = Column(Unicode(255))
     # actor who performed action on request
     user_id = Column(Integer, ForeignKey(User.id), nullable=True)
-    user = relationship(User, foreign_keys=[user_id])
+    user = relationship(User, foreign_keys=[user_id],
+                        primaryjoin=user_id == User.id)
     # actor if current user has been sudoed
     sudo_user_id = Column(Integer, ForeignKey(User.id), nullable=True)
-    sudo_user = relationship(User, foreign_keys=[sudo_user_id])
+    sudo_user = relationship(User, foreign_keys=[sudo_user_id],
+                             primaryjoin=sudo_user_id == User.id)
     # vacation_type pool counters when the action has been made
     pool_status = Column(UnicodeText())
     # why this request
