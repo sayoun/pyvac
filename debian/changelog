@@ -1,3 +1,9 @@
+pyvac (1.8.14) unstable; urgency=medium
+
+  * New feature: Request history
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 29 Nov 2016 08:49:35 +0100
+
 pyvac (1.8.13) unstable; urgency=medium
 
   * Add new vacation type for Lu: Compensatoire
