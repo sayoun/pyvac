@@ -1,3 +1,9 @@
+pyvac (1.8.15) unstable; urgency=medium
+
+  * Fixes SQLA models relationship declaration for history feature
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 29 Nov 2016 12:11:25 +0100
+
 pyvac (1.8.14) unstable; urgency=medium
 
   * New feature: Request history
