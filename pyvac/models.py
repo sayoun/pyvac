@@ -1380,8 +1380,9 @@ class Request(Base):
         self.status = status
         self.notified = False
 
-    def flag_error(self, message):
-        """Set request in ERROR and assign message."""
+    def flag_error(self, message, session):
+        """ Set request in ERROR and assign message """
+        RequestHistory.new(session, self, self.status, 'ERROR')
         self.status = 'ERROR'
         self.error_message = message
 
@@ -1694,6 +1695,15 @@ class Request(Base):
         return {}
 
     @property
+    def sudoed(self):
+        """Retrieve is request was sudoed."""
+        if self.status == 'APPROVED_ADMIN':
+            if len(self.history) == 1:
+                for entry in self.history:
+                    if entry.sudo_user_id:
+                        return entry.sudo_user
+
+    @property
     def summary(self):
         """Get a short string representation of a request, for tooltip."""
         return ('%s: %s - %s' %
@@ -1768,8 +1778,10 @@ class Request(Base):
                 for date in daterange(self.date_from, self.date_to)
                 if date.isoweekday() not in [6, 7]]
 
-    def add_to_cal(self, caldav_url):
-        """Add entry in calendar for request."""
+    def add_to_cal(self, caldav_url, session):
+        """
+        Add entry in calendar for request
+        """
         if self.ics_url:
             log.info('Tried to add to cal request %d but ics_url already set'
                      % self.id)
@@ -1791,7 +1803,7 @@ class Request(Base):
             log.info('Request %d added to cal: %s ' % (self.id, ics_url))
         except Exception as err:
             log.exception('Error while adding to calendar')
-            self.flag_error(str(err))
+            self.flag_error(str(err), session)
 
     def generate_vcal_entry(self):
         """Generate vcal entry for request."""
@@ -1906,6 +1918,65 @@ class Reminder(Base):
     def __repr__(self):
         return "<Reminder #%d: %s (%s)>" % (self.id, self.type,
                                             self.parameters)
+
+
+class RequestHistory(Base):
+    """
+    Store history of all actions/changes for a given request
+    """
+    # source request
+    req_id = Column('req_id', ForeignKey(Request.id), nullable=False)
+    request = relationship(Request, backref='history')
+    # status before the change
+    old_status = Column(Unicode(255))
+    # status after the change
+    new_status = Column(Unicode(255))
+    # actor who performed action on request
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
+    user = relationship(User, foreign_keys=[user_id])
+    # actor if current user has been sudoed
+    sudo_user_id = Column(Integer, ForeignKey(User.id), nullable=True)
+    sudo_user = relationship(User, foreign_keys=[sudo_user_id])
+    # vacation_type pool counters when the action has been made
+    pool_status = Column(UnicodeText())
+    # why this request
+    message = Column(UnicodeText())
+    # reason of cancel or deny
+    reason = Column(UnicodeText())
+    # in case of ERROR to store the error message
+    error_message = Column(UnicodeText())
+
+    @property
+    def pool(self):
+        """
+        Retrieve pool status stored in json
+        """
+        if self.pool_status:
+            return json.loads(self.pool_status)
+        return {}
+
+    @classmethod
+    def new(cls, session, request, old_status, new_status, user=None,
+            pool_status=None, message=None, reason=None, error_message=None,
+            sudo_user=None):
+        user_id = user.id if user else None
+        # check to see how to retrieve sudo status/info
+        sudo_user_id = sudo_user.id if sudo_user else None
+
+        entry = cls(request=request,
+                    old_status=old_status,
+                    new_status=new_status,
+                    user_id=user_id,
+                    sudo_user_id=sudo_user_id,
+                    pool_status=pool_status,
+                    message=message,
+                    reason=reason,
+                    error_message=error_message,
+                    )
+        session.add(entry)
+        session.flush()
+
+        return entry
 
 
 def includeme(config):

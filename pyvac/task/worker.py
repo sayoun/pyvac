@@ -13,7 +13,7 @@ except ImportError:
 
 from celery.task import Task, subtask
 
-from pyvac.models import DBSession, Request, User, Reminder
+from pyvac.models import DBSession, Request, User, Reminder, RequestHistory
 from pyvac.helpers.calendar import addToCal
 from pyvac.helpers.mail import SmtpCache
 from pyvac.helpers.conf import ConfCache
@@ -94,7 +94,7 @@ Request details: %s""" % (req.user.name, req.summarymail)
             req.notified = True
         except Exception as err:
             self.log.exception('Error while sending mail')
-            req.flag_error(str(err))
+            req.flag_error(str(err), self.session)
 
         self.session.flush()
         transaction.commit()
@@ -157,7 +157,7 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
             req.notified = True
         except Exception as err:
             self.log.exception('Error while sending mail')
-            req.flag_error(str(err))
+            req.flag_error(str(err), self.session)
 
         self.session.flush()
         transaction.commit()
@@ -182,6 +182,14 @@ class WorkerAcceptedNotified(BaseWorker):
             # auto accept it as HR
             self.log.info('3 days passed, auto accept it by HR')
 
+            # create history entry
+            msg = 'Automatically accepted by HR after 3 days passed'
+            # use error_message field, as it should not be used here
+            # if it fails in ERROR it should be overwritten anyway
+            # as the status will be changed from APPROVED_ADMIN to ERROR
+            RequestHistory.new(self.session, req,
+                               req.status, 'APPROVED_ADMIN',
+                               user=None, error_message=msg)
             # update request status after sending email
             req.update_status('APPROVED_ADMIN')
             self.session.flush()
@@ -235,7 +243,7 @@ Request details: %s""" % req.summarymail
             req.notified = True
         except Exception as err:
             self.log.exception('Error while sending mail')
-            req.flag_error(str(err))
+            req.flag_error(str(err), self.session)
 
         try:
             if 'caldav.url' in data:
@@ -256,7 +264,7 @@ Request details: %s""" % req.summarymail
             self.log.info('Request %d added to cal: %s ' % (req.id, ics_url))
         except Exception as err:
             self.log.exception('Error while adding to calendar')
-            req.flag_error(str(err))
+            req.flag_error(str(err), self.session)
 
         self.session.flush()
         transaction.commit()
@@ -287,7 +295,7 @@ Request details: %s""" % (req.reason, req.summarymail)
             req.notified = True
         except Exception as err:
             self.log.exception('Error while sending mail')
-            req.flag_error(str(err))
+            req.flag_error(str(err), self.session)
 
         self.session.flush()
         transaction.commit()

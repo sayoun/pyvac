@@ -19,6 +19,11 @@ class RequestTestCase(case.ViewTestCase):
     def tearDown(self):
         super(RequestTestCase, self).tearDown()
 
+    def delete_last_req(self, request):
+        for entry in request.history:
+            self.session.delete(entry)
+        self.session.delete(request)
+
     def test_get_list_admin_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
                                            permissive=True)
@@ -382,6 +387,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)
+        self.delete_last_req(last_req)
 
     def test_post_send_sudo_other_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
@@ -403,6 +409,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.user_id, target_user.id)
         self.assertEqual(last_req.status, u'APPROVED_ADMIN')
         self.assertTrue(last_req.notified)
+        self.delete_last_req(last_req)
 
     def test_post_send_sudo_unknown_ok(self):
         self.config.testing_securitypolicy(userid=u'admin',
@@ -424,6 +431,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.user_id, admin_user.id)
         self.assertEqual(last_req.status, u'PENDING')
         self.assertFalse(last_req.notified)
+        self.delete_last_req(last_req)
 
     def test_post_send_rtt_holiday_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
@@ -455,6 +463,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.status, u'PENDING')
         self.assertEqual(last_req.days, 4.0)
         janedoe.created_at = old_created_at
+        self.delete_last_req(last_req)
 
     def test_post_send_holiday_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
@@ -583,7 +592,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Exceptionnel')
-        self.session.delete(last_req)
+        self.delete_last_req(last_req)
 
     def test_post_send_recovery_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
@@ -610,7 +619,7 @@ class RequestTestCase(case.ViewTestCase):
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Récupération')
         self.assertEqual(last_req.message, msg)
-        self.session.delete(last_req)
+        self.delete_last_req(last_req)
 
     def test_post_send_recovery_no_message_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
@@ -635,7 +644,7 @@ class RequestTestCase(case.ViewTestCase):
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Récupération')
         self.assertEqual(last_req.message, None)
-        self.session.delete(last_req)
+        self.delete_last_req(last_req)
 
     def test_post_send_overlap_ko(self):
         self.config.testing_securitypolicy(userid=u'manager3',
@@ -800,7 +809,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
         self.assertEqual(last_req.type, u'Maladie')
-        self.session.delete(last_req)
+        self.delete_last_req(last_req)
 
     def test_post_send_rtt_usage_not_enough_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
