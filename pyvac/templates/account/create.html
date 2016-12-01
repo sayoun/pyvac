@@ -162,8 +162,14 @@
                      </select>
                     </div>
                 </div>
-
             {% endif %}
+
+            <div class="control-group">
+                <label class="control-label" for="inputUid">{% trans %}nickname:{% endtrans %}</label>
+                <div class="controls">
+                   <input type="text" name="user.uid" id="inputUid" value="{{user.uid|default('', true)}}"/>
+                </div>
+            </div>
 
         {% endif %}
 

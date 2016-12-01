@@ -255,10 +255,13 @@ class Edit(AccountMixin, EditView):
                 # cast to datetime
                 arrival_date = datetime.strptime(r.params['arrival_date'],
                                                  '%d/%m/%Y')
+            uid = None
+            if 'user.uid' in r.params and r.params['user.uid']:
+                uid = r.params['user.uid']
 
             ldap = LdapCache()
             ldap.update_user(account, password=password, unit=unit,
-                             arrival_date=arrival_date)
+                             arrival_date=arrival_date, uid=uid)
 
             # update teams
             uteams = {}

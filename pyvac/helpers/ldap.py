@@ -229,7 +229,8 @@ class LdapWrapper(object):
         # return password to display it to the administrator
         return dn
 
-    def update_user(self, user, password=None, unit=None, arrival_date=None):
+    def update_user(self, user, password=None, unit=None, arrival_date=None,
+                    uid=None):
         """ Update user params in ldap directory """
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
@@ -247,6 +248,9 @@ class LdapWrapper(object):
 
         if arrival_date:
             fields['arrivalDate'] = [self._cast_arrivaldate(arrival_date)]
+
+        if uid:
+            fields['uid'] = [uid.encode('utf-8')]
 
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
