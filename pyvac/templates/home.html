@@ -231,7 +231,7 @@ function DateDiff(date1, date2) {
           return [clickable, 'date-range-future-approved'];
         }
 
-        var day = date.getDay();
+        var day = date.getUTCDay();
         /* do not select weekend days */
         var isWeekend = (day == 6) || (day == 0);
         if (isWeekend)
