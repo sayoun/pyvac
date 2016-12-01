@@ -1,3 +1,9 @@
+pyvac (1.8.17) unstable; urgency=medium
+
+  * Fixes bug with calendar sometimes not working for non UTC timezones
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 01 Dec 2016 15:51:18 +0100
+
 pyvac (1.8.16) unstable; urgency=medium
 
   * Allow users to edit their nicknames (uid field) in profile page
