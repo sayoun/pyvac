@@ -608,6 +608,8 @@ class User(Base):
 
         def get_restant(date):
             data = vac.acquired(user, date, session)
+            if not data:
+                return 0
             return data['restant'] + data.get('n_1', 0)
 
         ret = {}
