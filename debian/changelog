@@ -1,3 +1,10 @@
+pyvac (1.8.18) unstable; urgency=medium
+
+  * Fixes bug in pool history page when user arrival date was current
+    year but after cycle start
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 19 Dec 2016 11:03:25 +0100
+
 pyvac (1.8.17) unstable; urgency=medium
 
   * Fixes bug with calendar sometimes not working for non UTC timezones
