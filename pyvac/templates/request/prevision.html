@@ -9,7 +9,7 @@
       <tr>
         <th>{% trans %}Login{% endtrans %}</th>
         <th>{% trans %}Total{% endtrans %}</th>
-        {% if use_ldap and has_permission('admin_view') %}
+        {% if use_ldap %}
         <th>{% trans %}Country{% endtrans %}</th>
         <th>{% trans %}Teams{% endtrans %}</th>
         {% endif %}
@@ -20,7 +20,7 @@
       <tr>
             <td>{{ users_per_id[user_id].login }}</td>
             <td>{{ total }}</td>
-            {% if use_ldap and has_permission('admin_view') %}
+            {% if use_ldap %}
             <td>
                 {{ users_per_id[user_id].country }}
             </td>
