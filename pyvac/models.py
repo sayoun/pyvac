@@ -1455,15 +1455,17 @@ class Request(Base):
                         order_by=(cls.user_id, cls.date_from.desc()))
 
     @classmethod
-    def by_user_future_approved(cls, session, user, count=None):
+    def by_user_future_approved(cls, session, user, count=None,
+                                date_from=None):
         """Get pending requests for given user in the future.
 
         retrieve status = APPROVED_ADMIN
         """
+        date_from = date_from or datetime.now().replace(day=1)
         return cls.find(session,
                         where=(cls.user_id == user.id,
                                cls.status == 'APPROVED_ADMIN',
-                               cls.date_from >= datetime.now().replace(day=1),
+                               cls.date_from >= date_from,
                                ),
                         count=count,
                         order_by=(cls.user_id, cls.date_from.desc()))
