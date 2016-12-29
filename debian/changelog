@@ -1,3 +1,9 @@
+pyvac (1.8.19) unstable; urgency=medium
+
+  * New feature: squad overview
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 29 Dec 2016 16:36:37 +0100
+
 pyvac (1.8.18) unstable; urgency=medium
 
   * Fixes bug in pool history page when user arrival date was current
