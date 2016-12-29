@@ -1782,6 +1782,12 @@ class Request(Base):
                 for date in daterange(self.date_from, self.date_to)
                 if date.isoweekday() not in [6, 7]]
 
+    @property
+    def dates(self):
+        """Return request dates as list."""
+        return [date for date in daterange(self.date_from, self.date_to)
+                if date.isoweekday() not in [6, 7]]
+
     def add_to_cal(self, caldav_url, session):
         """
         Add entry in calendar for request
