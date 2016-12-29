@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block body scoped %}
+{% for target_squad, squad_overview in overviews.items() %}
+<div id="overview-contain-{{target_squad}}" class="span6">
+  <legend>Today ({{ squad_overview['today'].strftime('%d/%m/%Y') }}) {{ target_squad }} presence: <b>{{ ((squad_overview['squad_length'] - squad_overview['today_off_length']) / squad_overview['squad_length'] * 100)|int }}%</b> ( {{squad_overview['squad_length'] - squad_overview['today_off_length']}}/{{squad_overview['squad_length']}} )
+  </legend>
+
+  <table id="overview-{{target_squad}}" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Login{% endtrans %}</th>
+        <th>{% trans %}Country{% endtrans %}</th>
+        <th>{% trans %}Teams{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user_id, user in squad_overview['users_per_id'].items() %}
+      <tr>
+            <td>{% if user in squad_overview['today_off'] %}<s>{{ user.login }}</s>{%else%}{{ user.login }}{% endif %}</td>
+            <td>{{ user.country }}</td>
+            <td>{{ ','.join(users_teams.get(user.dn, [])) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div id="overview-contain-requests-{{target_squad}}" class="span6">
+  <legend>Active vacation requests</legend>
+
+  <table id="overview-requests-{{target_squad}}" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Login{% endtrans %}</th>
+        <th>{% trans %}Summary{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in squad_overview['today_requests'] %}
+      <tr>
+            <td>{{ req.user.login }}</td>
+            <td>{{ req.summarymail }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div id="overview-contain-graph-empty-{{target_squad}}" class="span12">
+</div>
+
+<div id="overview-contain-graph-{{target_squad}}" class="span12">
+  <legend>Presence graph current month</legend>
+
+  <canvas id="presenceGraph-{{target_squad}}" width="400" height="120"></canvas>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function()
+        {
+          {% for target_squad, squad_overview in overviews.items() %}
+            $("#overview-{{target_squad}}").tablesorter({
+                theme : 'blue',
+                debug: false,
+                sortList: [[0,0]]
+            });
+
+            $("#overview-requests-{{target_squad}}").tablesorter({
+                theme : 'blue',
+                debug: false,
+                sortList: [[0,0]]
+            });
+          {% endfor %}
+        }
+    );
+</script>
+<script src="{{ static_url('pyvac:static/js/Chart.min.js') }}"></script>
+<script>
+{% for target_squad, squad_overview in overviews.items() %}
+var ctx = document.getElementById("presenceGraph-{{target_squad}}");
+var presenceGraph{{target_squad|replace("-", "_")}} = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        // labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels: {{ range(1, 32)|list }},
+        datasets: [{
+            label: '% of squad presence',
+            data: {{ squad_overview['data_days_current'] }},
+            backgroundColor: [{%- for x in range(1, 32) %}{% if x == squad_overview['today'].day %}'rgba(222,0,0,0.8)',{% else %}'rgba(0,0,222, 0.8)',{% endif %}{% endfor -%}],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+{% endfor %}
+</script>
+{% endblock %}

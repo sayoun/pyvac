@@ -782,3 +782,117 @@ class History(View):
             return {u'history': request.history, 'req': request}
 
         return {}
+
+
+class SquadOverview(View):
+    """Display a dashboard of request and presence for squad leaders."""
+    squad_leaders = {}
+
+    def get_squad_stats(self, target_squad, users_teams):
+        # retrieve squad members
+        users_per_id = {}
+        for user in User.find(self.session):
+            if target_squad in users_teams.get(user.dn, []):
+                users_per_id[user.id] = user
+
+        squad_length = len(users_per_id)
+
+        # retrieve today's squad off members
+        today = datetime.now()
+        today_off = []
+        today_requests = []
+        requests = Request.get_active(self.session)
+        for req in requests:
+            if req.user.id not in users_per_id:
+                continue
+            today_requests.append(req)
+            if req.user not in today_off:
+                today_off.append(req.user)
+
+        # retrieve today's active requests
+        date_from = today.replace(day=1)
+        all_reqs = []
+        for user_id, user in users_per_id.items():
+            user_req = Request.by_user_future_approved(self.session, user,
+                                                       date_from=date_from)
+            all_reqs.extend(user_req)
+
+        # compute current month squad presence percentages
+        data_months = {}
+        for req in all_reqs:
+            for dt in req.dates:
+                if dt.month not in data_months:
+                    data_months[dt.month] = {}
+                if dt.day not in data_months[dt.month]:
+                    data_months[dt.month][dt.day] = []
+                if req.user.login not in data_months[dt.month][dt.day]:
+                    data_months[dt.month][dt.day].append(req.user.login)
+
+        data_days_current = []
+        for x in range(1, 31):
+            perc = ((squad_length - len(data_months[today.month].get(x, []))) / float(squad_length) * 100)  # noqa
+            perc = round(perc, 2)
+            if datetime(today.year, today.month, x).isoweekday() in [6, 7]:
+                perc = 0.0
+            data_days_current.append(perc)
+
+        return {'users_per_id': users_per_id,
+                'data_days_current': data_days_current,
+                'today_requests': today_requests,
+                'today': today,
+                'today_off': today_off,
+                'today_off_length': len(today_off),
+                'squad_length': squad_length,
+                }
+
+    def render(self):
+        settings = self.request.registry.settings
+        use_ldap = False
+        if 'pyvac.use_ldap' in settings:
+            use_ldap = asbool(settings.get('pyvac.use_ldap'))
+
+        users_teams = {}
+        if use_ldap:
+            # synchronise user groups/roles
+            User.sync_ldap_info(self.session)
+            ldap = LdapCache()
+            users_teams = {}
+            for team, members in ldap.list_teams().iteritems():
+                for member in members:
+                    users_teams.setdefault(member, []).append(team)
+
+        # keep only managed users for managers
+        # use all users for admin
+        overviews = {}
+        if self.user.is_admin or self.user.has_feature('squad_overview_full'):
+            for _, target_squad in self.squad_leaders.items():
+                # retrieve logged leader squad
+                squad_stats = self.get_squad_stats(target_squad, users_teams)
+                overviews.update({target_squad: squad_stats})
+        elif self.user.is_manager:
+            # retrieve logged leader squad
+            target_squad = self.squad_leaders[self.user.login]
+            squad_stats = self.get_squad_stats(target_squad, users_teams)
+            overviews = {target_squad: squad_stats}
+        else:
+            return HTTPFound(location=route_url('home', self.request))
+
+        return {'users_teams': users_teams, 'overviews': overviews}
+
+
+def includeme(config):
+    """
+    Pyramid includeme file for the :class:`pyramid.config.Configurator`
+    """
+    settings = config.registry.settings
+
+    if 'pyvac.features.squad_overview' in settings:
+        filename = settings['pyvac.features.squad_overview']
+        try:
+            with open(filename) as fdesc:
+                conf = yaml.load(fdesc, YAMLLoader)
+            SquadOverview.squad_leaders = conf.get('squad_leaders', {})
+            log.info('Loaded squad_leaders file %s: %s' %
+                     (filename, SquadOverview.squad_leaders))
+        except IOError:
+            log.warn('Cannot load squad_leaders file %s' % filename)

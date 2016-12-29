@@ -259,6 +259,12 @@
                     <li class="divider"></li>
                     <li><a href="{{route_url('pool_history', user_id=pyvac.user.id)}}"><i class="fa fa-calendar fa-fw"></i> Pool history</a></li>
                 {% endif %}
+
+                {% if pyvac.user.has_feature('squad_overview'): %}
+                <li class="divider"></li>
+                <li><a href="{{route_url('squad_overview')}}"><i class="fa fa-calendar-o fa-fw"></i> Squad Overview</a></li>
+                {% endif %}
+
                 {% if has_permission('admin_view') %}
                 <li class="divider"></li>
                 <!-- <li><a href="#"><i class="fa fa-th fa-fw"></i> Manage Teams</a></li> -->

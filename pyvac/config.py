@@ -71,6 +71,9 @@ def includeme(config):
     # call includeme for models configuration
     config.include('pyvac.models')
 
+    # call includeme for request views configuration
+    config.include('pyvac.views.request')
+
     # Jinja configuration
     # We don't use jinja2 filename, .html instead
     config.add_renderer('.html', renderer_factory)
@@ -228,6 +231,12 @@ def includeme(config):
                     route_name=u'prevision_request',
                     renderer=u'templates/request/prevision.html',
                     permission=u'admin_view')
+
+    config.add_route(u'squad_overview', u'/pyvac/squad_overview')
+    config.add_view(u'pyvac.views.request.SquadOverview',
+                    route_name=u'squad_overview',
+                    renderer=u'templates/request/squad_overview.html',
+                    permission=u'manager_view')
 
     # Holiday request
     config.add_route('list_holiday', u'/pyvac/list_holiday',
