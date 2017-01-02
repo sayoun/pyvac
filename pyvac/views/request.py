@@ -830,7 +830,7 @@ class SquadOverview(View):
 
         data_days_current = []
         for x in range(1, 31):
-            perc = ((squad_length - len(data_months[today.month].get(x, []))) / float(squad_length) * 100)  # noqa
+            perc = ((squad_length - len(data_months.get(today.month, {}).get(x, []))) / float(squad_length) * 100)  # noqa
             perc = round(perc, 2)
             if datetime(today.year, today.month, x).isoweekday() in [6, 7]:
                 perc = 0.0
