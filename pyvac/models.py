@@ -708,13 +708,15 @@ class User(Base):
 
         return history, restant
 
-    def get_cp_usage(self, session, today=None):
+    def get_cp_usage(self, session, today=None, start=None, end=None):
         """Get CP usage for a user."""
         kwargs = {'session': session,
                   'name': u'CP',
                   'country': self.country,
                   'user': self,
-                  'today': today}
+                  'today': today,
+                  'start': start,
+                  'end': end}
         vac = VacationType.by_name_country(**kwargs)
         if not vac:
             return
@@ -1039,16 +1041,20 @@ class CPVacation(BaseVacation):
         restant = 0
         try:
             start, end = cls.get_cycle_boundaries(today, raising=True)
+            cycle_start = start
+            # do not go into a recursive loop if user is in first cycle
+            if (kwargs.get('start') == start) and (kwargs.get('end') == end):
+                raise FirstCycleException()
             # use user arrival_date if after starting cycle date
             if user.arrival_date > start:
                 start = user.arrival_date
             acquis = cls.get_acquis(user, start, today)
-            previous_usage = user.get_cp_usage(session, today=start)
+            previous_usage = user.get_cp_usage(session, today=start,
+                                               start=cycle_start, end=end)
             taken = user.get_cp_taken_cycle(session, start, end)
             # add taken value as it is already consumed by get_cp_usage method
             # so we don't consume it twice.
             restant = previous_usage['acquis']['left'] + taken
-
         except FirstCycleException:
             # cannot go back before first cycle, so use current cycle values
             start, end = cls.get_cycle_boundaries(today)
