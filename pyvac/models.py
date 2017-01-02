@@ -751,7 +751,7 @@ class User(Base):
                  (req.status in valid_status)]
 
         now = today or datetime.now()
-        compensatory = [dt for dt in get_holiday(self, use_datetime=True)
+        compensatory = [dt for dt in get_holiday(self, year=now.year-1, use_datetime=True) # noqa
                         if (dt not in taken) and
                         (dt.isoweekday() in [6, 7]) and
                         (dt - relativedelta(months=3) <= now <= (dt + relativedelta(months=3)))]  # noqa
