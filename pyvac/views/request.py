@@ -846,20 +846,13 @@ class SquadOverview(View):
                 }
 
     def render(self):
-        settings = self.request.registry.settings
-        use_ldap = False
-        if 'pyvac.use_ldap' in settings:
-            use_ldap = asbool(settings.get('pyvac.use_ldap'))
-
+        # synchronise user groups/roles
+        User.sync_ldap_info(self.session)
+        ldap = LdapCache()
         users_teams = {}
-        if use_ldap:
-            # synchronise user groups/roles
-            User.sync_ldap_info(self.session)
-            ldap = LdapCache()
-            users_teams = {}
-            for team, members in ldap.list_teams().iteritems():
-                for member in members:
-                    users_teams.setdefault(member, []).append(team)
+        for team, members in ldap.list_teams().iteritems():
+            for member in members:
+                users_teams.setdefault(member, []).append(team)
 
         # keep only managed users for managers
         # use all users for admin

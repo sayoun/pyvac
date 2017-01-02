@@ -59,6 +59,7 @@ def includeme(config):
     Pyramid includeme file for the :class:`pyramid.config.Configurator`
     """
 
+    ldap = False
     settings = config.registry.settings
     if 'pyvac.celery.yaml' in settings:
         configure(settings['pyvac.celery.yaml'])
@@ -232,11 +233,12 @@ def includeme(config):
                     renderer=u'templates/request/prevision.html',
                     permission=u'admin_view')
 
-    config.add_route(u'squad_overview', u'/pyvac/squad_overview')
-    config.add_view(u'pyvac.views.request.SquadOverview',
-                    route_name=u'squad_overview',
-                    renderer=u'templates/request/squad_overview.html',
-                    permission=u'manager_view')
+    if ldap:
+        config.add_route(u'squad_overview', u'/pyvac/squad_overview')
+        config.add_view(u'pyvac.views.request.SquadOverview',
+                        route_name=u'squad_overview',
+                        renderer=u'templates/request/squad_overview.html',
+                        permission=u'manager_view')
 
     # Holiday request
     config.add_route('list_holiday', u'/pyvac/list_holiday',
