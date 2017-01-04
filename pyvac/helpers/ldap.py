@@ -50,6 +50,7 @@ class LdapWrapper(object):
         self.system_password = conf['system_pass']
 
         self.team_dn = conf['team_dn']
+        self.chapter_dn = conf.get('chapter_dn')
         self.default_user = conf.get('default_user', self.system_DN)
 
         self._conn = ldap.initialize(self._url)
@@ -87,6 +88,12 @@ class LdapWrapper(object):
         # rebind with system dn
         self._bind(self.system_DN, self.system_password)
         return self._conn.search_s(self.team_dn, ldap.SCOPE_SUBTREE, what,
+                                   retrieve)
+
+    def _search_chapter(self, what, retrieve):
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        return self._conn.search_s(self.chapter_dn, ldap.SCOPE_SUBTREE, what,
                                    retrieve)
 
     def _search_by_item(self, item):
@@ -374,6 +381,20 @@ class LdapWrapper(object):
             if 'manager' not in entry['cn'][0]:
                 teams[entry['cn'][0]] = entry['member']
         return teams
+
+    def list_chapters(self):
+        """ Retrieve available chapters """
+        # rebind with system dn
+        self._bind(self.system_DN, self.system_password)
+        # retrieve all chapters so we can extract members
+        required = None
+        item = '(member=*)'
+        res = self._search_chapter(item, required)
+        chapters = {}
+        for USER_DN, entry in res:
+            if 'manager' not in entry['cn'][0]:
+                chapters[entry['cn'][0]] = entry['member']
+        return chapters
 
     def list_manager(self):
         """ Retrieve available managers dn """
