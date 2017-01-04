@@ -1068,6 +1068,13 @@ class CPVacation(BaseVacation):
             cp_bonus = int(math.floor(user.seniority / 5))
             restant = epoch_restants['restants'] + cp_bonus
             n_1 = epoch_restants['n_1']
+            n_1_expire = end - relativedelta(months=5)
+            # n_1 are only valid until end of civil year in first cycle
+            if today > n_1_expire:
+                taken = user.get_cp_taken_cycle(session, start, n_1_expire)
+                log.info('n_1 expired, capping to taken value: %d' % taken)
+                if n_1 > taken:
+                    n_1 = taken
             start = cls.epoch
 
         return {'acquis': acquis, 'restant': restant,
