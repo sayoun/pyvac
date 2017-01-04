@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from freezegun import freeze_time
 
 from pyvac.tests import case
 from pyvac.tests.mocks.tasks import DummyTasks
 from pyvac.tests.mocks.celery import subtask
+
+from mock import patch, PropertyMock
+from dateutil.relativedelta import relativedelta
 
 
 class RequestTestCase(case.ViewTestCase):
@@ -309,6 +313,83 @@ class RequestTestCase(case.ViewTestCase):
         }))()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
+
+    def test_post_send_n_1_ok(self):
+        self.config.testing_securitypolicy(userid=u'admin',
+                                           permissive=True)
+        from pyvac.models import Request, User, CPVacation
+        from pyvac.views.request import Send
+
+        total_req = Request.find(self.session, count=True)
+
+        jdoe = User.by_login(self.session, u'jdoe')
+        with freeze_time('2016-12-23',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+
+            with patch('pyvac.models.User.arrival_date',
+                       new_callable=PropertyMock) as mock_foo:
+                mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
+                CPVacation.users_base = {'jdoe': {'n_1': 20, 'restants': 25}}
+                CPVacation.epoch = datetime(2016, 6, 1)
+                pool = jdoe.get_cp_usage(self.session)
+                self.assertEqual(pool['n_1']['left'], 20)
+
+                request = self.create_request({
+                    'days': 5,
+                    'date_from': '09/01/2017 - 13/01/2017',
+                    'type': '1',
+                    'breakdown': 'FULL',
+                    'sudo_user': '5',
+                })
+                view = Send(request)()
+                self.session.commit()
+
+                self.assertIsRedirect(view)
+                self.assertEqual(Request.find(self.session, count=True), total_req + 1)  # noqa
+                last_req = Request.find(self.session)[-1]
+                self.assertEqual(last_req.user_id, jdoe.id)
+                self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+                self.assertEqual(last_req.days, 5.0)
+                pool = jdoe.get_cp_usage(self.session)
+                self.assertEqual(pool['n_1']['left'], 15)
+                self.delete_last_req(last_req)
+                self.session.flush()
+                self.session.commit()
+
+        with freeze_time('2017-01-02',
+                         ignore=['celery', 'psycopg2', 'sqlalchemy',
+                                 'icalendar']):
+
+            with patch('pyvac.models.User.arrival_date',
+                       new_callable=PropertyMock) as mock_foo:
+                mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
+                CPVacation.users_base = {'jdoe': {'n_1': 20, 'restants': 25}}
+                CPVacation.epoch = datetime(2016, 6, 1)
+                pool = jdoe.get_cp_usage(self.session)
+                self.assertEqual(pool['n_1']['left'], 0)
+                self.assertEqual(pool['restant']['left'], 25)
+
+                request = self.create_request({
+                    'days': 5,
+                    'date_from': '16/01/2017 - 20/01/2017',
+                    'type': '1',
+                    'breakdown': 'FULL',
+                    'sudo_user': '5',
+                })
+                view = Send(request)()
+                self.session.commit()
+
+                self.assertIsRedirect(view)
+                self.assertEqual(Request.find(self.session, count=True), total_req + 1)  # noqa
+                last_req = Request.find(self.session)[-1]
+                self.assertEqual(last_req.user_id, jdoe.id)
+                self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+                self.assertEqual(last_req.days, 5.0)
+                pool = jdoe.get_cp_usage(self.session)
+                self.assertEqual(pool['n_1']['left'], 0)
+                self.assertEqual(pool['restant']['left'], 20.0)
+                self.delete_last_req(last_req)
 
     def test_post_send_half_day_ok(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
