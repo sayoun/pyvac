@@ -1072,7 +1072,8 @@ class CPVacation(BaseVacation):
             # n_1 are only valid until end of civil year in first cycle
             if today > n_1_expire:
                 taken = user.get_cp_taken_cycle(session, start, n_1_expire)
-                log.info('n_1 expired, capping to taken value: %d' % taken)
+                log.info('n_1 expired for %s, capping to taken value: %d'
+                         % (user.login, taken))
                 if n_1 > taken:
                     n_1 = taken
             start = cls.epoch
