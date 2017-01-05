@@ -327,6 +327,10 @@ class Delete(AccountMixin, DeleteView):
         requests = Request.by_user(self.session, account)
         for req in requests:
             req.update_status('CANCELED')
+            # delete all request history entries for this user
+            # otherwise it will raise a integrity error
+            for entry in req.history:
+                self.session.delete(entry)
 
         super(Delete, self).delete(account)
         if account.ldap_user:
