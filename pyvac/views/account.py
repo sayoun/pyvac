@@ -195,8 +195,13 @@ class Create(AccountMixin, CreateView):
             ldap = LdapCache()
             if 'ldappassword' not in r.params:
                 raise MandatoryLdapPassword()
+
+            uid = None
+            if 'user.uid' in r.params and r.params['user.uid']:
+                uid = r.params['user.uid']
+
             new_dn = ldap.add_user(account, password=r.params['ldappassword'],
-                                   unit=r.params.get('unit'))
+                                   unit=r.params.get('unit'), uid=uid)
             # update dn
             account.dn = new_dn
 
