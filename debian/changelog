@@ -1,3 +1,14 @@
+pyvac (1.8.20) unstable; urgency=medium
+
+  * Bugfix release
+  * Fix on squad overview (ldap filtered and month=0)
+  * Fix on holiday retrieval for LU Compensatoire vacation
+  * Hide N-1 pool information as it's expired now
+  * Fix account deletion to work again
+  * Account creation in LDAP should send nickname when provided
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 05 Jan 2017 12:44:33 +0100
+
 pyvac (1.8.19) unstable; urgency=medium
 
   * New feature: squad overview
@@ -25,7 +36,7 @@ pyvac (1.8.16) unstable; urgency=medium
 
 pyvac (1.8.15) unstable; urgency=medium
 
-  * Fixes SQLA models relationship declaration for history feature
+   Fixes SQLA models relationship declaration for history feature
 
  -- Dejan Filipovic <sayoun@gandi.net>  Tue, 29 Nov 2016 12:11:25 +0100
 
