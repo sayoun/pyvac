@@ -1,3 +1,9 @@
+pyvac (1.8.21) unstable; urgency=medium
+
+  * Fixes bug with LU CP vacation and total CP available
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 26 Jan 2017 08:37:28 +0100
+
 pyvac (1.8.20) unstable; urgency=medium
 
   * Bugfix release
