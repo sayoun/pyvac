@@ -382,7 +382,7 @@ class CPVacationTestCase(ModelTestCase):
                 date_to = datetime.now() + relativedelta(days=3)
                 err = CPLUVacation.validate_request(user, pool, days,
                                                     date_from, date_to)
-                msg = 'You only have 200 CP to use.'
+                msg = 'You only have 164 CP to use.'
                 self.assertEqual(err, msg)
 
         with patch('pyvac.models.User.arrival_date',
