@@ -1240,7 +1240,6 @@ class CPLUVacation(BaseVacation):
                 start = user.arrival_date
             acquis = 200
             dt = start - relativedelta(days=1)
-            taken = user.get_cp_taken_cycle(session, start, end)
             previous_usage = user.get_cp_usage(session, today=dt)
             if not previous_usage:
                 left_acquis = 0
@@ -1249,9 +1248,7 @@ class CPLUVacation(BaseVacation):
                 # previous acquis are only valid 3 months
                 if today > previous_usage['acquis']['expire']:
                     left_acquis = 0
-            # add taken value as it is already consumed by get_cp_usage method
-            # so we don't consume it twice.
-            restant = left_acquis + taken
+            restant = left_acquis
         except FirstCycleException:
             # cannot go back before first cycle, so use current cycle values
             start, end = cls.get_cycle_boundaries(today)
