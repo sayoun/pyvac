@@ -475,7 +475,8 @@ class Accept(View):
 
         subtask(req_task).apply_async(kwargs={'data': data}, countdown=5)
 
-        log.info('scheduling task %s for %s' % (task_name, data))
+        log.info('scheduling task %s for req_id: %d' % (task_name,
+                                                        data['req_id']))
         return req.status
 
 

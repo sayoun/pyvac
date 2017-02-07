@@ -39,7 +39,10 @@ class BaseWorker(Task):
                        (self.session, id(self.session)))
 
         req = kwargs.get('data')
-        self.log.info('[Task %s]: RECEIVED %r' % (self.name, req))
+        # don't log credentials like in caldav.url
+        params = req.copy()
+        params.pop('caldav.url', None)
+        self.log.info('[Task %s]: RECEIVED %r' % (self.name, params))
 
         self.process(req)
 
