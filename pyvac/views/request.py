@@ -3,6 +3,7 @@ import re
 import json
 import logging
 from datetime import datetime
+from calendar import monthrange
 try:
     from collections import OrderedDict
 except ImportError:
@@ -830,7 +831,9 @@ class SquadOverview(View):
                     data_months[dt.month][dt.day].append(req.user.login)
 
         data_days_current = []
-        for x in range(1, 31):
+        # retrieve last day of the month
+        last_day = monthrange(today.year, today.month)[1]
+        for x in range(1, last_day):
             perc = ((squad_length - len(data_months.get(today.month, {}).get(x, []))) / float(squad_length) * 100)  # noqa
             perc = round(perc, 2)
             if datetime(today.year, today.month, x).isoweekday() in [6, 7]:
