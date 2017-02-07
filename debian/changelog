@@ -1,3 +1,9 @@
+pyvac (1.8.22) unstable; urgency=medium
+
+  * Don't log caldav credentials (as they are in the caldav.url string)
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 07 Feb 2017 17:33:51 +0100
+
 pyvac (1.8.21) unstable; urgency=medium
 
   * Fixes bug with LU CP vacation and total CP available
