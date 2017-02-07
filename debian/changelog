@@ -1,3 +1,9 @@
+pyvac (1.8.23) unstable; urgency=medium
+
+  * Fixes bug on squad overview page when in february (28 days not 31)
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 07 Feb 2017 17:42:31 +0100
+
 pyvac (1.8.22) unstable; urgency=medium
 
   * Don't log caldav credentials (as they are in the caldav.url string)
