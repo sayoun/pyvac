@@ -1,3 +1,9 @@
+pyvac (1.8.25) unstable; urgency=medium
+
+  * Admin can click already approved/pending future for sudo requests
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 08 Feb 2017 16:12:14 +0100
+
 pyvac (1.8.24) unstable; urgency=medium
 
   * Fixes zh holidays list for 2017
