@@ -1,3 +1,9 @@
+pyvac (1.8.24) unstable; urgency=medium
+
+  * Fixes zh holidays list for 2017
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 08 Feb 2017 08:41:29 +0100
+
 pyvac (1.8.23) unstable; urgency=medium
 
   * Fixes bug on squad overview page when in february (28 days not 31)
