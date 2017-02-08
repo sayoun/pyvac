@@ -220,6 +220,9 @@ function DateDiff(date1, date2) {
           if (futures_breakdown.indexOf(date.getTime()) != -1) {
             clickable = true
           }
+          {% if pyvac.user.is_admin %}
+          clickable = true
+          {% endif %}
           return [clickable, 'date-range-future-pending'];
         }
         if (futures_approved.indexOf(date.getTime()) != -1) {
@@ -227,9 +230,11 @@ function DateDiff(date1, date2) {
           if (futures_breakdown.indexOf(date.getTime()) != -1) {
             clickable = true
           }
+          {% if pyvac.user.is_admin %}
+          clickable = true
+          {% endif %}
           return [clickable, 'date-range-future-approved'];
         }
-
         var day = date.getUTCDay();
         /* do not select weekend days */
         var isWeekend = (day == 6) || (day == 0);
