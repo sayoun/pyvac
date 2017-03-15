@@ -34,6 +34,14 @@
             </div>
         </div>
         {% endif %}
+        {% if has_permission('admin_view') %}
+        <div class="control-group">
+            <label class="control-label" for="inputRegistrationNumber">{% trans %}Registration Number:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="user.registration_number" id="inputRegistrationNumber" value="{{user.registration_number|default('', true)}}"/>
+            </div>
+        </div>
+        {% endif %}
         <div class="control-group">
             <label class="control-label" for="inputEmail">{% trans %}Email:{% endtrans %}</label>
             <div class="controls">

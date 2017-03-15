@@ -226,21 +226,21 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,10/04/2015,14/04/2015,5.0,CP,,'
+        msg = u'1337,Doe,John,10/04/2015,14/04/2015,5.0,CP,,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_label(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 6)
         self.assertIsInstance(req, Request)
-        msg = u'Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM,'
+        msg = u'1337,Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_message(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 14)
         self.assertIsInstance(req, Request)
-        msg = (u"Doe,Jane,13/06/2016,13/06/2016,1.0,Exceptionnel,,"
+        msg = (u",Doe,Jane,13/06/2016,13/06/2016,1.0,Exceptionnel,,"
                "I need to see Star Wars, I'm a huge fan")
         self.assertEqual(req.summarycsv, msg)
 

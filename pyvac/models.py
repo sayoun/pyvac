@@ -132,6 +132,8 @@ class User(Base):
     ou = Column(Unicode(255), nullable=True)
     uid = Column(Unicode(255), nullable=True)
 
+    registration_number = Column(Integer, nullable=True)
+
     firm = ''
     feature_flags = {}
 
@@ -1766,8 +1768,9 @@ class Request(Base):
                 (self.created_at < datetime(2016, 7, 26))):
             days = CPLUVacation.convert_days(days)
 
-        return ('%s,%s,%s,%s,%.1f,%s,%s,%s' %
-                (self.user.lastname,
+        return ('%s,%s,%s,%s,%s,%.1f,%s,%s,%s' %
+                (self.user.registration_number or '',
+                 self.user.lastname,
                  self.user.firstname,
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),

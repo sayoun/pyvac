@@ -70,6 +70,7 @@ def setUpModule():
                  firstname=u'John',
                  lastname=u'Doe',
                  _country=fr_country,
+                 registration_number=1337,
                  )
     user1.groups.append(user_group)
     session.add(user1)
