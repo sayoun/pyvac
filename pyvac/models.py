@@ -244,6 +244,19 @@ class User(Base):
 
         return (True if delta == 0 else False, abs(delta))
 
+    def get_cycle_anniversary(self, cycle_start, cycle_end):
+        """Return user anniversary date if in current cycle boundaries."""
+        arrival_date = self.arrival_date
+        if not arrival_date:
+            return
+
+        current_arrival_date = arrival_date.replace(year=cycle_end.year)
+        # if it's already past for this year
+        if current_arrival_date > cycle_end:
+            current_arrival_date -= relativedelta(months=12)
+
+        return current_arrival_date
+
     @classmethod
     def by_login(cls, session, login):
         """Get a user from a given login."""
@@ -667,12 +680,12 @@ class User(Base):
                   'today': today}
         vac = VacationType.by_name_country(**kwargs)
         if not vac:
-            return [], []
+            return [], [], None
         if today < vac.epoch:
-            return [], []
+            return [], [], None
         allowed = vac.acquired(**kwargs)
         if not allowed:
-            return [], []
+            return [], [], None
 
         cycle_start, _ = vac.get_cycle_boundaries(today)
         if cycle_start < vac.epoch:
@@ -680,6 +693,12 @@ class User(Base):
 
         raw_restant = cls.get_cp_restant_history(vac, session, user, today)
         raw_acquired = cls.get_cp_acquired_history(vac, allowed, today)
+        # add seniority CP bonus if any
+        anniv_date = user.get_cycle_anniversary(cycle_start, today)
+        cp_bonus = int(math.floor(user.seniority / 5))
+        if anniv_date and cp_bonus:
+            raw_acquired.append({'date': anniv_date, 'value': cp_bonus})
+
         acquired = []
         total = 0
         for item in raw_acquired:
@@ -706,7 +725,7 @@ class User(Base):
         restant = dict([(entry['date'], get_restant_val(entry['date']))
                         for entry in history])
 
-        return history, restant
+        return history, restant, anniv_date
 
     def get_cp_usage(self, session, today=None, start=None, end=None):
         """Get CP usage for a user."""
@@ -976,9 +995,8 @@ class CPVacation(BaseVacation):
 
     @classmethod
     def get_acquis(cls, user, starting_date, today=None):
-        """."""
+        """Retrieve amount of acquis for CP."""
         today = today or datetime.now()
-
         delta = relativedelta(starting_date, today)
         months = abs(delta.months)
         years = abs(delta.years)
@@ -988,16 +1006,18 @@ class CPVacation(BaseVacation):
         # add bonus CP based on arrival_date, 1 more per year each 5 years
         # cp bonus are added on the last acquisition day of previous cycle,
         # so on 31/05 of year - 1
-        if years > 0:
+        anniv_date = user.get_cycle_anniversary(starting_date, today)
+        if (years > 0) or (today > anniv_date > starting_date):
             cp_bonus = int(math.floor(user.seniority / 5))
 
+        # this if or the pivot date when acquis becomes restants
         if not months and years:
             months = 12
             acquis = 25 + cp_bonus
 
         log.debug('%s: using coeff %s * months %s + (bonus %s)' %
                   (user.login, cls.coeff, months, cp_bonus))
-        acquis = acquis or (months * cls.coeff)
+        acquis = acquis or (months * cls.coeff + cp_bonus)
         return acquis
 
     @classmethod
@@ -1064,9 +1084,7 @@ class CPVacation(BaseVacation):
             acquis = cls.get_acquis(user, start, today)
             epoch_restants = cls.users_base.get(user.login,
                                                 {'restants': 0, 'n_1': 0})
-            # add seniority CP bonus for the 1st cycle
-            cp_bonus = int(math.floor(user.seniority / 5))
-            restant = epoch_restants['restants'] + cp_bonus
+            restant = epoch_restants['restants']
             n_1 = epoch_restants['n_1']
             n_1_expire = end - relativedelta(months=5)
             # n_1 are only valid until end of civil year in first cycle
@@ -1178,7 +1196,7 @@ class CPLUVacation(BaseVacation):
 
     @classmethod
     def get_acquis(cls, user, starting_date, today=None):
-        """."""
+        """Retrieve amount of acquis for CP LU."""
         today = today or datetime.now()
 
         delta = relativedelta(starting_date, today)

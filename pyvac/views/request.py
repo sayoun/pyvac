@@ -744,7 +744,8 @@ class PoolHistory(View):
         pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
         pool_history['CP'] = {}
-        history, restant = User.get_cp_history(self.session, user, year)
+        history, restant, anniv_date = User.get_cp_history(self.session,
+                                                           user, year)
         pool_history['CP']['history'] = history
         pool_history['CP']['restant'] = restant
 
@@ -754,6 +755,7 @@ class PoolHistory(View):
                'year': year,
                'years': years,
                'pool_history': pool_history,
+               'anniv_date': anniv_date,
                'consume_cp': vac_class.consume}
 
         return ret

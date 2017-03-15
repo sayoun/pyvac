@@ -61,6 +61,12 @@
           {% set init_acquis = False %}
         {% endif %}
 
+        {% if entry.date == anniv_date %}
+          {% set anniv_cycle = True %}
+        {% else %}
+          {% set anniv_cycle = False %}
+        {% endif %}
+
         {% set last_acquis = pool_balance_acquis %}
         {% set last_restant = pool_balance_restant %}
         {% set pool_balance_restant = last_restant %}
@@ -71,7 +77,7 @@
         {% endif %}
         <tr>
           <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ entry.value|plusify if not init_acquis else '-'}}</td>
+          <td>{{ entry.value|plusify if not init_acquis else '-'}}{% if anniv_cycle %} (seniority){%endif%}</td>
           <td {% if not init_acquis and last_restant == pool_balance_restant%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_restant }}</td>
           <td {% if not init_acquis and last_acquis == pool_balance_acquis%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_acquis }}</td>
         </tr>
