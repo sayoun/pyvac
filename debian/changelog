@@ -1,3 +1,10 @@
+pyvac (1.8.26) unstable; urgency=medium
+
+  * Seniority CP fix: display in pool history and use it in acquis not restants
+  * Add registration number field for each user 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 15 Mar 2017 14:19:42 +0100
+
 pyvac (1.8.25) unstable; urgency=medium
 
   * Admin can click already approved/pending future for sudo requests
