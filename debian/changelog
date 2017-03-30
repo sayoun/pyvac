@@ -1,3 +1,9 @@
+pyvac (1.8.27) unstable; urgency=medium
+
+  * Update squad overview graph
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 30 Mar 2017 18:47:58 +0200
+
 pyvac (1.8.26) unstable; urgency=medium
 
   * Seniority CP fix: display in pool history and use it in acquis not restants
