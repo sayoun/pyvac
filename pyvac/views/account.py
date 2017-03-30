@@ -332,6 +332,10 @@ class Delete(AccountMixin, DeleteView):
             for entry in req.history:
                 self.session.delete(entry)
 
+        # cancel associated password recovery attempts for this user
+        for item in account.recovery:
+            self.session.delete(item)
+
         super(Delete, self).delete(account)
         if account.ldap_user:
             # delete in ldap
