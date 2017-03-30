@@ -9,7 +9,7 @@ from pyramid.url import route_url
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group, Countries, Request
+from pyvac.models import User, Group, Countries
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
     LdapCache, hashPassword, randomstring, UnknownLdapUser,
@@ -324,7 +324,7 @@ class Delete(AccountMixin, DeleteView):
 
     def delete(self, account):
         # cancel all associated requests for this user
-        requests = Request.by_user(self.session, account)
+        requests = account.requests
         for req in requests:
             req.update_status('CANCELED')
             # delete all request history entries for this user
