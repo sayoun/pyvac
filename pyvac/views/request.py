@@ -2,12 +2,12 @@
 import re
 import json
 import logging
-from datetime import datetime
-from calendar import monthrange
+from datetime import datetime, timedelta
 try:
     from collections import OrderedDict
 except ImportError:
     OrderedDict = dict
+from dateutil.relativedelta import relativedelta
 
 from .base import View
 
@@ -813,8 +813,9 @@ class SquadOverview(View):
             if req.user not in today_off:
                 today_off.append(req.user)
 
-        # retrieve today's active requests
-        date_from = today.replace(day=1)
+        # retrieve active requests since 15 days ago
+        date_from = today - relativedelta(days=15)
+
         all_reqs = []
         for user_id, user in users_per_id.items():
             user_req = Request.by_user_future_approved(self.session, user,
@@ -833,18 +834,22 @@ class SquadOverview(View):
                     data_months[dt.month][dt.day].append(req.user.login)
 
         data_days_current = []
-        # retrieve last day of the month
-        last_day = monthrange(today.year, today.month)[1]
-        for x in range(1, last_day):
-            perc = ((squad_length - len(data_months.get(today.month, {}).get(x, []))) / float(squad_length) * 100)  # noqa
+        labels = []
+        start_date = today - timedelta(days=15)
+        stop_date = today + timedelta(days=15)
+        for x in daterange(start_date, stop_date):
+            labels.append("'%s'" % x.strftime('%d/%m'))
+            perc = ((squad_length - len(data_months.get(x.month, {}).get(x.day, []))) / float(squad_length) * 100)  # noqa
             perc = round(perc, 2)
-            if datetime(today.year, today.month, x).isoweekday() in [6, 7]:
+            if x.isoweekday() in [6, 7]:
                 perc = 0.0
             data_days_current.append(perc)
 
+        labels = '[%s]' % ','.join(labels)
         return {'users_per_id': users_per_id,
                 'data_days_current': data_days_current,
                 'today_requests': today_requests,
+                'labels': labels,
                 'today': today,
                 'today_off': today_off,
                 'today_off_length': len(today_off),

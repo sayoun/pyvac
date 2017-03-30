@@ -51,7 +51,7 @@
 </div>
 
 <div id="overview-contain-graph-{{target_squad}}" class="span12">
-  <legend>Presence graph current month</legend>
+  <legend>Presence for 15 days around current day</legend>
 
   <canvas id="presenceGraph-{{target_squad}}" width="400" height="120"></canvas>
 </div>
@@ -86,11 +86,11 @@ var presenceGraph{{target_squad|replace("-", "_")}} = new Chart(ctx, {
     type: 'bar',
     data: {
         // labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        labels: {{ range(1, 32)|list }},
+        labels: {{ squad_overview['labels']|safe }},
         datasets: [{
             label: '% of squad presence',
             data: {{ squad_overview['data_days_current'] }},
-            backgroundColor: [{%- for x in range(1, 32) %}{% if x == squad_overview['today'].day %}'rgba(222,0,0,0.8)',{% else %}'rgba(0,0,222, 0.8)',{% endif %}{% endfor -%}],
+            backgroundColor: [{%- for x in range(1, 32) %}{% if x == 16 %}'rgba(222,0,0,0.8)',{% else %}'rgba(0,0,222, 0.8)',{% endif %}{% endfor -%}],
             borderWidth: 1
         }]
     },
