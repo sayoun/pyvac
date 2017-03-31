@@ -584,8 +584,24 @@ class Exported(View):
         if self.user.is_admin:
             country = self.user.country
             month, year = self.request.params.get('month').split('/')
-            requests = Request.get_by_month(self.session, country,
+            log.info('exporting for: %d/%d' % (int(month), int(year)))
+            all_reqs = Request.get_by_month(self.session, country,
                                             int(month), int(year))
+
+            # filter request which overlap 2 months, only keep the ones which
+            # are ending in the selected month
+            requests = []
+            for req in all_reqs:
+                if req.date_from.month != req.date_to.month:
+                    if req.date_to.month == int(month):
+                        log.info('using overlapping req: %r' % req.summary)
+                        requests.append(req)
+                    else:
+                        log.info('discarding overlapping req: %r' %
+                                 req.summary)
+                else:
+                    requests.append(req)
+
             data = []
             header = ('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s' %
                       ('#', 'registration_number', 'lastname', 'firstname',
