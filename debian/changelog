@@ -1,3 +1,9 @@
+pyvac (1.8.28) unstable; urgency=medium
+
+  * Fixes bug with overlapping request in export
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 31 Mar 2017 16:19:04 +0200
+
 pyvac (1.8.27) unstable; urgency=medium
 
   * Update squad overview graph
