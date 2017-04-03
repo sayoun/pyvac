@@ -1,3 +1,9 @@
+pyvac (1.8.29) unstable; urgency=medium
+
+  * Extend CPLU first cycle end for one more year
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 03 Apr 2017 14:42:49 +0200
+
 pyvac (1.8.28) unstable; urgency=medium
 
   * Fixes bug with overlapping request in export
