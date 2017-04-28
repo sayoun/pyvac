@@ -1230,13 +1230,17 @@ class CPLUVacation(BaseVacation):
         if cycle_end.year == 2017:
             # XXX: dirty hack to extend first cycle end for one more year
             delta_restant = 12
+        delta_acquis = 0
+        if cycle_end.year == 2016:
+            # XXX: dirty hack to extend first cycle end for one more year
+            delta_acquis = 12
 
         # must handle 2 pools: acquis, restant
         ret_acquis = {
             'allowed': allowed['acquis'],
             'left': left_acquis,
             # add 3 months here
-            'expire': cycle_end.replace(year=cycle_end.year) + relativedelta(months=3)} # noqa
+            'expire': cycle_end + relativedelta(months=3) + relativedelta(months=delta_acquis)} # noqa
         ret_restant = {
             'allowed': allowed['restant'],
             'left': left_restant,
@@ -1353,8 +1357,6 @@ class CPLUVacation(BaseVacation):
                 start = user.arrival_date
             acquis = cls.users_base.get(user.login, 200)
             start = cls.epoch
-            # XXX: dirty hack to extend first cycle end for one more year
-            end = end + relativedelta(months=12)
 
         return {'acquis': acquis, 'restant': restant,
                 'cycle_start': start, 'cycle_end': end}
