@@ -355,7 +355,7 @@ class CPVacationTestCase(ModelTestCase):
             msg = 'You need 3 months of seniority before using your CP'
             self.assertEqual(err, msg)
 
-        with freeze_time('2016-12-25',
+        with freeze_time('2017-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             with patch('pyvac.models.User.arrival_date',
