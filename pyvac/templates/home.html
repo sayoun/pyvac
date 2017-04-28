@@ -140,6 +140,9 @@
         {% if pyvac.user.country == 'fr' %}
           <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year {{pyvac.user.rtt['year']}}</li>
           {% if pyvac.user.arrival_date and pyvac.user.cp %}
+          {% if 'extra' in pyvac.user.cp %}
+          <li>You have <b>{{pyvac.user.cp['extra']['left']}} CP {{pyvac.user.cp['extra']['type']}}</b> to use before {{pyvac.user.cp['extra']['expire'].strftime('%d/%m/%Y')}}</li>
+          {% endif %}
           <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP restants</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
           <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP en acquisition</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
           {% endif %}

@@ -52,35 +52,15 @@
       </tr>
     </thead>
     <tbody>
-      {% set pool_balance_acquis = 0 %}
-      {% for entry in pool_history['CP']['history'] %}
-        {% if pool_balance_acquis == 0 %}
-          {% set init_acquis = True %}
-          {% set pool_balance_restant = pool_history['CP']['restant'][entry.date] %}
-        {% else %}
-          {% set init_acquis = False %}
-        {% endif %}
-
-        {% if entry.date == anniv_date %}
-          {% set anniv_cycle = True %}
-        {% else %}
-          {% set anniv_cycle = False %}
-        {% endif %}
-
-        {% set last_acquis = pool_balance_acquis %}
-        {% set last_restant = pool_balance_restant %}
-        {% set pool_balance_restant = last_restant %}
-        {% if entry.value < 0 %}
-            {% set pool_n_1, pool_balance_restant, pool_balance_acquis = consume_cp(entry.value, 0, pool_balance_restant, pool_balance_acquis) %}
-        {% else %}
-            {% set pool_balance_acquis = pool_balance_acquis + entry.value %}
-        {% endif %}
+      {% for entry in pool_history['CP'] %}
         <tr>
-          <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ entry.value|plusify if not init_acquis else '-'}}{% if anniv_cycle %} (seniority){%endif%}</td>
-          <td {% if not init_acquis and last_restant == pool_balance_restant%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_restant }}</td>
-          <td {% if not init_acquis and last_acquis == pool_balance_acquis%}style="color:#aaaaaa"{% endif %}>{{ pool_balance_acquis }}</td>
+          <td>{{ entry.date }}</td>
+          <td>{{ entry.value|plusify if loop.index0 else '-'}}{% if entry.flavor %} ({{entry.flavor}}){%endif%}</td>
+          <td {% if loop.index0 > 0 and last_restant == entry.restant%}style="color:#aaaaaa"{% endif %}>{{ entry.restant }}</td>
+          <td {% if loop.index0 > 0 and last_acquis == entry.acquis%}style="color:#aaaaaa"{% endif %}>{{ entry.acquis }}</td>
         </tr>
+        {% set last_acquis = entry.acquis %}
+        {% set last_restant = entry.restant %}
     {% endfor %}
     </tbody>
   </table>

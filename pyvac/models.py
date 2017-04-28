@@ -602,6 +602,9 @@ class User(Base):
         if cycle_start < vac.epoch:
             cycle_start = vac.epoch
 
+        if cycle_start.day != 1:
+            cycle_start = cycle_start + relativedelta(days=1)
+
         delta = relativedelta(cycle_start, today)
         months = abs(delta.months)
 
@@ -619,13 +622,16 @@ class User(Base):
         if cycle_start < vac.epoch:
             cycle_start = vac.epoch
 
+        if cycle_start.day != 1:
+            cycle_start = cycle_start + relativedelta(days=1)
         thresholds = [cycle_start, cycle_end]
 
         def get_restant(date):
             data = vac.acquired(user, date, session)
             if not data:
                 return 0
-            return data['restant'] + data.get('n_1', 0)
+            extra = data.get('extra', {}).get('allowed', 0)
+            return data['restant'] + data.get('n_1', 0) + extra
 
         ret = {}
         for date in thresholds:
@@ -644,6 +650,7 @@ class User(Base):
         # set taken to 12h hour so sorted history correctly put the acquired
         # before the taken
         return [{'date': req.date_from.replace(hour=12),
+                 'flavor': '',
                  'value': -req.days} for req in entries]
 
     def get_cp_taken_year(self, session, date):
@@ -682,12 +689,12 @@ class User(Base):
                   'today': today}
         vac = VacationType.by_name_country(**kwargs)
         if not vac:
-            return [], [], None
+            return [], []
         if today < vac.epoch:
-            return [], [], None
+            return [], []
         allowed = vac.acquired(**kwargs)
         if not allowed:
-            return [], [], None
+            return [], []
 
         cycle_start, _ = vac.get_cycle_boundaries(today)
         if cycle_start < vac.epoch:
@@ -699,11 +706,21 @@ class User(Base):
         anniv_date = user.get_cycle_anniversary(cycle_start, today)
         cp_bonus = int(math.floor(user.seniority / 5))
         if anniv_date and cp_bonus:
-            raw_acquired.append({'date': anniv_date, 'value': cp_bonus})
+            raw_acquired.append({'date': anniv_date,
+                                 'flavor': 'seniority',
+                                 'value': cp_bonus})
 
+        # XXX: handle expiration date for extra pool
+        extra = allowed.get('extra')
+        if extra and extra['absolute']:
+            raw_acquired.append({'date': extra['expire_date'],
+                                 'flavor': 'expiration',
+                                 'value': -extra['absolute']})
         acquired = []
         total = 0
         for item in raw_acquired:
+            if 'flavor' not in item:
+                item['flavor'] = ''
             if item['date'] < cycle_start:
                 total += item['value']
             else:
@@ -727,7 +744,7 @@ class User(Base):
         restant = dict([(entry['date'], get_restant_val(entry['date']))
                         for entry in history])
 
-        return history, restant, anniv_date
+        return history, restant
 
     def get_cp_usage(self, session, today=None, start=None, end=None):
         """Get CP usage for a user."""
@@ -908,6 +925,10 @@ class CPVacation(BaseVacation):
     epoch = datetime(2015, 6, 1)
     coeff = 2.08  # per month
     users_base = {}
+    extra_cp = False
+    cycle_end_year = None
+    cycle_start = None
+    delta_restant = 0
 
     @classmethod
     def initialize(cls, filename):
@@ -926,14 +947,15 @@ class CPVacation(BaseVacation):
     @classmethod
     def get_left(cls, taken, allowed, req_taken):
         """Return how much vacation is left after taken has been accounted."""
+        left_data = {}
         cycle_end = allowed['cycle_end']
         restant = allowed['restant']
         n_1 = allowed['n_1']
         acquis = allowed['acquis']
+        extra = allowed.get('extra', {})
 
-        left_n_1, left_restant, left_acquis = cls.consume(taken, n_1,
-                                                          restant,
-                                                          acquis)
+        left_n_1, left_restant, left_acquis, left_extra = cls.consume(
+            taken, n_1, restant, acquis, extra.get('allowed', 0))
 
         # must handle 3 pools: acquis, restant, and N-1
         ret_n_1 = {
@@ -944,17 +966,41 @@ class CPVacation(BaseVacation):
             'allowed': allowed['acquis'],
             'left': left_acquis,
             'expire': cycle_end.replace(year=cycle_end.year + 1)}
+
+        delta_restant = 0
+        if cls.extra_cp and cycle_end.year == cls.cycle_end_year:
+            # XXX: dirty hack to extend 2017 cycle end until end of year
+            delta_restant = cls.delta_restant
+
         ret_restant = {
             'allowed': allowed['restant'],
             'left': left_restant,
-            'expire': allowed['cycle_end']}
-        return {'acquis': ret_acquis, 'restant': ret_restant,
-                'n_1': ret_n_1,
-                'taken': taken}
+            'expire': allowed['cycle_end'] + relativedelta(months=delta_restant)}  # noqa
+        left_data['acquis'] = ret_acquis
+        left_data['restant'] = ret_restant
+        left_data['n_1'] = ret_n_1
+        left_data['taken'] = taken
+
+        # trouver les restants a garder -> extra structure
+        if extra:
+            # handle extra structure
+            expire_date = extra['expire_date']
+            left_data['extra'] = {
+                'left': left_extra,
+                'allowed': extra['allowed'],
+                'type': extra['type'],
+                'expire': expire_date,
+            }
+
+        return left_data
 
     @classmethod
-    def consume(cls, taken, n_1, restant, acquis):
+    def consume(cls, taken, n_1, restant, acquis, extra=None):
         """Remove taken CP from N-1 pool then Restant pool then Acquis pool."""
+
+        # TODO: order pools by expiration date and consume in order
+        # this way it's generic ?
+
         exceed = 0
         if n_1 < 0:
             restant = restant + n_1
@@ -966,6 +1012,11 @@ class CPVacation(BaseVacation):
             exceed = abs(left_n_1)
             left_n_1 = 0
 
+        left_extra = extra - exceed
+        if left_extra < 0:
+            exceed = abs(left_extra)
+            left_extra = 0
+
         left_restant = restant - exceed
         if left_restant < 0:
             exceed = abs(left_restant)
@@ -974,7 +1025,7 @@ class CPVacation(BaseVacation):
         else:
             left_acquis = acquis
 
-        return left_n_1, left_restant, left_acquis
+        return left_n_1, left_restant, left_acquis, left_extra
 
     @classmethod
     def get_cycle_boundaries(cls, date, raising=None):
@@ -1042,7 +1093,6 @@ class CPVacation(BaseVacation):
         - retrieve amount of restant/acquis from previous cycle
         - use acquis from previous cycle for restant of current one
         """
-
         # if user is not in france, discard
         if user.country not in ('fr'):
             log.info('user %s not in country fr, discarding' % user.login)
@@ -1061,6 +1111,7 @@ class CPVacation(BaseVacation):
 
         n_1 = 0
         restant = 0
+        extra = {}
         try:
             start, end = cls.get_cycle_boundaries(today, raising=True)
             cycle_start = start
@@ -1077,6 +1128,24 @@ class CPVacation(BaseVacation):
             # add taken value as it is already consumed by get_cp_usage method
             # so we don't consume it twice.
             restant = previous_usage['acquis']['left'] + taken
+
+            # only use extra pool for a specific cycle
+            if cls.extra_cp and cycle_start == cls.cycle_start:
+                extra_expire = cycle_start + relativedelta(months=cls.delta_restant) # noqa
+                extra = {'type': 'restants',
+                         'allowed': previous_usage['restant']['left'],
+                         'expire_date': extra_expire}
+                # extra are only valid until end of civil year in this cycle
+                if today > extra_expire:
+                    taken = user.get_cp_taken_cycle(session, start,
+                                                    extra_expire)
+                    extra['absolute'] = extra['allowed'] - taken
+                    log.info('extra expired for %s, capping to taken '
+                             'value: %d (from %d)'
+                             % (user.login, taken, extra['allowed']))
+                    if extra['allowed'] > taken:
+                        extra['allowed'] = taken
+
         except FirstCycleException:
             # cannot go back before first cycle, so use current cycle values
             start, end = cls.get_cycle_boundaries(today)
@@ -1100,6 +1169,7 @@ class CPVacation(BaseVacation):
 
         return {'acquis': acquis, 'restant': restant,
                 'n_1': n_1,
+                'extra': extra,
                 'cycle_start': start, 'cycle_end': end}
 
     @classmethod
@@ -2043,6 +2113,18 @@ def includeme(config):
             if 'pyvac.vacation.cp_class.base_file' in settings:
                 file = settings['pyvac.vacation.cp_class.base_file']
                 CPVacation.initialize(file)
+
+    if 'pyvac.vacation.extra_cp.enable' in settings:
+        extra_cp = asbool(settings['pyvac.vacation.extra_cp.enable'])
+        if extra_cp:
+            CPVacation.extra_cp = True
+            if 'pyvac.vacation.extra_cp.cycle_end_year' in settings:
+                CPVacation.cycle_end_year = int(settings['pyvac.vacation.extra_cp.cycle_end_year']) # noqa
+            if 'pyvac.vacation.extra_cp.cycle_start' in settings:
+                date = settings['pyvac.vacation.extra_cp.cycle_start']
+                CPVacation.cycle_start = datetime.strptime(date, '%d/%m/%Y')
+            if 'pyvac.vacation.extra_cp.delta_restant' in settings:
+                CPVacation.delta_restant = int(settings['pyvac.vacation.extra_cp.delta_restant']) # noqa
 
     if 'pyvac.vacation.cp_lu_class.enable' in settings:
         cp_lu_class = asbool(settings['pyvac.vacation.cp_lu_class.enable'])

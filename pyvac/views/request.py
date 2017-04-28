@@ -229,6 +229,8 @@ class Send(View):
                     # remove expire datetimes as it's not json serializable
                     if 'n_1' in pool:
                         pool['n_1'].pop('expire', None)
+                    if 'extra' in pool:
+                        pool['extra'].pop('expire', None)
                     pool['acquis'].pop('expire', None)
                     pool['restant'].pop('expire', None)
 
@@ -759,20 +761,37 @@ class PoolHistory(View):
         pool_history = {}
         pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
-        pool_history['CP'] = {}
-        history, restant, anniv_date = User.get_cp_history(self.session,
-                                                           user, year)
-        pool_history['CP']['history'] = history
-        pool_history['CP']['restant'] = restant
-
+        history, restant = User.get_cp_history(self.session, user, year)
         vac_class = user.get_cp_class(self.session)
+
+        cp_history = []
+        pool_acquis = 0
+        pool_restant = 0
+        for idx, entry in enumerate(history):
+            if idx == 0:
+                pool_restant = restant[entry['date']]
+
+            if entry['value'] < 0:
+                _, pool_restant, pool_acquis, _ = vac_class.consume(
+                    entry['value'], 0, pool_restant, pool_acquis, 0)
+            else:
+                pool_acquis = pool_acquis + entry['value']
+
+            item = {
+                'date': entry['date'].strftime('%Y-%m-%d'),
+                'value': entry['value'],
+                'restant': pool_restant,
+                'acquis': pool_acquis,
+                'flavor': entry.get('flavor', ''),
+            }
+            cp_history.append(item)
+
+        pool_history['CP'] = cp_history
 
         ret = {'user': user,
                'year': year,
                'years': years,
-               'pool_history': pool_history,
-               'anniv_date': anniv_date,
-               'consume_cp': vac_class.consume}
+               'pool_history': pool_history}
 
         return ret
 
