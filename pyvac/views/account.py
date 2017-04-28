@@ -13,6 +13,7 @@ from pyvac.models import User, Group, Countries
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
     LdapCache, hashPassword, randomstring, UnknownLdapUser,
+    ALREADY_EXISTS,
 )
 
 
@@ -200,8 +201,21 @@ class Create(AccountMixin, CreateView):
             if 'user.uid' in r.params and r.params['user.uid']:
                 uid = r.params['user.uid']
 
-            new_dn = ldap.add_user(account, password=r.params['ldappassword'],
-                                   unit=r.params.get('unit'), uid=uid)
+            try:
+                new_dn = ldap.add_user(account,
+                                       password=r.params['ldappassword'],
+                                       unit=r.params.get('unit'), uid=uid)
+                msg = ('User %s created in pyvac and ldap' % account.login)
+                self.request.session.flash('info;%s' % msg)
+            except ALREADY_EXISTS:
+                # already exists in ldap, only retrieve the dn
+                new_dn = 'cn=%s,c=%s,%s' % (account.login, account.country,
+                                            ldap._base)
+                msg = ('User %s already exists in ldap, created only in pyvac'
+                       % account.login)
+                log.info(msg)
+                self.request.session.flash('info;%s' % msg)
+
             # update dn
             account.dn = new_dn
 

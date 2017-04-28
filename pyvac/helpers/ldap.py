@@ -13,7 +13,7 @@ except ImportError:
     from yaml import SafeLoader as YAMLLoader
 
 import ldap
-from ldap import dn, modlist, SERVER_DOWN
+from ldap import dn, modlist, SERVER_DOWN, ALREADY_EXISTS
 
 log = logging.getLogger(__file__)
 
