@@ -773,7 +773,11 @@ class PoolHistory(View):
 
             if entry['value'] < 0:
                 _, pool_restant, pool_acquis, _ = vac_class.consume(
-                    entry['value'], 0, pool_restant, pool_acquis, 0)
+                    taken=entry['value'],
+                    restant=pool_restant,
+                    acquis=pool_acquis,
+                    n_1=0,
+                    extra=0)
             else:
                 pool_acquis = pool_acquis + entry['value']
 
