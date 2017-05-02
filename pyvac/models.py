@@ -1842,13 +1842,11 @@ class Request(Base):
         label = '%s' % self.label if self.label else ''
         message = '%s' % self.message if self.message else ''
         days = self.days
-        req_type = self.type
         # XXX: must convert CPLU vacation to hours until 2017 cycle
         if self.user.country == 'lu':
             if self.type == 'CP':
                 if self.created_at < datetime(2016, 7, 26):
                     days = CPLUVacation.convert_days(days)
-                req_type = 'CP h.'
             if self.type == 'Maladie':
                 days = CPLUVacation.convert_days(days)
             if self.type == 'Compensatoire':
@@ -1861,7 +1859,7 @@ class Request(Base):
                  self.date_from.strftime('%d/%m/%Y'),
                  self.date_to.strftime('%d/%m/%Y'),
                  days,
-                 req_type,
+                 self.type,
                  label,
                  message))
 
