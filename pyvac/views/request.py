@@ -761,7 +761,13 @@ class PoolHistory(View):
         pool_history = {}
         pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
-        history, restant = User.get_cp_history(self.session, user, year)
+        if today.year > year:
+            if user.country == 'lu':
+                today = datetime(year, 12, 31)
+            else:
+                today = datetime(year, 5, 31)
+
+        history, restant = User.get_cp_history(self.session, user, year, today)
         vac_class = user.get_cp_class(self.session)
 
         cp_history = []
@@ -772,12 +778,18 @@ class PoolHistory(View):
                 pool_restant = restant[entry['date']]
 
             if entry['value'] < 0:
-                _, pool_restant, pool_acquis, _ = vac_class.consume(
-                    taken=entry['value'],
-                    restant=pool_restant,
-                    acquis=pool_acquis,
-                    n_1=0,
-                    extra=0)
+                if user.country == 'lu':
+                    pool_restant, pool_acquis = vac_class.consume(
+                        taken=entry['value'],
+                        restant=pool_restant,
+                        acquis=pool_acquis)
+                else:
+                    _, pool_restant, pool_acquis, _ = vac_class.consume(
+                        taken=entry['value'],
+                        restant=pool_restant,
+                        acquis=pool_acquis,
+                        n_1=0,
+                        extra=0)
             else:
                 pool_acquis = pool_acquis + entry['value']
 

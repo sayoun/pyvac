@@ -257,7 +257,24 @@ class User(Base):
         if current_arrival_date > cycle_end:
             current_arrival_date -= relativedelta(months=12)
 
+        if current_arrival_date < cycle_start:
+            return
+
         return current_arrival_date
+
+    def get_seniority(self, today=None):
+        """Return how many years the user has been employed."""
+        arrival_date = self.arrival_date
+        if not arrival_date:
+            return 0
+
+        today = today or datetime.now()
+        nb_year = today.year - arrival_date.year
+        current_arrival_date = arrival_date.replace(year=today.year)
+        if today < current_arrival_date:
+            nb_year = nb_year - 1
+
+        return nb_year
 
     @classmethod
     def by_login(cls, session, login):
@@ -593,7 +610,7 @@ class User(Base):
         return history
 
     @classmethod
-    def get_cp_acquired_history(cls, vac, acquired, today=None):
+    def get_cp_acquired_history(cls, vac, acquired, user, today=None):
         """Get CP acquired history."""
         today = today or datetime.now()
         cycle_start, _ = vac.get_cycle_boundaries(today)
@@ -604,6 +621,9 @@ class User(Base):
 
         if cycle_start.day != 1:
             cycle_start = cycle_start + relativedelta(days=1)
+
+        if user.country == 'lu':
+            return [{'date': cycle_start, 'value': 200}]
 
         delta = relativedelta(cycle_start, today)
         months = abs(delta.months)
@@ -679,9 +699,9 @@ class User(Base):
                     (req.date_to <= date_end)])
 
     @classmethod
-    def get_cp_history(cls, session, user, year):
+    def get_cp_history(cls, session, user, year, today=None):
         """Get CP history for given user: taken + acquired, sorted by date."""
-        today = datetime.now().replace(year=year)
+        today = today.replace(year=year) or datetime.now().replace(year=year)
         kwargs = {'session': session,
                   'name': u'CP',
                   'country': user.country,
@@ -701,21 +721,34 @@ class User(Base):
             cycle_start = vac.epoch
 
         raw_restant = cls.get_cp_restant_history(vac, session, user, today)
-        raw_acquired = cls.get_cp_acquired_history(vac, allowed, today)
+        raw_acquired = cls.get_cp_acquired_history(vac, allowed, user, today)
         # add seniority CP bonus if any
         anniv_date = user.get_cycle_anniversary(cycle_start, today)
-        cp_bonus = int(math.floor(user.seniority / 5))
+        cp_bonus = int(math.floor(user.get_seniority(today) / 5))
         if anniv_date and cp_bonus:
             raw_acquired.append({'date': anniv_date,
                                  'flavor': 'seniority',
                                  'value': cp_bonus})
 
+        if user.country == 'lu':
+            # XXX: handle expiration date for restant pool
+            restant_expire_date = datetime(today.year, 3, 31)
+            allowed_data = user.get_cp_usage(session,
+                                             today=restant_expire_date,
+                                             start=cycle_start, end=today)
+            allowed_restant = allowed_data['restant']
+            if today >= allowed_restant['expire']:
+                raw_acquired.append({'date': allowed_restant['expire'],
+                                     'flavor': 'expiration',
+                                     'value': -allowed_restant['left']})
+
         # XXX: handle expiration date for extra pool
         extra = allowed.get('extra')
-        if extra and extra['absolute']:
+        if extra and extra.get('absolute'):
             raw_acquired.append({'date': extra['expire_date'],
                                  'flavor': 'expiration',
                                  'value': -extra['absolute']})
+
         acquired = []
         total = 0
         for item in raw_acquired:
@@ -1060,7 +1093,8 @@ class CPVacation(BaseVacation):
         # cp bonus are added on the last acquisition day of previous cycle,
         # so on 31/05 of year - 1
         anniv_date = user.get_cycle_anniversary(starting_date, today)
-        if (years > 0) or (today > anniv_date > starting_date):
+        if anniv_date and ((years > 0) or
+                           (today > anniv_date > starting_date)):
             cp_bonus = int(math.floor(user.seniority / 5))
 
         # this if or the pivot date when acquis becomes restants
@@ -1250,7 +1284,7 @@ class CPLUVacation(BaseVacation):
                 'taken': taken}
 
     @classmethod
-    def consume(cls, taken, restant, acquis):
+    def consume(cls, taken, restant, acquis, **kwargs):
         """First remove taken CP from Restant pool then from Acquis pool."""
         exceed = 0
         left_restant = restant - abs(taken)
@@ -1294,7 +1328,7 @@ class CPLUVacation(BaseVacation):
 
         if not months and years:
             months = 12
-            acquis = 25 + cp_bonus
+            acquis = 200 + cp_bonus
 
         log.debug('%s: using coeff %s * months %s + (bonus %s)' %
                   (user.login, cls.coeff, months, cp_bonus))
