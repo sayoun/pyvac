@@ -31,6 +31,9 @@ class Home(RedirectView):
         for vac in vacation_types:
             if vac.visibility and self.user.role not in vac.visibility:
                 continue
+            # disable RTT for user with feature flag disable_rtt
+            if vac.name == 'RTT' and self.user.has_feature('disable_rtt'):
+                continue
             ret_dict['types'].append({'name': _(vac.name), 'id': vac.id})
 
         if self.user.is_admin:

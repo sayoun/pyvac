@@ -126,6 +126,13 @@ class Send(View):
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 
+            # check RTT usage access
+            if vac_type.name == u'RTT':
+                if self.user.has_feature('disable_rtt'):
+                    msg = 'You are not allowed to use type: %s' % vac_type.name
+                    self.request.session.flash('error;%s' % msg)
+                    return HTTPFound(location=route_url('home', self.request))
+
             # label field is used when requesting half day
             label = u''
             if breakdown != 'FULL':

@@ -181,6 +181,15 @@
             </div>
 
         {% endif %}
+        {% if has_permission('admin_view') %}
+        <div class="control-group">
+            <label class="control-label" for="disable_rtt">{% trans %}disable RTT:{% endtrans %}</label>
+            <div class="controls">
+                <input type="checkbox" name="disable_rtt" value="1" id="disable_rtt" class="input-small"
+                {% if user.has_feature('disable_rtt') %}checked="checked"{% endif %}/>
+            </div>
+        </div>
+        {% endif %}
 
         <div class="control-group">
             <div class="controls">

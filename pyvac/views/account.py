@@ -185,6 +185,11 @@ class Create(AccountMixin, CreateView):
         self.set_country(account)
         self.append_groups(account)
 
+        if 'disable_rtt' in self.request.params:
+            account.add_feature('disable_rtt', save=True)
+        else:
+            account.del_feature('disable_rtt', save=True)
+
         settings = self.request.registry.settings
         ldap = False
         if 'pyvac.use_ldap' in settings:
@@ -252,6 +257,11 @@ class Edit(AccountMixin, EditView):
         super(Edit, self).update_model(account)
         self.set_country(account)
         self.append_groups(account)
+
+        if 'disable_rtt' in self.request.params:
+            account.add_feature('disable_rtt', save=True)
+        else:
+            account.del_feature('disable_rtt', save=True)
 
         settings = self.request.registry.settings
         ldap = False

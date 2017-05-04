@@ -136,6 +136,7 @@ class User(Base):
 
     firm = ''
     feature_flags = {}
+    users_flagfile = ''
 
     @property
     def name(self):
@@ -517,20 +518,48 @@ class User(Base):
                         order_by=cls.lastname)
 
     @classmethod
-    def load_feature_flags(cls, filename):
+    def load_feature_flags(cls):
         """Load features flag per users."""
         try:
-            with open(filename) as fdesc:
+            with open(cls.users_flagfile) as fdesc:
                 conf = yaml.load(fdesc, YAMLLoader)
             cls.feature_flags = conf.get('users_flags', {})
             log.info('Loaded users feature flags file %s: %s' %
-                     (filename, cls.feature_flags))
+                     (cls.users_flagfile, cls.feature_flags))
         except IOError:
-            log.warn('Cannot load users feature flags file %s' % filename)
+            log.warn('Cannot load users feature flags file %s' %
+                     cls.users_flagfile)
+
+    @classmethod
+    def save_feature_flags(cls):
+        """Save users feature flag data"""
+        try:
+            with open(cls.users_flagfile, 'w') as out:
+                data = {'users_flags': cls.feature_flags}
+                yaml.dump(data, out, indent=4,
+                          default_flow_style=False)
+        except IOError:
+            log.warn('Cannot save feature flags file %s' % cls.users_flagfile)
 
     def has_feature(self, feature):
         """Check if user has a feature enabled."""
         return feature in self.feature_flags.get(self.login, [])
+
+    def add_feature(self, feature, save=False):
+        """Add feature for user and save it if needed."""
+        user_feature = self.feature_flags.get(self.login, [])
+        if feature not in user_feature:
+            self.feature_flags[self.login].append(feature)
+            if save:
+                self.save_feature_flags()
+
+    def del_feature(self, feature, save=False):
+        """Delete feature for user and save it if needed."""
+        user_feature = self.feature_flags.get(self.login, [])
+        if feature in user_feature:
+            self.feature_flags[self.login].remove(feature)
+            if save:
+                self.save_feature_flags()
 
     def get_rtt_taken_year(self, session, year):
         """Retrieve taken RTT for a user for current year."""
@@ -548,6 +577,8 @@ class User(Base):
                   'session': session}
         vac = VacationType.by_name_country(**kwargs)
         if not vac:
+            return
+        if self.has_feature('disable_rtt'):
             return
         allowed = vac.acquired(**kwargs)
         if allowed is None:
@@ -2185,8 +2216,8 @@ def includeme(config):
         User.firm = settings['pyvac.firm']
 
     if 'pyvac.features.users_flagfile' in settings:
-        file = settings['pyvac.features.users_flagfile']
-        User.load_feature_flags(file)
+        User.users_flagfile = settings['pyvac.features.users_flagfile']
+        User.load_feature_flags()
 
     if 'pyvac.password.sender.mail' in settings:
         Request.sender_mail = settings['pyvac.password.sender.mail']
