@@ -549,6 +549,10 @@ class User(Base):
         """Add feature for user and save it if needed."""
         user_feature = self.feature_flags.get(self.login, [])
         if feature not in user_feature:
+            if self.login not in self.feature_flags:
+                # cast in str otherwise yaml will write !!python-unicode and
+                # yaml load will fail
+                self.feature_flags[str(self.login)] = []
             self.feature_flags[self.login].append(feature)
             if save:
                 self.save_feature_flags()
