@@ -1,3 +1,9 @@
+pyvac (1.8.33) unstable; urgency=medium
+
+  * Fixes bug with feature flag saving and unicode
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 05 May 2017 08:27:43 +0200
+
 pyvac (1.8.32) unstable; urgency=medium
 
   * Add feature flag: disable_rtt to disable this vacation type per user
