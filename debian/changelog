@@ -1,3 +1,9 @@
+pyvac (1.8.32) unstable; urgency=medium
+
+  * Add feature flag: disable_rtt to disable this vacation type per user
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 05 May 2017 08:15:04 +0200
+
 pyvac (1.8.31) unstable; urgency=medium
 
   * Add Pool History feature for LU users
