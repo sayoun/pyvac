@@ -1,3 +1,10 @@
+pyvac (1.8.34) unstable; urgency=medium
+
+  * Add new feature: Manager Overview
+  * Add new feature: Chapter Overview 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 16 May 2017 15:17:54 +0200
+
 pyvac (1.8.33) unstable; urgency=medium
 
   * Fixes bug with feature flag saving and unicode
