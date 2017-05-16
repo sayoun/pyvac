@@ -981,7 +981,7 @@ class ChapterOverview(OverviewMixin, View):
         elif self.user.is_manager:
             # retrieve logged chapter leader
             target_chapter = self.chapter_leaders[self.user.login]
-            chapter_stats = self.get_chapter_stats(users_entity)
+            chapter_stats = self.get_chapter_stats(target_chapter, users_entity) # noqa
             overviews = {target_chapter: chapter_stats}
         else:
             return HTTPFound(location=route_url('home', self.request))
