@@ -240,6 +240,12 @@ def includeme(config):
                         renderer=u'templates/request/squad_overview.html',
                         permission=u'manager_view')
 
+    config.add_route(u'manager_overview', u'/pyvac/manager_overview')
+    config.add_view(u'pyvac.views.request.ManagerOverview',
+                    route_name=u'manager_overview',
+                    renderer=u'templates/request/manager_overview.html',
+                    permission=u'manager_view')
+
     # Holiday request
     config.add_route('list_holiday', u'/pyvac/list_holiday',
                      request_method=u'POST')

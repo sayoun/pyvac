@@ -942,6 +942,95 @@ class SquadOverview(View):
         return {'users_teams': users_teams, 'overviews': overviews}
 
 
+class ManagerOverview(View):
+    """Display a dashboard of requests and presence for managers."""
+
+    def get_manager_stats(self, target_manager, users):
+        # retrieve squad members
+        users_per_id = {}
+        for user in users:
+            users_per_id[user.id] = user
+
+        managed_length = len(users_per_id)
+
+        # retrieve today's squad off members
+        today = datetime.now()
+        today_off = []
+        today_requests = []
+        requests = Request.get_active(self.session)
+        for req in requests:
+            if req.user.id not in users_per_id:
+                continue
+            today_requests.append(req)
+            if req.user not in today_off:
+                today_off.append(req.user)
+
+        # retrieve active requests since 15 days ago
+        date_from = today - relativedelta(days=15)
+
+        all_reqs = []
+        for user_id, user in users_per_id.items():
+            user_req = Request.by_user_future_approved(self.session, user,
+                                                       date_from=date_from)
+            all_reqs.extend(user_req)
+
+        # compute current month squad presence percentages
+        data_months = {}
+        for req in all_reqs:
+            for dt in req.dates:
+                if dt.month not in data_months:
+                    data_months[dt.month] = {}
+                if dt.day not in data_months[dt.month]:
+                    data_months[dt.month][dt.day] = []
+                if req.user.login not in data_months[dt.month][dt.day]:
+                    data_months[dt.month][dt.day].append(req.user.login)
+
+        data_days_current = []
+        labels = []
+        start_date = today - timedelta(days=15)
+        stop_date = today + timedelta(days=15)
+        for x in daterange(start_date, stop_date):
+            labels.append("'%s'" % x.strftime('%d/%m'))
+            perc = ((managed_length - len(data_months.get(x.month, {}).get(x.day, []))) / float(managed_length) * 100)  # noqa
+            perc = round(perc, 2)
+            if x.isoweekday() in [6, 7]:
+                perc = 0.0
+            data_days_current.append(perc)
+
+        labels = '[%s]' % ','.join(labels)
+        return {'users_per_id': users_per_id,
+                'data_days_current': data_days_current,
+                'today_requests': today_requests,
+                'labels': labels,
+                'today': today,
+                'today_off': today_off,
+                'today_off_length': len(today_off),
+                'managed_length': managed_length,
+                }
+
+    def render(self):
+        # keep only managed users for managers
+        # use all users for admin
+        overviews = {}
+        if self.user.is_admin or self.user.has_feature('squad_overview_full'):
+            for manager in User.by_role(self.session, 'manager'):
+                # retrieve logged leader squad
+                users = User.managed_users(self.session, manager)
+                target_manager = manager.login.replace('.', '_')
+                manager_stats = self.get_manager_stats(target_manager, users)
+                overviews.update({target_manager: manager_stats})
+        elif self.user.is_manager:
+            # retrieve logged leader squad
+            users = User.managed_users(self.session, self.user)
+            target_manager = self.user.login.replace('.', '_')
+            manager_stats = self.get_manager_stats(target_manager, users)
+            overviews = {target_manager: manager_stats}
+        else:
+            return HTTPFound(location=route_url('home', self.request))
+
+        return {'users': users, 'overviews': overviews}
+
+
 def includeme(config):
     """
     Pyramid includeme file for the :class:`pyramid.config.Configurator`
