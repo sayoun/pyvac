@@ -4,9 +4,8 @@
 <div class="span12">
         <legend>User</legend>
 </div>
-<div class="span6">
 <form action="" method="post" id="createUserForm" class="form-horizontal">
-
+<div class="span6">
     <fieldset>
         <input type="hidden" name="user_id" value="{{user.id|default('', true)}}"/>
         <input type="hidden" name="user.ldap_user" value="{{use_ldap|int}}"/>
@@ -200,12 +199,18 @@
             </div>
         </div>
     </fieldset>
-
 </div>
 <div class="span6">
+    <fieldset>
     {% if ldap_user.photo %}
-    <image src="data:image/png;base64,{{ ldap_user.photo }}"/>
+    <div class="control-group">
+        <label class="control-label">{% trans %}Photo:{% endtrans %}</label>
+        <div class="controls">
+            <image src="data:image/png;base64,{{ ldap_user.photo }}" class="img-polaroid"/>
+        </div>
+    </div>
     {% endif %}
+    </fieldset>
 </div>
 </form>
 
