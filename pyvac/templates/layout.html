@@ -260,7 +260,7 @@
                     <li><a href="{{route_url('pool_history', user_id=pyvac.user.id)}}"><i class="fa fa-calendar fa-fw"></i> Pool history</a></li>
                 {% endif %}
 
-                {% if pyvac.user.has_feature('squad_overview') or pyvac.user.is_super %}
+                {% if pyvac.user.has_feature('squad_overview') or pyvac.user.has_feature('chapter_overview') or pyvac.user.is_super %}
                 <li class="divider"></li>
                 {% endif %}
                 {% if pyvac.user.is_super %}
@@ -268,6 +268,9 @@
                 {% endif %}
                 {% if pyvac.user.has_feature('squad_overview') %}
                 <li><a href="{{route_url('squad_overview')}}"><i class="fa fa-calendar-o fa-fw"></i> Squad Overview</a></li>
+                {% endif %}
+                {% if pyvac.user.has_feature('chapter_overview') %}
+                <li><a href="{{route_url('chapter_overview')}}"><i class="fa fa-calendar-o fa-fw"></i> Chapter Overview</a></li>
                 {% endif %}
 
                 {% if has_permission('admin_view') %}

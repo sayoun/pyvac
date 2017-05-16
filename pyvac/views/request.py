@@ -846,18 +846,10 @@ class History(View):
         return {}
 
 
-class SquadOverview(View):
-    """Display a dashboard of request and presence for squad leaders."""
-    squad_leaders = {}
+class OverviewMixin(object):
 
-    def get_squad_stats(self, target_squad, users_teams):
-        # retrieve squad members
-        users_per_id = {}
-        for user in User.find(self.session):
-            if target_squad in users_teams.get(user.dn, []):
-                users_per_id[user.id] = user
-
-        squad_length = len(users_per_id)
+    def get_users_stats(self, users_per_id):
+        entity_length = len(users_per_id)
 
         # retrieve today's squad off members
         today = datetime.now()
@@ -897,7 +889,7 @@ class SquadOverview(View):
         stop_date = today + timedelta(days=15)
         for x in daterange(start_date, stop_date):
             labels.append("'%s'" % x.strftime('%d/%m'))
-            perc = ((squad_length - len(data_months.get(x.month, {}).get(x.day, []))) / float(squad_length) * 100)  # noqa
+            perc = ((entity_length - len(data_months.get(x.month, {}).get(x.day, []))) / float(entity_length) * 100)  # noqa
             perc = round(perc, 2)
             if x.isoweekday() in [6, 7]:
                 perc = 0.0
@@ -911,102 +903,102 @@ class SquadOverview(View):
                 'today': today,
                 'today_off': today_off,
                 'today_off_length': len(today_off),
-                'squad_length': squad_length,
+                'entity_length': entity_length,
                 }
+
+
+class SquadOverview(OverviewMixin, View):
+    """Display a dashboard of request and presence for squad leaders."""
+    squad_leaders = {}
+
+    def get_squad_stats(self, target_squad, users_entity):
+        # retrieve squad members
+        users_per_id = {}
+        for user in User.find(self.session):
+            if target_squad in users_entity.get(user.dn, []):
+                users_per_id[user.id] = user
+
+        return self.get_users_stats(users_per_id)
 
     def render(self):
         # synchronise user groups/roles
         User.sync_ldap_info(self.session)
         ldap = LdapCache()
-        users_teams = {}
+        users_entity = {}
         for team, members in ldap.list_teams().iteritems():
             for member in members:
-                users_teams.setdefault(member, []).append(team)
+                users_entity.setdefault(member, []).append(team)
 
         # keep only managed users for managers
         # use all users for admin
         overviews = {}
         if self.user.is_admin or self.user.has_feature('squad_overview_full'):
             for _, target_squad in self.squad_leaders.items():
-                # retrieve logged leader squad
-                squad_stats = self.get_squad_stats(target_squad, users_teams)
+                squad_stats = self.get_squad_stats(target_squad, users_entity)
                 overviews.update({target_squad: squad_stats})
         elif self.user.is_manager:
-            # retrieve logged leader squad
+            # retrieve logged squad leader
             target_squad = self.squad_leaders[self.user.login]
-            squad_stats = self.get_squad_stats(target_squad, users_teams)
+            squad_stats = self.get_squad_stats(target_squad, users_entity)
             overviews = {target_squad: squad_stats}
         else:
             return HTTPFound(location=route_url('home', self.request))
 
-        return {'users_teams': users_teams, 'overviews': overviews}
+        return {'users_entity': users_entity, 'overviews': overviews}
 
 
-class ManagerOverview(View):
-    """Display a dashboard of requests and presence for managers."""
+class ChapterOverview(OverviewMixin, View):
+    """Display a dashboard of request and presence for chapter leaders."""
+    chapter_leaders = {}
 
-    def get_manager_stats(self, target_manager, users):
-        # retrieve squad members
+    def get_chapter_stats(self, target_chapter, users_entity):
+        # retrieve chapter members
         users_per_id = {}
-        for user in users:
+        for user_dn, chapters in users_entity.iteritems():
+            if target_chapter not in chapters:
+                continue
+            user = User.by_dn(self.session, user_dn)
             users_per_id[user.id] = user
 
-        managed_length = len(users_per_id)
+        return self.get_users_stats(users_per_id)
 
-        # retrieve today's squad off members
-        today = datetime.now()
-        today_off = []
-        today_requests = []
-        requests = Request.get_active(self.session)
-        for req in requests:
-            if req.user.id not in users_per_id:
-                continue
-            today_requests.append(req)
-            if req.user not in today_off:
-                today_off.append(req.user)
+    def render(self):
+        # synchronise user groups/roles
+        User.sync_ldap_info(self.session)
+        ldap = LdapCache()
+        users_entity = {}
+        for chapter, members in ldap.list_chapters().iteritems():
+            for member in members:
+                users_entity.setdefault(member, []).append(chapter)
 
-        # retrieve active requests since 15 days ago
-        date_from = today - relativedelta(days=15)
+        # keep only managed users for managers
+        # use all users for admin
+        overviews = {}
+        if self.user.is_admin or self.user.has_feature('chapter_overview_full'):  # noqa
+            for _, target_chapter in self.chapter_leaders.items():
+                chapter_stats = self.get_chapter_stats(target_chapter, users_entity)  # noqa
+                overviews.update({target_chapter: chapter_stats})
+        elif self.user.is_manager:
+            # retrieve logged chapter leader
+            target_chapter = self.chapter_leaders[self.user.login]
+            chapter_stats = self.get_chapter_stats(users_entity)
+            overviews = {target_chapter: chapter_stats}
+        else:
+            return HTTPFound(location=route_url('home', self.request))
 
-        all_reqs = []
-        for user_id, user in users_per_id.items():
-            user_req = Request.by_user_future_approved(self.session, user,
-                                                       date_from=date_from)
-            all_reqs.extend(user_req)
+        return {'users_entity': users_entity, 'overviews': overviews}
 
-        # compute current month squad presence percentages
-        data_months = {}
-        for req in all_reqs:
-            for dt in req.dates:
-                if dt.month not in data_months:
-                    data_months[dt.month] = {}
-                if dt.day not in data_months[dt.month]:
-                    data_months[dt.month][dt.day] = []
-                if req.user.login not in data_months[dt.month][dt.day]:
-                    data_months[dt.month][dt.day].append(req.user.login)
 
-        data_days_current = []
-        labels = []
-        start_date = today - timedelta(days=15)
-        stop_date = today + timedelta(days=15)
-        for x in daterange(start_date, stop_date):
-            labels.append("'%s'" % x.strftime('%d/%m'))
-            perc = ((managed_length - len(data_months.get(x.month, {}).get(x.day, []))) / float(managed_length) * 100)  # noqa
-            perc = round(perc, 2)
-            if x.isoweekday() in [6, 7]:
-                perc = 0.0
-            data_days_current.append(perc)
+class ManagerOverview(OverviewMixin, View):
+    """Display a dashboard of requests and presence for managers."""
 
-        labels = '[%s]' % ','.join(labels)
-        return {'users_per_id': users_per_id,
-                'data_days_current': data_days_current,
-                'today_requests': today_requests,
-                'labels': labels,
-                'today': today,
-                'today_off': today_off,
-                'today_off_length': len(today_off),
-                'managed_length': managed_length,
-                }
+    def get_manager_stats(self, users_entity):
+        # retrieve squad members
+        users_per_id = {}
+        for user in users_entity:
+            users_per_id[user.id] = user
+
+        return self.get_users_stats(users_per_id)
 
     def render(self):
         # keep only managed users for managers
@@ -1015,20 +1007,20 @@ class ManagerOverview(View):
         if self.user.is_admin or self.user.has_feature('squad_overview_full'):
             for manager in User.by_role(self.session, 'manager'):
                 # retrieve logged leader squad
-                users = User.managed_users(self.session, manager)
+                users_entity = User.managed_users(self.session, manager)
                 target_manager = manager.login.replace('.', '_')
-                manager_stats = self.get_manager_stats(target_manager, users)
+                manager_stats = self.get_manager_stats(users_entity)
                 overviews.update({target_manager: manager_stats})
         elif self.user.is_manager:
             # retrieve logged leader squad
-            users = User.managed_users(self.session, self.user)
+            users_entity = User.managed_users(self.session, self.user)
             target_manager = self.user.login.replace('.', '_')
-            manager_stats = self.get_manager_stats(target_manager, users)
+            manager_stats = self.get_manager_stats(users_entity)
             overviews = {target_manager: manager_stats}
         else:
             return HTTPFound(location=route_url('home', self.request))
 
-        return {'users': users, 'overviews': overviews}
+        return {'users_entity': users_entity, 'overviews': overviews}
 
 
 def includeme(config):
@@ -1047,3 +1039,14 @@ def includeme(config):
                      (filename, SquadOverview.squad_leaders))
         except IOError:
             log.warn('Cannot load squad_leaders file %s' % filename)
+
+    if 'pyvac.features.chapter_overview' in settings:
+        filename = settings['pyvac.features.chapter_overview']
+        try:
+            with open(filename) as fdesc:
+                conf = yaml.load(fdesc, YAMLLoader)
+            ChapterOverview.chapter_leaders = conf.get('chapter_leaders', {})
+            log.info('Loaded chapter_leaders file %s: %s' %
+                     (filename, ChapterOverview.chapter_leaders))
+        except IOError:
+            log.warn('Cannot load chapter_leaders file %s' % filename)

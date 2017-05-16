@@ -3,7 +3,7 @@
 {% block body scoped %}
 {% for target_manager, manager_overview in overviews.items() %}
 <div id="overview-contain-{{target_manager}}" class="span7">
-  <legend>Today ({{ manager_overview['today'].strftime('%d/%m/%Y') }}) {{ target_manager.replace('_', '.') }} manages: <b>{{ ((manager_overview['managed_length'] - manager_overview['today_off_length']) / manager_overview['managed_length'] * 100)|int }}%</b> ({{manager_overview['managed_length'] - manager_overview['today_off_length']}}/{{manager_overview['managed_length']}})
+  <legend>Today ({{ manager_overview['today'].strftime('%d/%m/%Y') }}) {{ target_manager.replace('_', '.') }} manages: <b>{{ ((manager_overview['entity_length'] - manager_overview['today_off_length']) / manager_overview['entity_length'] * 100)|int }}%</b> ({{manager_overview['entity_length'] - manager_overview['today_off_length']}}/{{manager_overview['entity_length']}})
   </legend>
 
   <table id="overview-{{target_manager}}" class="table table-bordered table-condensed table-striped table-hover tablesorter">
