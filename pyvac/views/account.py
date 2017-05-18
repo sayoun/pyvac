@@ -148,18 +148,31 @@ class AccountMixin:
                 view['ldap_user']['photo'] = base64.b64encode(jpeg)
 
     def append_groups(self, account):
+        settings = self.request.registry.settings
+        use_ldap = False
+        if 'pyvac.use_ldap' in settings:
+            use_ldap = asbool(settings.get('pyvac.use_ldap'))
+        if use_ldap:
+            # update groups only for non LDAP users
+            return
+
         exists = []
         group_ids = [int(id) for id in self.request.params.getall('groups')]
 
         if not group_ids:
+            # ensure that account has at least user group otherwise
+            # he cannot access anything
             group_ids = [Group.by_name(self.session, u'user').id]
 
         # only update if there is at least one group provided
         if group_ids:
-            for group in account.groups:
+            # cast as list because of iterator for will only loop on first one
+            account_groups = list(account.groups)
+            for group in account_groups:
                 exists.append(group.id)
                 if group.id not in group_ids:
-                    account.groups.remove(group)
+                    if group.name != 'sudoer':
+                        account.groups.remove(group)
 
             for group_id in group_ids:
                 if group_id not in exists:
