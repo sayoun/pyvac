@@ -306,7 +306,7 @@ class Edit(AccountMixin, EditView):
             if 'user.uid' in r.params and r.params['user.uid']:
                 uid = r.params['user.uid']
 
-            if (r.params['remove_photo'] == 'yes'):
+            if (r.params.get('remove_photo', 'no') == 'yes'):
                 photo = ''
             else:
                 try:
@@ -362,7 +362,7 @@ class Edit(AccountMixin, EditView):
             if r.params['user.password'] != r.params['confirm_password']:
                 errors.append(_(u'passwords do not match'))
 
-        if (r.params['remove_photo'] == 'no'):
+        if (r.params.get('remove_photo', 'no') == 'no'):
             try:
                 photo = r.POST['photofile'].file.read()
                 photo_size = len(photo)
