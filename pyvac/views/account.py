@@ -306,9 +306,18 @@ class Edit(AccountMixin, EditView):
             if 'user.uid' in r.params and r.params['user.uid']:
                 uid = r.params['user.uid']
 
+            if (r.params['remove_photo'] == 'yes'):
+                photo = ''
+            else:
+                try:
+                    photo = r.POST['photofile'].file.read()
+                except:
+                    photo = None
+
             ldap = LdapCache()
             ldap.update_user(account, password=password, unit=unit,
-                             arrival_date=arrival_date, uid=uid)
+                             arrival_date=arrival_date, uid=uid,
+                             photo=photo)
 
             # update teams
             uteams = {}
@@ -353,8 +362,17 @@ class Edit(AccountMixin, EditView):
             if r.params['user.password'] != r.params['confirm_password']:
                 errors.append(_(u'passwords do not match'))
 
-            if errors:
-                self.request.session.flash('error;%s' % ','.join(errors))
+        if (r.params['remove_photo'] == 'no'):
+            try:
+                photo = r.POST['photofile'].file.read()
+                photo_size = len(photo)
+                if photo_size > 200000:
+                    errors.append(_(u'Invalid photo size: %d' % photo_size))
+            except:
+                pass
+
+        if errors:
+            self.request.session.flash('error;%s' % ','.join(errors))
 
         return len(errors) == 0
 

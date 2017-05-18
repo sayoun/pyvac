@@ -240,7 +240,7 @@ class LdapWrapper(object):
         return dn
 
     def update_user(self, user, password=None, unit=None, arrival_date=None,
-                    uid=None):
+                    uid=None, photo=None):
         """ Update user params in ldap directory """
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
@@ -262,6 +262,9 @@ class LdapWrapper(object):
         if uid:
             fields['uid'] = [uid.encode('utf-8')]
 
+        if photo is not None:
+            fields['jpegPhoto'] = [photo]
+
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
         log.info('updating user %s from ldap' % dn)
@@ -269,7 +272,7 @@ class LdapWrapper(object):
         # retrieve current user information
         required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
                     'manager', 'mail', 'ou', 'uid', 'userPassword',
-                    'arrivalDate']
+                    'arrivalDate', 'jpegPhoto']
         item = 'cn=*%s*' % user.login
         res = self._search(self._filter % item, required)
         USER_DN, entry = res[0]
@@ -288,7 +291,6 @@ class LdapWrapper(object):
         if ldif:
             # rebind with system dn
             self._bind(self.system_DN, self.system_password)
-            log.info('sending for dn %r: %r' % (dn, ldif))
             # Do the actual modification if needed
             self._conn.modify_s(dn, ldif)
 
