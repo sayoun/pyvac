@@ -72,24 +72,40 @@ class ListPool(View):
         country = Countries.by_name(self.session, self.user.country)
         users = User.by_country(self.session, country.id)
 
+        data = []
         rtt_usage = {}
         cp_usage = {}
         for user in users:
             if self.user.country == 'fr':
                 rtts = user.get_rtt_usage(self.session)
-                rtt_usage[user.login] = rtts['left']
+                if rtts:
+                    rtt_usage[user.login] = rtts['left']
 
             cps = user.get_cp_usage(self.session)
             total = 0
             if cps:
                 total = cps['restant']['left'] + cps['acquis']['left']
                 if self.user.country == 'fr':
-                    total = total + cps['n_1']['left']
+                    total = total + cps['n_1']['left'] + cps['extra']['left']
             cp_usage[user.login] = total
+            if user.login not in ['admin', 'peter.parker', 'sarah.connor']:
+                data.append('%s,%s,%s,%s' %
+                            (user.login,
+                             rtt_usage.get(user.login, 0),
+                             cps['extra']['left'] if cps else 0,
+                             cps['restant']['left'] if cps else 0,
+                             ))
+
+        if data:
+            # sort list by name
+            data = sorted(data)
+            header = ('%s,%s,%s,%s' % ('Login', 'RTT', 'CP N-1', 'CP N'))
+            data.insert(0, header)
 
         ret = {u'user_count': User.find(self.session, count=True),
                u'users': users,
-               u'cp_usage': cp_usage}
+               u'cp_usage': cp_usage,
+               u'exported': '\n'.join(data)}
 
         if self.user.country == 'fr':
             ret['rtt_usage'] = rtt_usage
