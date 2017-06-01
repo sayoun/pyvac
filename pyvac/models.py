@@ -1194,9 +1194,7 @@ class CPVacation(BaseVacation):
             previous_usage = user.get_cp_usage(session, today=start,
                                                start=cycle_start, end=end)
             taken = user.get_cp_taken_cycle(session, start, end)
-            # add taken value as it is already consumed by get_cp_usage method
-            # so we don't consume it twice.
-            restant = previous_usage['acquis']['left'] + taken
+            restant = previous_usage['acquis']['left']
 
             # only use extra pool for a specific cycle
             if cls.extra_cp and cycle_start == cls.cycle_start:
