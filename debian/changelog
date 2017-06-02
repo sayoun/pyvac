@@ -1,3 +1,10 @@
+pyvac (1.8.35) unstable; urgency=medium
+
+  * Add new feature LDAP: users can now upload their photos
+  * Fix bug with CP not consuming taken properly upon new cycle
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 02 Jun 2017 09:35:41 +0200
+
 pyvac (1.8.34) unstable; urgency=medium
 
   * Add new feature: Manager Overview
