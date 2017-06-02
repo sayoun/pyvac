@@ -65,6 +65,8 @@ class ListPool(View):
     """
     List all user pool
     """
+    ignore_users = []
+
     def render(self):
         if self.user and not self.user.is_admin:
             return HTTPFound(location=route_url('home', self.request))
@@ -88,7 +90,7 @@ class ListPool(View):
                 if self.user.country == 'fr':
                     total = total + cps['n_1']['left'] + cps['extra']['left']
             cp_usage[user.login] = total
-            if user.login not in ['admin', 'peter.parker', 'sarah.connor']:
+            if user.login not in self.ignore_users:
                 data.append('%s,%s,%s,%s' %
                             (user.login,
                              rtt_usage.get(user.login, 0),
@@ -420,3 +422,15 @@ class Delete(AccountMixin, DeleteView):
                 ldap.delete_user(account.dn)
             except IndexError:
                 log.info('User %s seems already deleted in ldap' % account.dn)
+
+
+def includeme(config):
+    """
+    Pyramid includeme file for the :class:`pyramid.config.Configurator`
+    """
+    settings = config.registry.settings
+
+    if 'pyvac.export_pool.ignore_users' in settings:
+        ignore_users = settings['pyvac.export_pool.ignore_users']
+        ListPool.ignore_users = ignore_users
+        log.info('Loaded ListPool ignore_users: %s' % ListPool.ignore_users)

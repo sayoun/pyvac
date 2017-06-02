@@ -75,6 +75,9 @@ def includeme(config):
     # call includeme for request views configuration
     config.include('pyvac.views.request')
 
+    # call includeme for account views configuration
+    config.include('pyvac.views.account')
+
     # Jinja configuration
     # We don't use jinja2 filename, .html instead
     config.add_renderer('.html', renderer_factory)
