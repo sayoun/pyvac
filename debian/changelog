@@ -1,3 +1,9 @@
+pyvac (1.8.37) unstable; urgency=medium
+
+  * Do not include future taken vacation for pool export data
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 02 Jun 2017 14:37:37 +0200
+
 pyvac (1.8.36) unstable; urgency=medium
 
   * Don't hardcode users to ignore on Users Pool page, use configuration
