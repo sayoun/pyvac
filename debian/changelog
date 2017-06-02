@@ -1,3 +1,9 @@
+pyvac (1.8.36) unstable; urgency=medium
+
+  * Don't hardcode users to ignore on Users Pool page, use configuration
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 02 Jun 2017 09:53:31 +0200
+
 pyvac (1.8.35) unstable; urgency=medium
 
   * Add new feature LDAP: users can now upload their photos
