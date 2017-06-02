@@ -814,7 +814,8 @@ class User(Base):
 
         return history, restant
 
-    def get_cp_usage(self, session, today=None, start=None, end=None):
+    def get_cp_usage(self, session, today=None, start=None, end=None,
+                     taken_end=None):
         """Get CP usage for a user."""
         kwargs = {'session': session,
                   'name': u'CP',
@@ -832,6 +833,8 @@ class User(Base):
 
         cycle_start = allowed['cycle_start']
         cycle_end = allowed['cycle_end']
+        if taken_end:
+            cycle_end = taken_end
         req_taken = self.get_cp_taken_cycle(session, cycle_start, cycle_end,
                                             return_req=True)
         taken = sum([req.days for req in req_taken])

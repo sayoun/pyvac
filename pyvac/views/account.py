@@ -74,6 +74,7 @@ class ListPool(View):
         country = Countries.by_name(self.session, self.user.country)
         users = User.by_country(self.session, country.id)
 
+        today = datetime.now()
         data = []
         rtt_usage = {}
         cp_usage = {}
@@ -83,7 +84,7 @@ class ListPool(View):
                 if rtts:
                     rtt_usage[user.login] = rtts['left']
 
-            cps = user.get_cp_usage(self.session)
+            cps = user.get_cp_usage(self.session, today=today, taken_end=today)
             total = 0
             if cps:
                 total = cps['restant']['left'] + cps['acquis']['left']
@@ -106,6 +107,7 @@ class ListPool(View):
 
         ret = {u'user_count': User.find(self.session, count=True),
                u'users': users,
+               u'today': today,
                u'cp_usage': cp_usage,
                u'exported': '\n'.join(data)}
 
