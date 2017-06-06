@@ -89,15 +89,16 @@ class ListPool(View):
             if cps:
                 total = cps['restant']['left'] + cps['acquis']['left']
                 if self.user.country == 'fr':
-                    total = total + cps['n_1']['left'] + cps['extra']['left']
+                    total = total + cps['n_1']['left'] + cps.get('extra', {}).get('left', 0) # noqa
             cp_usage[user.login] = total
-            if user.login not in self.ignore_users:
-                data.append('%s,%s,%s,%s' %
-                            (user.login,
-                             rtt_usage.get(user.login, 0),
-                             cps['extra']['left'] if cps else 0,
-                             cps['restant']['left'] if cps else 0,
-                             ))
+            if self.user.country == 'fr':
+                if user.login not in self.ignore_users:
+                    data.append('%s,%s,%s,%s' %
+                                (user.login,
+                                 rtt_usage.get(user.login, 0),
+                                 cps.get('extra', {}).get('left', 0) if cps else 0, # noqa
+                                 cps['restant']['left'] if cps else 0,
+                                 ))
 
         if data:
             # sort list by name
