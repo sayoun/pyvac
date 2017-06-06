@@ -1,3 +1,11 @@
+pyvac (1.8.38) unstable; urgency=medium
+
+  * Users pool page should not break for users in other countries
+  * Manager overview should not break when a manager manages nothing
+  * Fix Manager overview when admin is also a manager
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 06 Jun 2017 09:44:29 +0200
+
 pyvac (1.8.37) unstable; urgency=medium
 
   * Do not include future taken vacation for pool export data
