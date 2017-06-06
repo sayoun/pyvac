@@ -1006,8 +1006,12 @@ class ManagerOverview(OverviewMixin, View):
         # keep only managed users for managers
         # use all users for admin
         overviews = {}
+        extra_managers = []
+        # check if admin user is also a manager
+        if User.managed_users(self.session, self.user):
+            extra_managers = [self.user]
         if self.user.is_admin or self.user.has_feature('squad_overview_full'):
-            for manager in User.by_role(self.session, 'manager'):
+            for manager in extra_managers + User.by_role(self.session, 'manager'):  # noqa
                 # retrieve logged leader squad
                 users_entity = User.managed_users(self.session, manager)
                 target_manager = manager.login.replace('.', '_')
