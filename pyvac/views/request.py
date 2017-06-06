@@ -850,6 +850,8 @@ class OverviewMixin(object):
 
     def get_users_stats(self, users_per_id):
         entity_length = len(users_per_id)
+        if not entity_length:
+            return
 
         # retrieve today's squad off members
         today = datetime.now()
@@ -1010,6 +1012,8 @@ class ManagerOverview(OverviewMixin, View):
                 users_entity = User.managed_users(self.session, manager)
                 target_manager = manager.login.replace('.', '_')
                 manager_stats = self.get_manager_stats(users_entity)
+                if not manager_stats:
+                    continue
                 overviews.update({target_manager: manager_stats})
         elif self.user.is_manager:
             # retrieve logged leader squad
