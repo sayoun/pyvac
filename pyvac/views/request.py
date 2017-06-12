@@ -1024,7 +1024,8 @@ class ManagerOverview(OverviewMixin, View):
             users_entity = User.managed_users(self.session, self.user)
             target_manager = self.user.login.replace('.', '_')
             manager_stats = self.get_manager_stats(users_entity)
-            overviews = {target_manager: manager_stats}
+            if manager_stats:
+                overviews = {target_manager: manager_stats}
         else:
             return HTTPFound(location=route_url('home', self.request))
 
