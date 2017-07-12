@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Currently off</title>
+<style type="text/css">
+
+@media (max-width: 800px) {
+    .column {
+        grid-column: 1;
+    }
+    .column + .column  {
+        grid-column: 1 !important;
+    }
+    .column + .column + .column {
+        grid-column: 1 !important;
+    }
+}
+
+body {
+    display: grid;
+    grid-gap: 10px;
+}
+
+.column {
+    font-family: sans-serif;
+    font-size: 16px;
+}
+.column {
+    grid-column: 1;
+}
+
+.column + .column  {
+    grid-column: 2;
+}
+.column + .column + .column {
+    grid-column: 3;
+}
+.column > div {
+    padding: 8px 8px;
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.0) 0%,rgba(20,20,20,0.1) 100%);
+    background-color: #dbe0af;
+}
+.column > div +  div {
+    border-top: 1px dotted gray;
+}
+.column > div > span {
+    padding-left: 20px;
+    font-style: oblique;
+    font-size: 12px;
+    float: right;
+    margin-top: 5px;
+}
+.date {
+    font-weight: bold;
+    text-align: center;
+    background-color: #e0c494 !important;
+}
+.cp {
+    background-color: #b2e0a6 !important;
+}
+
+.rtt {
+    background-color: #8da8e0 !important;
+}
+.column > div.pm {
+    background-image: linear-gradient(to right, rgba(255,255,255,0.0) 0%,rgba(20,20,20,0.2) 100%)
+}
+.column > div.am {
+    background-image: linear-gradient(to left, rgba(255,255,255,0.0) 0%,rgba(20,20,20,0.2) 100%) 
+}
+.rtt-am, .rtt-pm {
+    background-color: #afbfe0 !important;
+}
+</style>
+<script>
+(function() {
+var OFF_URL = "{{route_url('request_off')}}";
+
+function getURL(date) {
+    // return "off-" + date + ".json"; // local test
+    return OFF_URL + '?date=' + date;
+}
+
+function onLoad() {
+    var i, j;
+    var cols = document.querySelectorAll('.column');
+    var now = (new Date()).getTime();
+    for ( i=0,j=0; i < cols.length; i++, j++ ) {
+        var next = new Date(now + (j * 24 * 3600 * 1000));
+        var day = next.getDay();
+        if ( day === 0 || day === 6 ) {
+            i--;  // skip weekends
+            continue;
+        }
+
+        var date = next.toISOString().substring(0, 10);
+
+        fetchOff(date, cols[i]);
+    }
+}
+
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt){
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+}
+
+function mkLoader(container) {
+    return function(event) {
+        var res = event.target.response;
+        for ( var name in res ) {
+            var what = res[name];
+            var lwhat = what.toLowerCase();
+
+            var node = document.createElement('div');
+            node.innerHTML = toTitleCase(name);
+
+            if ( lwhat == "cp" ) {
+                node.classList.add("cp")
+            } else if ( lwhat.indexOf('rtt') === 0 ) {
+                node.classList.add("rtt")
+            }
+
+            if ( lwhat.indexOf('am') === lwhat.length - 2) {
+                node.classList.add("am")
+            } else if ( lwhat.indexOf('pm') === lwhat.length - 2) {
+                node.classList.add("pm")
+            }
+
+            // Details
+            var subnode = document.createElement('span');
+            subnode.innerHTML = what;
+            node.appendChild(subnode);
+            container.appendChild(node)
+        }
+    }
+}
+
+function fetchOff(date, container) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("load", mkLoader(container));
+    container.querySelector('.date').innerHTML = date;
+
+    xhr.open("GET", getURL(date));
+    xhr.responseType = "json";
+    xhr.send();
+}
+
+window.onload = onLoad;
+})();
+
+</script>
+</head>
+<body>
+
+<div class="column">
+    <div class="date"></div>
+</div>
+<div class="column">
+    <div class="date"></div>
+</div>
+<div class="column">
+    <div class="date"></div>
+</div>
+
+</body>
+</html>
