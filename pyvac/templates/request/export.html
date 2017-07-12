@@ -9,6 +9,9 @@
         <option  value="{{ entry }}" {% if entry == current_month %}selected="selected"{% endif %}>{{ text }}</option>
     {% endfor %}
      </select>
+    <label class="checkbox">
+        <input type="checkbox" name="sage_order" value="1" id="sage_order"/> Sage output ordering
+    </label>
 </form>
 
 <textarea class='exportedlist' id="textexport" rows="20"></textarea>
@@ -18,26 +21,29 @@
 {% block js %}
 <script>
 
-$("#month_select").change(function(){
+function get_data() {
+    sage_order = 0;
+    if ($('#sage_order').prop('checked')){
+        sage_order = 1;
+    };
     $.ajax({
         url: "{{ route_url('request_export') }}",
         type: 'post',
-        data: {'month': $('#month_select').val()},
+        data: {'month': $('#month_select').val(), 'sage_order': sage_order},
         success: function(html) {
             $('#textexport').val(html);
         }
     });
-});
+};
 
+$("#month_select").change(function(){
+    get_data();
+});
+$("#sage_order").change(function(){
+    get_data();
+});
 $(document).ready(function(){
-    $.ajax({
-        url: "{{ route_url('request_export') }}",
-        type: 'post',
-        data: {'month': $('#month_select').val()},
-        success: function(html) {
-            $('#textexport').val(html);
-        }
-    });
+    get_data();
 });
 
 </script>

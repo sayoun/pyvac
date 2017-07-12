@@ -593,9 +593,11 @@ class Exported(View):
         if self.user.is_admin:
             country = self.user.country
             month, year = self.request.params.get('month').split('/')
+            sage_order = int(self.request.params.get('sage_order', 0))
             log.info('exporting for: %d/%d' % (int(month), int(year)))
             all_reqs = Request.get_by_month(self.session, country,
-                                            int(month), int(year))
+                                            int(month), int(year),
+                                            sage_order=sage_order)
 
             # filter request which overlap 2 months, only keep the ones which
             # are ending in the selected month

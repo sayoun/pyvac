@@ -1771,7 +1771,7 @@ class Request(Base):
                         eagerload=['user'])
 
     @classmethod
-    def get_by_month(cls, session, country, month, year):
+    def get_by_month(cls, session, country, month, year, sage_order=False):
         """
         Get all requests for a given month.
 
@@ -1797,6 +1797,11 @@ class Request(Base):
 
         country_id = Countries.by_name(session, country).id
 
+        order_by = cls.user_id
+        if sage_order:
+            order_by = (User.registration_number, cls.date_from,
+                        cls.vacation_type_id)
+
         return cls.find(session,
                         join=(cls.user),
                         where=(or_(and_(cls.date_from >= first_month_date,
@@ -1808,7 +1813,7 @@ class Request(Base):
                                User.country_id == country_id,
                                cls.status == 'APPROVED_ADMIN',
                                cls.vacation_type_id != 4,),
-                        order_by=cls.user_id)
+                        order_by=order_by)
 
     @classmethod
     def get_previsions(cls, session, end_date=None):
