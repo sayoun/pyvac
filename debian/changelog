@@ -1,3 +1,12 @@
+pyvac (1.8.39) unstable; urgency=medium
+
+  * Don't use stats when no stats are available (for manager overview)
+  * Add option to sort exported data using Sage format
+  * Fixes bug with extra pool not properly consumed
+  * Add an HTML version for the "off" view 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 13 Jul 2017 16:30:20 +0200
+
 pyvac (1.8.38) unstable; urgency=medium
 
   * Users pool page should not break for users in other countries
