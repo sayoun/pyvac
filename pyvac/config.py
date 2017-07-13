@@ -272,6 +272,6 @@ def includeme(config):
 
     # Retrieve today vacations (HTML)
     config.add_route(u'request_off_html', u'/pyvac/off.html')
-    config.add_view(u'pyvac.views.request.ViewBase',
+    config.add_view(u'pyvac.views.base.ViewBase',
                     route_name=u'request_off_html',
                     renderer=u'templates/off.html')
