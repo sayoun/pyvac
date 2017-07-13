@@ -1087,6 +1087,8 @@ class CPVacation(BaseVacation):
         if left_extra < 0:
             exceed = abs(left_extra)
             left_extra = 0
+        else:
+            exceed = 0
 
         left_restant = restant - exceed
         if left_restant < 0:
