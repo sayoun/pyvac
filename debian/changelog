@@ -1,3 +1,9 @@
+pyvac (1.8.40) unstable; urgency=medium
+
+  * Admins should always be able to select RTT, in case of sudoing
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 23 Aug 2017 13:10:11 +0200
+
 pyvac (1.8.39) unstable; urgency=medium
 
   * Don't use stats when no stats are available (for manager overview)
