@@ -962,6 +962,8 @@ class ChapterOverview(OverviewMixin, View):
             if target_chapter not in chapters:
                 continue
             user = User.by_dn(self.session, user_dn)
+            if not user:
+                continue
             users_per_id[user.id] = user
 
         return self.get_users_stats(users_per_id)
