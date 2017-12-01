@@ -211,6 +211,7 @@ function DateDiff(date1, date2) {
 
     beforeShowDay: function ( date ) {
         // date from datepicker are in localtime, convert to UTC
+        date_origin = date;
         date = new Date(date - new Date(date).getTimezoneOffset() * 60000);
 
         var date_class = ''
@@ -252,7 +253,7 @@ function DateDiff(date1, date2) {
             return [true, date_class];
         }
 
-        if (date.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date.getTime() <= Math.max(prv.getTime(), cur.getTime()))
+        if (date_origin.getTime() >= Math.min(prv.getTime(), cur.getTime()) && date_origin.getTime() <= Math.max(prv.getTime(), cur.getTime()))
         {
             date_class = 'date-range-selected';
         }
@@ -274,11 +275,8 @@ function DateDiff(date1, date2) {
 
     onSelect: function ( dateText, inst ) {
           var d1, d2;
-
           prv = cur;
           dt = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
-          // date from datepicker are in localtime, convert to UTC
-          dt = new Date(dt - new Date(dt).getTimezoneOffset() * 60000);
 
           cur = dt;
           //cur = dt.getTime();
