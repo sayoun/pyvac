@@ -1,3 +1,12 @@
+pyvac (1.8.41) unstable; urgency=medium
+
+  * Fix off.html titlecase with accentuated names
+  * Ignore unknown users when computing chapter overview
+  * Fixes date selection to work regardless of timezones
+  * Fixes bug with photo upload not working anymore 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 04 Dec 2017 17:50:11 +0100
+
 pyvac (1.8.40) unstable; urgency=medium
 
   * Admins should always be able to select RTT, in case of sudoing
