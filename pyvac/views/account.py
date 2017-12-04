@@ -331,7 +331,8 @@ class Edit(AccountMixin, EditView):
                 photo = ''
             else:
                 try:
-                    photo = r.POST['photofile'].file.read()
+                    r.params['photofile'].file.seek(0)
+                    photo = r.params['photofile'].file.read()
                 except:
                     photo = None
 

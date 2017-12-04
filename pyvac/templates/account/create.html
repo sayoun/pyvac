@@ -208,15 +208,13 @@
     <div class="control-group">
         <label class="control-label" for="photofile">{% trans %}Photo:{% endtrans %}</label>
         <div class="controls">
-            {% if ldap_user.photo %}
             <div id="filedrag">
-            <image id="profileimg" name="profileimg" src="data:image/png;base64,{{ ldap_user.photo }}"/>
+            <image id="profileimg" name="profileimg" {% if ldap_user.photo %}src="data:image/png;base64,{{ ldap_user.photo }}"{% endif %}/>
             </div>
-            {% endif %}
             <button class="btn btn-inverse btn-mini pull-right" type="button" id="deletephoto" name="deletephoto">Delete</button>
         </div>
         <div class="controls">
-            <input type="file" name="photofile" id="photofile" accept="image/*"/>
+            <input type="file" name="photofile" id="photofile"/>
             <label>The maximum file size allowed is 200KB</label>
         </div>
     </div>
