@@ -24,6 +24,8 @@ log = logging.getLogger(__name__)
 
 class Login(View):
 
+    blacklist_users = []
+
     def render(self):
 
         login_url = resource_url(self.request.context, self.request, 'login')
@@ -45,6 +47,8 @@ class Login(View):
                     ldap = asbool(settings.get('pyvac.use_ldap'))
 
                 try:
+                    if login in self.blacklist_users:
+                        raise INVALID_CREDENTIALS
                     user = User.by_credentials(self.session, login,
                                                password, ldap)
                     if user is not None:
@@ -211,3 +215,15 @@ class Sudo(View):
                              headers=headers)
 
         return {'user': self.user}
+
+
+def includeme(config):
+    """
+    Pyramid includeme file for the :class:`pyramid.config.Configurator`
+    """
+    settings = config.registry.settings
+
+    if 'pyvac.blacklist_users' in settings:
+        blacklist_users = settings['pyvac.blacklist_users']
+        Login.blacklist_users = blacklist_users
+        log.info('Loaded Login blacklist_users: %s' % Login.blacklist_users)
