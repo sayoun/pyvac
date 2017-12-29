@@ -78,3 +78,9 @@ def english_suffix(n):
     else:
         suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, 'th')
     return '%s%s' % (n, suffix)
+
+
+def mayberound(value):
+    if '.0' in '%s' % value:
+        return int(value)
+    return value
