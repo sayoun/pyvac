@@ -50,8 +50,24 @@ override = {'zh': {2016: [('2016-01-01', 'New Years Day'),
                           ('2017-05-30', 'Dragon Boat Festival'),
                           ('2017-10-04', 'Mid-Autumn Festival'),
                           ('2017-10-09', 'National Day/Double Tenth Day'),
-                          ('2017-10-10', 'National Day/Double Tenth Day')]},
-            }
+                          ('2017-10-10', 'National Day/Double Tenth Day')],
+                   2018: [('2018-01-01', 'New year'),
+                          ('2018-02-15', "Chinese New Year's eve"),
+                          ('2018-02-16', 'Chinese New Year'),
+                          ('2018-02-17', 'Chinese New Year (2nd day)'),
+                          ('2018-02-18', 'Chinese New Year (3rd day)'),
+                          ('2018-02-19', 'Chinese New Year (4th day)'),
+                          ('2018-02-20', 'Chinese New Year (5th day)'),
+                          ('2018-02-28', '228 Peace Memorial Day'),
+                          ('2018-04-04', "Combination of Women's Day and Children's Day"), # noqa
+                          ('2018-04-05', 'Qingming Festival'),
+                          ('2018-04-06', 'Qingming Festival'),
+                          ('2017-05-01', '1st May'),
+                          ('2018-06-18', 'Dragon Boat Festival'),
+                          ('2018-09-24', 'Mid-Autumn Festival'),
+                          ('2018-10-10', 'National Day/Double Tenth Day'),
+                          ('2018-12-31', "New Year's Eve")],
+            }}
 
 
 def utcify(date):
