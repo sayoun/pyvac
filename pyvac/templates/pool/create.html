@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="span12">
+    <legend>Pool</legend>
+</div>
+<form action="" method="post" id="createPoolForm" class="form-horizontal">
+<div class="span6">
+    <fieldset>
+        <input type="hidden" name="pool_id" value="{{pool.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+            <label class="control-label" for="inputName">{% trans %}Name:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="pool.name" id="inputName" value="{{pool.name|default('', true)}}"
+               />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputAlias">{% trans %}Alias:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="pool.alias" id="inputAlias" value="{{pool.alias|default('', true)}}"
+               />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">{% trans %}Vacation type:{% endtrans %}</label>
+            <div class="controls">
+            <select name="set_vacation_type">
+            {% for vt in vacation_types %}
+                <option value="{{vt.id}}" {% if vt.id == pool.vacation_type_id %}selected="selected"{% endif %}>{{ vt.name }}</option>
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">{% trans %}Country:{% endtrans %}</label>
+            <div class="controls">
+            <select name="set_country">
+            {% for c in countries %}
+                <option value="{{ c.id }}" {% if c.id == pool.country_id %}selected="selected"{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">{% trans %}Status:{% endtrans %}</label>
+            <div class="controls">
+            <select name="pool.status">
+            {% for s in ['active', 'inactive'] %}
+                <option value="{{ s }}" {% if s == pool.status %}selected="selected"{% endif %}>{{ s }}</option>
+            {% endfor %}
+             </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputDateStart">{% trans %}date start:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="date_start" id="inputDateStart" value="{% if pool.date_start %}{{pool.date_start.strftime('%d/%m/%Y')|default('', true)}}{% endif %}" placeholder="DD/MM/YYYY"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputDateEnd">{% trans %}date start:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="date_end" id="inputDateEnd" value="{% if pool.date_end %}{{pool.date_end.strftime('%d/%m/%Y')|default('', true)}}{% endif %}" placeholder="DD/MM/YYYY"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" id="submitbutton" class="btn">Valider</button>
+            </div>
+        </div>
+    </fieldset>
+</div>
+</form>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+$(document).ready(function(){
+    $("#inputDateStart").datepicker({dateFormat: 'dd/mm/yy'});
+    $("#inputDateEnd").datepicker({dateFormat: 'dd/mm/yy'});
+});
+</script>
+{% endblock %}

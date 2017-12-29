@@ -32,7 +32,11 @@
         {% set pool_balance = pool_balance + entry.value %}
         <tr>
           <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ entry.value|plusify }}</td>
+          <td>{{ entry.value|plusify if loop.index0 else '-'}}
+          {% if entry.flavor %}
+              {% if entry.req_id %}<a href="{{ route_url('request_history', req_id=entry.req_id) }}">({{entry.flavor}})
+          {% endif %}
+          {%endif%}</td>
           <td>{{ pool_balance }}</td>
         </tr>
     {% endfor %}
@@ -56,8 +60,14 @@
     <tbody>
       {% for entry in pool_history['CP'] %}
         <tr>
-          <td>{{ entry.date }}</td>
-          <td>{{ entry.value|plusify if loop.index0 else '-'}}{% if entry.flavor %} ({{entry.flavor}}){%endif%}</td>
+          <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ entry.value|plusify if loop.index0 else '-'}}
+          {% if entry.flavor %}
+            {% if entry.req_id %}(<a href="{{ route_url('request_history', req_id=entry.req_id) }}">{{entry.flavor}}</a>)
+            {%else%}
+              ({{entry.flavor}})
+            {% endif %}
+          {%endif%}</td>
           <td {% if loop.index0 > 0 and last_restant == entry.restant%}style="color:#aaaaaa"{% endif %}>{{ entry.restant }}</td>
           <td {% if loop.index0 > 0 and last_acquis == entry.acquis%}style="color:#aaaaaa"{% endif %}>{{ entry.acquis }}</td>
         </tr>

@@ -137,24 +137,14 @@
         <li><b>{{ pyvac.user.anniversary[1] }}</b> days until your {{ (pyvac.user.seniority + 1)|english_suffix}} {% if pyvac.user.firm %}{{ pyvac.user.firm }}{% else %}anni{% endif %}versary ! ({{ pyvac.user.arrival_date.strftime('%d/%m/%Y') }})</li>
         {% endif %}
 
-        {% if pyvac.user.country == 'fr' %}
-          {% if pyvac.user.rtt %}
-          <li>You have <span class="text-{{pyvac.user.rtt['state']}}"><b>{{pyvac.user.rtt['left']}} RTT</b></span> to use before end of year  {{pyvac.user.rtt['year']}}</li>
-          {% endif %}
-          {% if pyvac.user.arrival_date and pyvac.user.cp %}
-          {% if 'extra' in pyvac.user.cp %}
-          <li>You have <b>{{pyvac.user.cp['extra']['left']}} CP {{pyvac.user.cp['extra']['type']}}</b> to use before {{pyvac.user.cp['extra']['expire'].strftime('%d/%m/%Y')}}</li>
-          {% endif %}
-          <li>You have <b>{{pyvac.user.cp['restant']['left']}} CP restants</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
-          <li>You have <b>{{pyvac.user.cp['acquis']['left']}} CP en acquisition</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
-          {% endif %}
-        {% endif %}
-        {% if pyvac.user.country == 'lu' %}
-          {% if pyvac.user.arrival_date and pyvac.user.cp %}
-          <li>You have <b>{{pyvac.user.cp['restant']['left']}} hours CP REPORT</b> to use before {{pyvac.user.cp['restant']['expire'].strftime('%d/%m/%Y')}}</li>
-          <li>You have <b>{{pyvac.user.cp['acquis']['left']|int }} hours CP LÉGAUX</b> to use before {{pyvac.user.cp['acquis']['expire'].strftime('%d/%m/%Y')}}</li>
-          {% endif %}
-        {% endif %}
+        {% for userpool in pyvac.user.pools|sort(attribute="pool.date_end")|sort(attribute="pool.pool_group") %}
+         {% if userpool.pool.alias %}
+         {% set pool_name = '%s %s'|format(userpool.pool.vacation_type.name, userpool.pool.alias)|upper %}
+         {% else %}
+         {% set pool_name = userpool.pool.fullname %}
+         {% endif %}
+          <li>You have <b>{{userpool.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}{{pool_name}}</b> to use before {{userpool.pool.date_end.strftime('%d/%m/%Y')}}</li>
+        {% endfor %}
     </ul>
 </div>
 {% endif %}

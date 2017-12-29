@@ -6,8 +6,16 @@ from pyvac.tests import case
 from pyvac.tests.mocks.tasks import DummyTasks
 from pyvac.tests.mocks.celery import subtask
 
-from mock import patch, PropertyMock
+from mock import patch, MagicMock, PropertyMock
 from dateutil.relativedelta import relativedelta
+
+
+def mock_pool(amount, date_start, date_end):
+    mocked_pool = MagicMock()
+    type(mocked_pool).amount = PropertyMock(return_value=amount)
+    type(mocked_pool).date_start = PropertyMock(return_value=date_start) # noqa
+    type(mocked_pool).date_end = PropertyMock(return_value=date_end) # noqa
+    return mocked_pool
 
 
 class RequestTestCase(case.ViewTestCase):
@@ -774,13 +782,20 @@ class RequestTestCase(case.ViewTestCase):
     def test_post_send_rtt_year_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
                                            permissive=True)
-        from pyvac.models import Request
+        from pyvac.models import Request, User
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        with freeze_time('2015-10-01',
-                         ignore=['celery', 'psycopg2', 'sqlalchemy',
-                                 'icalendar']):
+        with patch('pyvac.models.User.pool',
+                   new_callable=PropertyMock) as mock_foo:
+            mocked_pool = mock_pool(10, datetime(2015, 1, 1),
+                                    datetime(2015, 12, 31))
+            mock_foo.return_value = {'RTT': mocked_pool}
+
+            user = User.by_login(self.session, u'janedoe')
+            rtt_pool = user.pool.get('RTT')
+            self.assertTrue(rtt_pool)
+
             request = self.create_request({
                 'days': 1,
                 'date_from': '06/05/2016 - 06/05/2016',
@@ -792,7 +807,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         # no new requests were made
         self.assertEqual(Request.find(self.session, count=True), total_req)
-        expected = ['error;RTT can only be used for year 2015.']
+        expected = ['error;RTT can only be used between 01/01/2015 and 31/12/2015']  # noqa
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_rtt_usage_empty_ok(self):
@@ -829,29 +844,28 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        def mock_get_rtt_usage(self, session):
-            """ Get rrt usage for a user """
-            return {'allowed': 10, 'left': 0, 'state': 'error',
-                    'taken': 10.0, 'year': 2014}
+        with patch('pyvac.models.User.pool',
+                   new_callable=PropertyMock) as mock_foo:
+            mocked_pool = mock_pool(0, datetime(2014, 1, 1),
+                                    datetime(2014, 12, 31))
+            mock_foo.return_value = {'RTT': mocked_pool}
 
-        orig_get_rtt_usage = User.get_rtt_usage
-        User.get_rtt_usage = mock_get_rtt_usage
-        user = User.by_login(self.session, u'janedoe')
-        rtt_data = user.get_rtt_usage(self.session)
-        self.assertTrue(rtt_data)
+            user = User.by_login(self.session, u'janedoe')
+            rtt_pool = user.pool.get('RTT')
+            self.assertTrue(rtt_pool)
 
-        request = self.create_request({'days': 1,
-                                       'date_from': '05/05/2015 - 05/05/2015',
-                                       'type': '2',
-                                       'breakdown': 'AM',
-                                       })
-        view = Send(request)()
+            request = self.create_request({'days': 1,
+                                           'date_from': '05/05/2015 - 05/05/2015', # noqa
+                                           'type': '2',
+                                           'breakdown': 'AM',
+                                           })
+            view = Send(request)()
+
         self.assertIsRedirect(view)
         # no new requests were made
         self.assertEqual(Request.find(self.session, count=True), total_req)
         expected = ['error;No RTT left to take.']
         self.assertEqual(request.session.pop_flash(), expected)
-        User.get_rtt_usage = orig_get_rtt_usage
 
     def test_post_send_vacation_type_visibility_ko(self):
         self.config.testing_securitypolicy(userid=u'janedoe',
@@ -899,29 +913,28 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        def mock_get_rtt_usage(self, session):
-            """ Get rrt usage for a user """
-            return {'allowed': 10, 'left': 0.5, 'state': 'error',
-                    'taken': 9.5, 'year': 2014}
+        with patch('pyvac.models.User.pool',
+                   new_callable=PropertyMock) as mock_foo:
+            mocked_pool = mock_pool(0.5, datetime(2014, 1, 1),
+                                    datetime(2014, 12, 31))
+            mock_foo.return_value = {'RTT': mocked_pool}
 
-        orig_get_rtt_usage = User.get_rtt_usage
-        User.get_rtt_usage = mock_get_rtt_usage
-        user = User.by_login(self.session, u'janedoe')
-        rtt_data = user.get_rtt_usage(self.session)
-        self.assertTrue(rtt_data)
+            user = User.by_login(self.session, u'janedoe')
+            rtt_pool = user.pool.get('RTT')
+            self.assertTrue(rtt_pool)
 
-        request = self.create_request({'days': 1,
-                                       'date_from': '05/05/2015 - 05/05/2015',
-                                       'type': '2',
-                                       'breakdown': 'FULL',
-                                       })
-        view = Send(request)()
+            request = self.create_request({'days': 1,
+                                           'date_from': '05/05/2015 - 05/05/2015', # noqa
+                                           'type': '2',
+                                           'breakdown': 'FULL',
+                                           })
+            view = Send(request)()
+
         self.assertIsRedirect(view)
         # no new requests were made
         self.assertEqual(Request.find(self.session, count=True), total_req)
         expected = ['error;You only have 0.5 RTT to use.']
         self.assertEqual(request.session.pop_flash(), expected)
-        User.get_rtt_usage = orig_get_rtt_usage
 
     def test_post_send_cp_lu_full_ok(self):
         self.config.testing_securitypolicy(userid=u'sarah.doe',

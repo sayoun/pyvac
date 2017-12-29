@@ -12,9 +12,10 @@ from dateutil.relativedelta import relativedelta
 import cryptacular.bcrypt
 from sqlalchemy import (Table, Column, ForeignKey, Enum,
                         Integer, Float, Boolean, Unicode, DateTime,
-                        UnicodeText)
+                        UnicodeText, Index, UniqueConstraint)
 from sqlalchemy import or_, and_, func
-from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.orm import relationship, synonym, backref
+from sqlalchemy.ext.declarative import declared_attr
 
 import yaml
 try:
@@ -54,6 +55,10 @@ def create_engine(settings, prefix='sqlalchemy.', scoped=False):
 def dispose_engine():
     """Dispose database engine."""
     dispose_engine_base
+
+
+def diff_month(d1, d2):
+    return (d1.year - d2.year) * 12 + d1.month - d2.month
 
 
 class Permission(Base):
@@ -241,11 +246,31 @@ class User(Base):
         today = datetime.now()
         current_arrival_date = arrival_date.replace(year=today.year)
         # if it's already past for this year
-        if current_arrival_date < today:
+        if current_arrival_date.date() < today.date():
             current_arrival_date += relativedelta(months=12)
-        delta = (today - current_arrival_date).days
 
+        if current_arrival_date.date() == today.date():
+            return (True, 0)
+
+        delta = (today - current_arrival_date).days
         return (True if delta == 0 else False, abs(delta))
+
+    @property
+    def pool(self):
+        """Return current pool status amounts for user"""
+        return dict([(up.fullname, up) for up in self.pools])
+
+    def set_pool_amount(self, session, poolname, amount, created_at=None):
+        """Set pool amount for user, create userpool if it does not exists"""
+        pool = Pool.by_name_country(session, poolname, self._country)
+        up = UserPool.by_user_pool(session, self, pool)
+        if not up:
+            entry = UserPool(amount=0, user=self, pool=pool)
+            session.flush()
+            entry.increment(session, amount, 'heartbeat', created_at=created_at) # noqa
+        else:
+            raise Exception('This should not happen')
+            up.amount = amount
 
     def get_cycle_anniversary(self, cycle_start, cycle_end):
         """Return user anniversary date if in current cycle boundaries."""
@@ -437,6 +462,16 @@ class User(Base):
             user.uid = uid
         # put in correct group
         user.groups.append(Group.by_name(session, group))
+
+        # create userpool for this user if needed
+        pools = Pool.by_country_active(session, country.id)
+        for pool in pools:
+            pool_class = pool.vacation_class
+            initial_amount = pool_class.get_increment_step(user)
+            entry = UserPool(amount=0, user=user, pool=pool)
+            session.flush()
+            entry.increment(session, initial_amount, 'creation')
+
         session.add(user)
         session.flush()
 
@@ -619,7 +654,8 @@ class User(Base):
         if not acquired:
             return
 
-        return [{'date': item, 'value': 1} for item in acquired]
+        return [{'date': item, 'value': 1, 'flavor': '', 'req_id': None}
+                for item in acquired]
 
     @classmethod
     def get_rtt_taken_history(cls, session, user, year):
@@ -630,7 +666,9 @@ class User(Base):
                    (req.status in valid_status) and
                    (req.date_from.year == year)]
 
-        return [{'date': req.date_from, 'value': -req.days} for req in entries]
+        return [{'date': req.date_from, 'value': -req.days,
+                 'flavor': '', 'req_id': req.id}
+                for req in entries]
 
     @classmethod
     def get_rtt_history(cls, session, user, year):
@@ -713,7 +751,8 @@ class User(Base):
         # before the taken
         return [{'date': req.date_from.replace(hour=12),
                  'flavor': '',
-                 'value': -req.days} for req in entries]
+                 'value': -req.days,
+                 'req_id': req.id} for req in entries]
 
     def get_cp_taken_year(self, session, date):
         """Retrieve taken CP for a user for current year."""
@@ -799,6 +838,8 @@ class User(Base):
         for item in raw_acquired:
             if 'flavor' not in item:
                 item['flavor'] = ''
+            if 'req_id' not in item:
+                item['req_id'] = None
             if item['date'] < cycle_start:
                 total += item['value']
             else:
@@ -909,6 +950,15 @@ class BaseVacation(object):
     def convert_days(cls, days):
         return days
 
+    @classmethod
+    def get_increment_step(cls, **kwargs):
+        return 0
+
+    @classmethod
+    def check_seniority(cls, userpool):
+        """Called every day to check for user seniority bonus."""
+        return 0
+
 
 class CompensatoireVacation(BaseVacation):
     """Implement Compensatoire vacation behavior."""
@@ -968,6 +1018,18 @@ class RTTVacation(BaseVacation):
                  cls.except_months)
 
     @classmethod
+    def get_increment_step(cls, user=None, date=None, **kwargs):
+        """Get the amount to use to increment a User Pool each cycle."""
+
+        # TODO: check if user is using partial time
+        # in which case increment should be a fraction of 1 RTT
+
+        today = date or datetime.now()
+        if today.month not in cls.except_months:
+            return 1
+        return 0
+
+    @classmethod
     def acquired(cls, **kwargs):
         """Return acquired vacation this year to current day.
 
@@ -1024,6 +1086,11 @@ class CPVacation(BaseVacation):
         except IOError:
             log.warn('Cannot load user base file %s for CP vacation' %
                      filename)
+
+    @classmethod
+    def get_increment_step(cls, **kwargs):
+        """Get the amount to use to increment a User Pool each cycle."""
+        return cls.coeff
 
     @classmethod
     def get_left(cls, taken, allowed, req_taken):
@@ -1128,6 +1195,20 @@ class CPVacation(BaseVacation):
             raise FirstCycleException()
 
         return start, end
+
+    @classmethod
+    def check_seniority(cls, userpool):
+        """Called every day to check for user seniority bonus."""
+        cp_bonus = 0
+        # only do this for 'acquis' pool
+        if userpool.pool.name == 'restant':
+            return 0
+
+        user = userpool.user
+        if user.anniversary[0]:
+            cp_bonus = int(math.floor(user.seniority / 5))
+
+        return cp_bonus
 
     @classmethod
     def get_acquis(cls, user, starting_date, today=None):
@@ -1257,12 +1338,15 @@ class CPVacation(BaseVacation):
     @classmethod
     def validate_request(cls, user, pool, days, date_from, date_to):
         """Validate request regarding user pool."""
+        pool = user.pool
+        if not pool:
+            return
+
         # check that we request vacations in the allowed cycle
-        if pool is not None and (
-                not (date_from <= date_to <=
-                     pool['acquis']['expire'])):
+        expire_date = pool['CP acquis'].date_end
+        if not (date_from <= date_to <= expire_date):
             msg = ('CP can only be used until %s.' %
-                   pool['acquis']['expire'].strftime('%d/%m/%Y'))
+                   expire_date.strftime('%d/%m/%Y'))
             return msg
 
 
@@ -1446,27 +1530,6 @@ class CPLUVacation(BaseVacation):
     @classmethod
     def validate_request(cls, user, pool, days, date_from, date_to):
         """Validate request regarding user pool."""
-        if pool is not None:
-            total_left = (pool['acquis']['left'] +
-                          pool['restant']['left'])
-
-        if pool is not None and total_left <= 0:
-            msg = 'No CP left to take.'
-            return msg
-
-        # check that we have enough CP to take
-        if pool is not None and days > total_left:
-            msg = 'You only have %d CP to use.' % total_left
-            return msg
-
-        # check that we request vacations in the allowed cycle
-        if pool is not None and (
-                not (date_from <= date_to <=
-                     pool['acquis']['expire'])):
-            msg = ('CP can only be used until %s.' %
-                   pool['acquis']['expire'].strftime('%d/%m/%Y'))
-            return msg
-
         # check that the user has at least 3 months of seniority
         if user.arrival_date:
             today = datetime.now()
@@ -1474,6 +1537,28 @@ class CPLUVacation(BaseVacation):
             if delta.days < (3 * 31):
                 msg = 'You need 3 months of seniority before using your CP'
                 return msg
+
+        pool = user.pool
+        if not pool:
+            return
+
+        total_left = pool['CP acquis'].amount + pool['CP restant'].amount
+
+        if total_left <= 0:
+            msg = 'No CP left to take.'
+            return msg
+
+        # check that we have enough CP to take
+        if days > total_left:
+            msg = 'You only have %d CP to use.' % total_left
+            return msg
+
+        # check that we request vacations in the allowed cycle
+        expire_date = pool['CP acquis'].date_end
+        if not (date_from <= date_to <= expire_date):
+            msg = ('CP can only be used until %s.' %
+                   expire_date.strftime('%d/%m/%Y'))
+            return msg
 
     @classmethod
     def convert_days(cls, days):
@@ -1896,6 +1981,31 @@ class Request(Base):
         return {}
 
     @property
+    def pool_left(self):
+        """Retrieve pool left status."""
+        if self.pool:
+            pool = self.pool
+            if self.type == 'CP':
+                if 'acquis' in pool:
+                    return pool.get('n_1', {}).get('left', 0) + pool['restant']['left'] + pool['acquis']['left'] # noqa
+                else:
+                    # new pool format
+                    # {u'CP acquis': 12.48, u'CP restant': 25.0, u'RTT': 12.0}
+                    return pool.get('CP acquis', 0) + pool.get('CP restant', 0)
+            else:
+                # RTT
+                if 'left' in pool:
+                    return pool['left']
+                else:
+                    # new pool format
+                    return pool.get('RTT', 0)
+        return {}
+
+    def refund_userpool(self, session):
+        """refund userpool amount in case of CANCEL/DENIED."""
+        UserPool.increment_request(session, self)
+
+    @property
     def sudoed(self):
         """Retrieve is request was sudoed."""
         if self.status == 'APPROVED_ADMIN':
@@ -2069,7 +2179,10 @@ class PasswordRecovery(Base):
     hash = Column(Unicode(255), nullable=False, unique=True)
     date_end = Column(DateTime, nullable=False)
     user_id = Column('user_id', ForeignKey(User.id), nullable=False)
-    user = relationship(User, backref='recovery')
+    user = relationship(User,
+                        backref=backref('recovery', cascade='all,delete'),
+                        cascade='all,delete',
+                        passive_deletes=True)
 
     @classmethod
     def by_hash(cls, session, hash):
@@ -2163,11 +2276,30 @@ class RequestHistory(Base):
 
     @property
     def pool(self):
-        """
-        Retrieve pool status stored in json
-        """
+        """Retrieve pool status stored in json."""
         if self.pool_status:
             return json.loads(self.pool_status)
+        return {}
+
+    @property
+    def pool_left(self):
+        """Retrieve pool left status."""
+        if self.pool:
+            pool = self.pool
+            if self.request.type == 'CP':
+                if 'acquis' in pool:
+                    return pool.get('n_1', {}).get('left', 0) + pool['restant']['left'] + pool['acquis']['left'] # noqa
+                else:
+                    # new pool format
+                    # {u'CP acquis': 12.48, u'CP restant': 25.0, u'RTT': 12.0}
+                    return pool.get('CP acquis', 0) + pool.get('CP restant', 0)
+            else:
+                # RTT
+                if 'left' in pool:
+                    return pool['left']
+                else:
+                    # new pool format
+                    return pool.get('RTT', 0)
         return {}
 
     @classmethod
@@ -2192,6 +2324,390 @@ class RequestHistory(Base):
         session.flush()
 
         return entry
+
+
+class EventLog(Base):
+    """Store an event log of all actions/changes happening."""
+
+    # source of action: pool, userpool
+    source = Column(Unicode(255), nullable=False)
+    # source id if applicable  do not use ForeignKey
+    source_id = Column(Integer, nullable=True)
+    # type of event: increment, decrement, status, clone, expire
+    type = Column(Unicode(255), nullable=False)
+    # when we need additionnal information: seniority, heartbeat, request
+    comment = Column(Unicode(255), nullable=False)
+    # changes applied if needed
+    delta = Column(Float(precision=2), nullable=True)
+    # extra id if applicable  do not use ForeignKey
+    extra_id = Column(Integer, nullable=True)
+
+    @declared_attr
+    def __table_args__(cls):  # noqa
+        return (Index('idx_%s_source_id' % cls.__tablename__, 'source_id'),
+                Index('idx_%s_type' % cls.__tablename__, 'type'),
+                Index('idx_%s_comment' % cls.__tablename__, 'comment'),
+                Index('idx_%s_extra_id' % cls.__tablename__, 'extra_id'),
+                Index('idx_%s_type_comment' % cls.__tablename__,
+                      'type', 'comment'),
+                Index('idx_%s_source_id_type' % cls.__tablename__,
+                      'source_id', 'type'),
+                Index('idx_%s_source_id_type_comment' % cls.__tablename__,
+                      'source_id', 'type', 'comment'),
+                )
+
+    @classmethod
+    def add(cls, session, source, type, comment=None, delta=None,
+            created_at=None, extra_id=None):
+        source_name = source
+        if not isinstance(source, basestring):
+            source_name = source.__class__.__name__.lower()
+
+        kwargs = {
+            'source': source_name,
+            'source_id': source.id,
+            'type': type,
+            'delta': delta,
+            'comment': comment,
+            'extra_id': extra_id,
+        }
+
+        if created_at:
+            kwargs['created_at'] = created_at
+
+        entry = cls(**kwargs)
+        session.add(entry)
+        session.flush()
+
+        return entry
+
+    @classmethod
+    def by_source_type(cls, session, source, type, comment):
+        return cls.find(session,
+                        where=(cls.source_id == source.id,
+                               cls.type == type,
+                               cls.comment == comment),
+                        )
+
+    @classmethod
+    def by_type_comment(cls, session, type, comment):
+        return cls.find(session,
+                        where=(cls.type == type,
+                               cls.comment == comment),
+                        )
+
+    def __repr__(self):
+        try:
+            return "<EventLog #%d: %s (#%d) -> %s | %s | %s >" % (
+                self.id, self.source, self.source_id, self.type,
+                self.comment, self.delta)
+        except:
+            return object.__repr__(self)
+
+
+class Pool(Base):
+    """Describe a vacation pool entry."""
+
+    name = Column(Unicode(255), nullable=False)
+    alias = Column(Unicode(255), nullable=True)
+    date_start = Column(DateTime, nullable=False)
+    date_end = Column(DateTime, nullable=False)
+    # store date of last increment process
+    date_last_increment = Column(DateTime, nullable=False, default=func.now())
+
+    status = Column(Enum('active', 'inactive', 'expired',
+                         name='enum_pool_status'),
+                    nullable=False, default='active')
+
+    vacation_type_id = Column('vacation_type_id', ForeignKey(VacationType.id),
+                              nullable=False)
+    vacation_type = relationship(VacationType, backref='pools')
+    # XXX: handle CP LU this way ?
+    country_id = Column('country_id', ForeignKey(Countries.id))
+    country = relationship(Countries, backref='pools')
+
+    pool_group = Column(Unicode(255), nullable=True)
+
+    @declared_attr
+    def __table_args__(cls):  # noqa
+        return (UniqueConstraint('date_start', 'date_end', 'vacation_type_id',
+                                 'country_id', name='uq_start_end_type_ctry'),
+                )
+
+    @classmethod
+    def by_name(cls, session, name):
+        """Get pools for a given name."""
+        return cls.find(session, where=(cls.name == name,))
+
+    @classmethod
+    def by_pool_group(cls, session, pool_group):
+        """Get pools in the same pool_group."""
+        return cls.find(session, where=(cls.pool_group == pool_group,
+                                        cls.status == 'active'))
+
+    @classmethod
+    def by_name_country(cls, session, name, country):
+        """Get a pool from a given name and country."""
+        return cls.first(session, where=(cls.country == country,
+                                         cls.name == name,
+                                         cls.status == 'active'))
+
+    @classmethod
+    def by_status(cls, session, status):
+        """Get a pool from a given status."""
+        if not isinstance(status, (list, tuple)):
+            status = [status]
+        return cls.find(session, where=(cls.status.in_(status),))
+
+    @classmethod
+    def by_country_active(cls, session, country_id):
+        """Get pools for a given name."""
+        return cls.find(session, where=(cls.country_id == country_id,
+                                        cls.status == 'active'))
+
+    @classmethod
+    def clone(cls, session, pool, shift=None, date_start=None, date_end=None,
+              pool_group=None):
+        """Clone a pool from an existing one
+
+        with a 12 months shift for date boundaries if nothing is provided."""
+        new_date_start = pool.date_start + relativedelta(months=shift or 12)
+        new_date_end = pool.date_end + relativedelta(months=shift or 12)
+        if date_start:
+            new_date_start = date_start
+        if date_end:
+            new_date_end = date_end
+
+        entry = cls(name=pool.name,
+                    alias=pool.alias,
+                    date_start=new_date_start,
+                    date_end=new_date_end,
+                    status='active',
+                    vacation_type=pool.vacation_type,
+                    country=pool.country,
+                    pool_group=pool_group,
+                    date_last_increment=datetime.now(),
+                    )
+        session.add(entry)
+        session.flush()
+
+        EventLog.add(session, pool, 'clone', comment='heartbeat')
+
+        return entry
+
+    @property
+    def fullname(self):
+        fullname = ''
+        if self.vacation_type.name != self.name:
+            fullname = '%s ' % self.vacation_type.name
+        return '%s%s' % (fullname, self.name)
+
+    @property
+    def vacation_class(self):
+        vacation_name = self.vacation_type.name
+
+        vacation_name = '%s_%s' % (self.vacation_type.name, self.country.name)
+        return VacationType._vacation_classes.get(vacation_name)
+
+    @property
+    def in_first_month(self):
+        today = datetime.now()
+        return self.date_start.month == today.month
+
+    @property
+    def in_last_month(self):
+        today = datetime.now()
+        return self.date_end.month == today.month
+
+    def expire(self, session):
+        self.status = 'expired'
+        EventLog.add(session, self, 'expire', comment='heartbeat')
+
+    def __repr__(self):
+        try:
+            return "<Pool #%d: %s (%s) | %s>" % (self.id, self.name,
+                                                 self.vacation_type.name,
+                                                 self.country.name)
+        except:
+            return object.__repr__(self)
+
+
+class UserPool(Base):
+    """Describe a user vacation pool entry."""
+
+    amount = Column(Float(precision=2), nullable=False)
+
+    user_id = Column('user_id', ForeignKey(User.id), nullable=False)
+    user = relationship(User, backref=backref('pools', cascade='all,delete'),
+                        primaryjoin="and_(User.id==UserPool.user_id, UserPool.pool_id==Pool.id, Pool.status=='active')",    # noqa
+                        cascade='all,delete',
+                        passive_deletes=True)
+
+    pool_id = Column('pool_id', ForeignKey(Pool.id), nullable=False)
+    pool = relationship(Pool, backref='user_pools')
+
+    @classmethod
+    def by_user_pool(cls, session, user, pool):
+        """Get a userpool for a given user and pool."""
+        return cls.first(session, where=(cls.user == user,
+                                         cls.pool == pool))
+
+    @classmethod
+    def by_user(cls, session, user):
+        """Get all userpools for a given user."""
+        return cls.find(session, where=(cls.user == user,))
+
+    @classmethod
+    def by_pool(cls, session, pool):
+        """Get all userpools for a given pool."""
+        return cls.find(session, where=(cls.pool == pool,))
+
+    @property
+    def name(self):
+        """Return name of associated pool."""
+        return self.pool.name
+
+    @property
+    def fullname(self):
+        """Return fullname of associated pool."""
+        return self.pool.fullname
+
+    @property
+    def date_start(self):
+        """Return date_start of associated pool."""
+        return self.pool.date_start
+
+    @property
+    def date_end(self):
+        """Return date_end of associated pool."""
+        return self.pool.date_end
+
+    def increment(self, session, amount, comment, created_at=None):
+        self.amount = self.amount + amount
+        EventLog.add(session, self, 'increment', comment=comment, delta=amount,
+                     created_at=created_at)
+
+    def increment_month(self, session, need_increment):
+        """Called once per month to increment the user pool amount."""
+        today = datetime.now()
+        pool_class = self.pool.vacation_class
+        if need_increment:
+            log.info('pool %r to increment' % self.pool)
+            months = diff_month(today, self.pool.date_last_increment)
+            log.info('%d months since last update' % months)
+            for cpt in range(months):
+                date = self.pool.date_last_increment + relativedelta(months=cpt + 1) # noqa
+                delta = pool_class.get_increment_step(user=self.user, date=date) # noqa
+                self.amount = self.amount + delta
+
+                EventLog.add(session, self, 'increment', comment='heartbeat',
+                             delta=delta)
+
+        # check that we did not have already credited seniority for this user
+        evt = EventLog.by_source_type(session, self, 'increment', 'seniority')
+        if not evt:
+            seniority_bonus = pool_class.check_seniority(self)
+            if seniority_bonus:
+                self.amount = self.amount + seniority_bonus
+
+                EventLog.add(session, self, 'increment', comment='seniority',
+                             delta=seniority_bonus)
+
+        if self.pool.in_last_month:
+            self.amount = round(self.amount)
+
+    def decrement(self, session, amount, comment, created_at=None):
+        self.amount = self.amount - amount
+        EventLog.add(session, self, 'decrement', comment=comment, delta=amount,
+                     created_at=created_at)
+
+    @classmethod
+    def decrement_request(cls, session, request):
+        # which userpool do we need to modify
+        delta = request.days
+        comment = 'Request #%d' % request.id
+        userpools = [up for up in request.user.pools
+                     if up.pool.vacation_type == request.vacation_type]
+        created_at = request.date_from
+        userpool = userpools[0]
+        if userpool.pool.pool_group:
+            # in case of a pool_group
+            # we need to decrement pools in order of date expiration
+            # and report the extra in the other pool
+            # example: restant=4 acquis=10, need to decrement 6
+            # we'll have restant=0 acquis=8 after this operation
+            # 1. order the userpools by expiration date (date_end)
+            userpools.sort(key=lambda t: t.date_end)
+            # 2. decrement userpool in order of date expiration
+            for idx, up in enumerate(userpools, start=1):
+                if not delta:
+                    continue
+                # in case one pool is negative and it's not the last pool
+                # probably restant and not acquis
+                if up.amount < 0 and idx != len(userpools):
+                    continue
+                up.amount = up.amount - abs(delta)
+                if up.amount < 0:
+                    # we consumed more than what was available
+                    left = abs(delta) + up.amount
+                    delta = abs(up.amount)
+                    # if we are at the last pool, keep it as negative
+                    # otherwise reset to 0
+                    if idx != len(userpools):
+                        up.amount = 0
+                    else:
+                        if round(left + delta) == request.days:
+                            left = request.days
+                    if left:
+                        EventLog.add(session, up, 'decrement', comment=comment,
+                                     delta=left, extra_id=request.id,
+                                     created_at=created_at)
+                else:
+                    EventLog.add(session, up, 'decrement', comment=comment,
+                                 delta=delta, extra_id=request.id,
+                                 created_at=created_at)
+                    delta = 0
+        else:
+            userpool.amount = userpool.amount - delta
+            EventLog.add(session, userpool, 'decrement', comment=comment,
+                         delta=delta, extra_id=request.id,
+                         created_at=created_at)
+
+    @classmethod
+    def increment_request(cls, session, request):
+        """Used in case of refund"""
+        comment = 'Request #%d' % request.id
+        events = EventLog.by_type_comment(session, 'decrement', comment)
+        # for each events, rollback/refund the userpool
+        # this way if a request has consumed multiple pools, it will refund
+        # each one for the correct amount
+        for event in events:
+            up = UserPool.by_id(session, event.source_id)
+            up.amount = up.amount + event.delta
+            EventLog.add(session, up, 'increment', comment=comment,
+                         delta=event.delta, extra_id=request.id)
+
+    def get_pool_history(self, session, user):
+        """Return all events for a userpool."""
+        history = []
+        events = EventLog.find(session,
+                               where=(EventLog.source == "userpool",
+                                      EventLog.source_id == self.id),
+                               order_by=EventLog.id)
+        for evt in events:
+            delta = evt.delta
+            if evt.type == 'decrement' and delta > 0:
+                delta = -delta
+            item = {'date': evt.created_at, 'value': delta,
+                    'name': self.pool.name, 'flavor': None,
+                    'req_id': None}
+            if evt.comment != 'heartbeat' and evt.comment:
+                item['flavor'] = evt.comment
+            if evt.extra_id and 'Request #' in evt.comment:
+                item['req_id'] = evt.extra_id
+            history.append(item)
+
+        return history
 
 
 def includeme(config):

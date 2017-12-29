@@ -2,12 +2,14 @@
 
 import os
 import sys
+from datetime import datetime
 
 from pyramid.paster import get_appsettings, setup_logging
 
 from pyvac.helpers.sqla import create_engine, dispose_engine
 from pyvac.models import (
     DBSession, Base, Permission, Group, User, VacationType, Countries,
+    Pool,
 )
 
 
@@ -76,6 +78,59 @@ def populate(engine):
     session.add(us_country)
     zh_country = Countries(name=u'zh')
     session.add(zh_country)
+
+    now = datetime.now()
+    cp_pool1 = Pool(name=u'acquis',
+                    date_start=datetime(now.year, 6, 1),
+                    date_end=datetime(now.year + 1, 5, 31),
+                    status='active',
+                    vacation_type=vactype1,
+                    country=fr_country,
+                    pool_group=1,
+                    date_last_increment=now,
+                    )
+    session.add(cp_pool1)
+    cp_pool2 = Pool(name=u'restant',
+                    date_start=datetime(now.year - 1, 6, 1),
+                    date_end=datetime(now.year, 5, 31),
+                    status='active',
+                    vacation_type=vactype1,
+                    country=fr_country,
+                    pool_group=1,
+                    date_last_increment=now,
+                    )
+    session.add(cp_pool2)
+    cplu_pool1 = Pool(name=u'acquis',
+                      alias=u'légaux',
+                      date_start=datetime(now.year, 1, 1),
+                      date_end=datetime(now.year + 1, 3, 31),
+                      status='active',
+                      vacation_type=vactype1,
+                      country=lu_country,
+                      pool_group=2,
+                      date_last_increment=now,
+                      )
+    session.add(cplu_pool1)
+    cplu_pool2 = Pool(name=u'restant',
+                      alias=u'report',
+                      date_start=datetime(now.year - 1, 1, 1),
+                      date_end=datetime(now.year, 3, 31),
+                      status='active',
+                      vacation_type=vactype1,
+                      country=lu_country,
+                      pool_group=2,
+                      date_last_increment=now,
+                      )
+    session.add(cplu_pool2)
+    rtt_pool = Pool(name=vactype2.name,
+                    date_start=datetime(now.year, 1, 1),
+                    date_end=datetime(now.year + 1, 12, 31),
+                    status='active',
+                    vacation_type=vactype2,
+                    country=fr_country,
+                    date_last_increment=now,
+                    )
+    session.add(rtt_pool)
 
     # CP is available for everyone
     vactype1.countries.append(fr_country)

@@ -258,6 +258,31 @@ def includeme(config):
                     renderer=u'templates/request/manager_overview.html',
                     permission=u'manager_view')
 
+    # Pool managment
+    config.add_route(u'list_pools', u'/pyvac/pool')
+    config.add_view(u'pyvac.views.pool.List',
+                    route_name=u'list_pools',
+                    renderer=u'templates/pool/list.html',
+                    permission=u'admin_view')
+
+    config.add_route(u'create_pool', u'/pyvac/pool/new')
+    config.add_view(u'pyvac.views.pool.Create',
+                    route_name=u'create_pool',
+                    renderer=u'templates/pool/create.html',
+                    permission=u'admin_view')
+
+    config.add_route(u'edit_pool', u'/pyvac/pool/{pool_id}')
+    config.add_view(u'pyvac.views.pool.Edit',
+                    route_name=u'edit_pool',
+                    renderer=u'templates/pool/edit.html',
+                    permission=u'user_view')
+
+    config.add_route(u'delete_pool', u'/pyvac/delete/pool/{pool_id}')
+    config.add_view(u'pyvac.views.pool.Delete',
+                    route_name=u'delete_pool',
+                    renderer=u'templates/pool/delete.html',
+                    permission=u'admin_view')
+
     # Holiday request
     config.add_route('list_holiday', u'/pyvac/list_holiday',
                      request_method=u'POST')

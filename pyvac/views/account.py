@@ -10,7 +10,7 @@ from pyramid.url import route_url
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group, Countries
+from pyvac.models import User, Group, Countries, Pool, UserPool
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
     LdapCache, hashPassword, randomstring, UnknownLdapUser,
@@ -81,29 +81,22 @@ class ListPool(View):
         for user in users:
             if user.login in self.ignore_users:
                 continue
-            if self.user.country == 'fr':
-                rtts = user.get_rtt_usage(self.session)
-                if rtts:
-                    rtt_usage[user.login] = rtts['left']
 
-            cps = user.get_cp_usage(self.session, today=today)
-            total = 0
-            if cps:
-                total = cps['restant']['left'] + cps['acquis']['left']
-            cp_usage[user.login] = total
-            if self.user.country == 'fr':
-                if user.login not in self.ignore_users:
-                    data.append('%s,%s,%s,%s' %
-                                (user.login,
-                                 rtt_usage.get(user.login, 0),
-                                 cps['restant']['left'] if cps else 0, # noqa
-                                 cps['acquis']['left'] if cps else 0,
-                                 ))
+            usage = dict([(k, v.amount) for k, v in user.pool.items()])
+            rtt_usage[user.login] = usage.get('RTT', 0)
+            cp_total = usage.get('CP acquis', 0) + usage.get('CP restant', 0)
+            cp_usage[user.login] = cp_total
+            if user.login not in self.ignore_users:
+                data.append('%s,%s,%s' %
+                            (user.login,
+                             rtt_usage[user.login],
+                             cp_usage[user.login],
+                             ))
 
         if data:
             # sort list by name
             data = sorted(data)
-            header = ('%s,%s,%s,%s' % ('Login', 'RTT', 'CP N-1', 'CP N'))
+            header = ('%s,%s,%s' % ('Login', 'RTT', 'CP'))
             data.insert(0, header)
 
         ret = {u'user_count': User.find(self.session, count=True),
@@ -213,6 +206,18 @@ class AccountMixin:
         country = Countries.by_name(self.session, _ct)
         account._country = country
 
+    def assign_pools(self, user):
+        # create userpool for this user if needed
+        pools = Pool.by_country_active(self.session, user._country.id)
+        for pool in pools:
+            if 'disable_rtt' in self.request.params and pool.name == 'RTT':
+                continue
+            pool_class = pool.vacation_class
+            initial_amount = pool_class.get_increment_step(user=user)
+            entry = UserPool(amount=0, user=user, pool=pool)
+            self.session.flush()
+            entry.increment(self.session, initial_amount, 'creation')
+
 
 class Create(AccountMixin, CreateView):
     """
@@ -223,6 +228,7 @@ class Create(AccountMixin, CreateView):
         super(Create, self).save_model(account)
         self.set_country(account)
         self.append_groups(account)
+        self.assign_pools(account)
 
         if 'disable_rtt' in self.request.params:
             account.add_feature('disable_rtt', save=True)

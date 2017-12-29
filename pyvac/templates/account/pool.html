@@ -19,7 +19,7 @@
     <tbody>
       {% for user in users %}
       <tr>
-            <td>{{ user.login }}</td>
+            <td><a href="{{route_url('pool_history', user_id=user.id)}}">{{ user.login }}</a></td>
             <td>{{ user.name }}</td>
             <td>{% if user.manager_dn %}
                   {{ user.manager_dn|extract_cn }}

@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<form action="" method="post" id="deletePoolForm" class="form-horizontal">
+
+    <fieldset>
+        <legend>Pool</legend>
+        <input type="hidden" name="pool_id" value="{{pool.id|default('', true)}}"/>
+        <input name="_csrf" type="hidden" value="{{ csrf_token }}">
+
+        <div class="control-group">
+            <label class="control-label" for="inputName">{% trans %}Name:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="pool.name" id="inputName" value="{{pool.name|default('', true)}}" disabled="disabled"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputVacationType">{% trans %}Vacation type:{% endtrans %}</label>
+            <div class="controls">
+               <input type="text" name="pool.vacation_type.name" id="inputVacationType" value="{{pool.vacation_type.name|default('', true)}}" disabled="disabled"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button name="form.submitted" type="submit" class="btn">Delete</button>
+            </div>
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}

@@ -33,8 +33,8 @@
       {% for req in next %}
       <tr id="tr_req_{{ req.id }}">
             <td>
-            {% if pyvac.user.is_super and req.pool and req.type == 'CP'%}
-              {% set pool_total = req.pool['restant']['left'] + req.pool['acquis']['left'] %}
+            {% if pyvac.user.is_super and req.pool_left and req.type == 'CP'%}
+              {% set pool_total = req.pool_left %}
               {% if (pool_total < 0) or (req.days > pool_total) %}
                 {% if (req.days > pool_total) %}
                   {% set warning_message = 'Only have %s CP to use.' % pool_total|abs %}
@@ -137,12 +137,8 @@
             </td>
             {% if pyvac.user.is_super %}
             <td>
-            {% if req.pool %}
-                {% if req.type == 'CP' %}
-                  {{ req.pool.get('n_1', {}).get('left', 0) + req.pool['restant']['left'] + req.pool['acquis']['left'] }}{% if req.user.country == 'lu' %} CP h.{% else %} CP{% endif %}
-                {% else %}
-                  {{ req.pool['left'] }} RTT
-                {% endif %}
+            {% if req.pool_left %}
+              {{ req.pool_left }}
             {% else %}
               -
             {% endif %}

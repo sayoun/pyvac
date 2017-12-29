@@ -15,7 +15,9 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
 from pyramid.settings import asbool
 
-from pyvac.models import Request, VacationType, User, RequestHistory
+from pyvac.models import (
+    Request, VacationType, User, RequestHistory, UserPool,
+)
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
 from pyvac.helpers.ldap import LdapCache
@@ -63,7 +65,6 @@ class Send(View):
                          if d.isoweekday() not in [6, 7]
                          and d not in holidays]
             days = float(len(submitted))
-            pool = None
 
             days_diff = (date_to - date_from).days
             if days_diff < 0:
@@ -84,6 +85,7 @@ class Send(View):
 
             # check if user is sudoed
             check_user = self.get_target_user(self.user)
+            pool = dict([(k, v.amount) for k, v in check_user.pool.items()])
             # retrieve future requests for user so we can check overlap
             futures = [d for req in
                        Request.by_user_future(self.session, check_user)
@@ -148,24 +150,25 @@ class Send(View):
 
             # check RTT usage
             if vac_type.name == u'RTT':
-                pool = rtt_data = check_user.get_rtt_usage(self.session)
-                if rtt_data is not None and rtt_data['left'] <= 0:
+                rtt_pool = check_user.pool.get('RTT')
+                if rtt_pool is not None and rtt_pool.amount <= 0:
                     msg = 'No RTT left to take.'
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
                 # check that we have enough RTT to take
-                if rtt_data is not None and days > rtt_data['left']:
-                    msg = 'You only have %s RTT to use.' % rtt_data['left']
+                if rtt_pool is not None and days > rtt_pool.amount:
+                    msg = 'You only have %s RTT to use.' % rtt_pool.amount
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
                 # check that we request vacations in the allowed year
-                if rtt_data is not None and (
-                        date_from.year != rtt_data['year'] or
-                        date_to.year != rtt_data['year']):
-                    msg = ('RTT can only be used for year %d.' %
-                           rtt_data['year'])
-                    self.request.session.flash('error;%s' % msg)
-                    return HTTPFound(location=route_url('home', self.request))
+                if rtt_pool is not None:
+                    if (date_from < rtt_pool.date_start or
+                            date_to > rtt_pool.date_end):
+                        msg = ('RTT can only be used between %s and %s' %
+                               (rtt_pool.date_start.strftime('%d/%m/%Y'),
+                                rtt_pool.date_end.strftime('%d/%m/%Y')))
+                        self.request.session.flash('error;%s' % msg)
+                        return HTTPFound(location=route_url('home', self.request)) # noqa
 
             message = None
             # check Exceptionnel mandatory field
@@ -217,7 +220,6 @@ class Send(View):
             # check CP usage
             if vac_type.name == u'CP':
                 cp_class = check_user.get_cp_class(self.session)
-                pool = check_user.get_cp_usage(self.session)
 
                 if cp_class:
                     # only FR and LU have a dedicated CP class to use
@@ -231,15 +233,6 @@ class Send(View):
                         self.request.session.flash('error;%s' % error)
                         return HTTPFound(location=route_url('home',
                                                             self.request))
-
-                if pool:
-                    # remove expire datetimes as it's not json serializable
-                    if 'n_1' in pool:
-                        pool['n_1'].pop('expire', None)
-                    if 'extra' in pool:
-                        pool['extra'].pop('expire', None)
-                    pool['acquis'].pop('expire', None)
-                    pool['restant'].pop('expire', None)
 
             # create the request
             # default values
@@ -259,10 +252,7 @@ class Send(View):
                         target_notified = True
 
             # save pool status when making the request
-            if pool:
-                pool_status = json.dumps(pool)
-            else:
-                pool_status = json.dumps({})
+            pool_status = json.dumps(pool)
 
             request = Request(date_from=date_from,
                               date_to=date_to,
@@ -284,6 +274,8 @@ class Send(View):
             RequestHistory.new(self.session, request, '', target_status,
                                target_user, pool_status, message=message,
                                sudo_user=sudo_user)
+
+            UserPool.decrement_request(self.session, request)
 
             if request and not sudo_use:
                 msg = 'Request sent to your manager.'
@@ -510,6 +502,8 @@ class Refuse(View):
         req.update_status('DENIED')
         # save who performed this action
         req.last_action_user_id = self.user.id
+        # refund userpool
+        req.refund_userpool(self.session)
 
         self.session.flush()
 
@@ -559,6 +553,8 @@ class Cancel(View):
         req.update_status('CANCELED')
         # save who performed this action
         req.last_action_user_id = self.user.id
+        # refund userpool
+        req.refund_userpool(self.session)
 
         self.session.flush()
         return req.status
@@ -744,29 +740,78 @@ class PoolHistory(View):
     """
     Display pool history balance changes for given user
     """
-    def render(self):
-        user = User.by_id(self.session,
-                          int(self.request.matchdict['user_id']))
 
-        if self.user.has_no_role:
-            # can only see own requests
-            if user.id != self.user.id:
-                return HTTPFound(location=route_url('list_request',
-                                                    self.request))
+    def get_new_history(self, user, today, year):
+        """Retrieve pool history using Pool and UserPool models."""
+        # group userpools per vacation_type
+        pools = {}
+        for up in user.pools:
+            if up.pool.pool_group:
+                pools[up.pool.name] = up
+            else:
+                pools[up.pool.vacation_type.name] = up
 
-        if self.user.is_manager:
-            # can only see own requests and managed user requests
-            if ((user.id != self.user.id)
-                    and (user.manager_id != self.user.id)):
-                return HTTPFound(location=route_url('list_request',
-                                                    self.request))
+        pool_history = {}
+        if 'RTT' in pools:
+            pool_history['RTT'] = pools['RTT'].get_pool_history(self.session, self.user) # noqa
 
-        today = datetime.now()
-        year = int(self.request.params.get('year', today.year))
+        history = []
+        if 'restant' in pools:
+            restant = pools['restant'].get_pool_history(self.session, self.user) # noqa
+            acquis = pools['acquis'].get_pool_history(self.session, self.user)
+            pool_restant = restant[0]['value']
+            restant[0]['value'] = 0
+            pool_acquis = acquis.pop(0)['value']
+            history = sorted(restant + acquis)
 
-        start = datetime(2014, 5, 1)
-        years = [item for item in reversed(range(start.year, today.year + 1))]
+        cp_history = []
+        for idx, entry in enumerate(history, start=1):
+            if entry['name'] == 'acquis':
+                pool_acquis = round(pool_acquis, 2) + entry['value']
+            else:
+                pool_restant = round(pool_restant, 2) + entry['value']
+            item = {
+                'date': entry['date'],
+                'value': entry['value'],
+                'name': entry['name'],
+                'restant': pool_restant,
+                'acquis': pool_acquis,
+                'flavor': entry.get('flavor', ''),
+                'req_id': entry.get('req_id'),
+            }
+            # if idx == len(history):
+            #     item['acquis'] = round(item['acquis'])
 
+            cp_history.append(item)
+
+        skip_idx = []
+        for idx, entry in enumerate(cp_history):
+            try:
+                next_entry = cp_history[idx + 1]
+            except:
+                next_entry = None
+            # merge events in case of split decrement when using 2 pools
+            if next_entry and entry['req_id'] and (entry['date'] == next_entry['date']) and (entry['req_id'] == next_entry['req_id']): # noqa
+                if entry['name'] == 'restant':
+                    skip_idx.append(idx)
+                    entry['restant'] = 0
+                else:
+                    entry['restant'] = 0
+                    skip_idx.append(idx + 1)
+                entry['value'] += next_entry['value']
+
+        cp_history = [i for idx, i in enumerate(cp_history)
+                      if idx not in skip_idx]
+
+        # remove duplicate 1st entry as we merged 2 lines into one
+        if len(cp_history) > 1 and (cp_history[0]['acquis'] == cp_history[1]['acquis']) and (cp_history[0]['restant'] == cp_history[1]['restant']): # noqa
+            cp_history.pop(0)
+        pool_history['CP'] = cp_history
+
+        return pool_history
+
+    def get_old_history(self, user, today, year):
+        """Retrieve pool history using epoch recomputing."""
         pool_history = {}
         pool_history['RTT'] = User.get_rtt_history(self.session, user, year)
 
@@ -803,7 +848,7 @@ class PoolHistory(View):
                 pool_acquis = pool_acquis + entry['value']
 
             item = {
-                'date': entry['date'].strftime('%Y-%m-%d'),
+                'date': entry['date'],
                 'value': entry['value'],
                 'restant': pool_restant,
                 'acquis': pool_acquis,
@@ -812,6 +857,42 @@ class PoolHistory(View):
             cp_history.append(item)
 
         pool_history['CP'] = cp_history
+
+        return pool_history
+
+    def render(self):
+        user = User.by_id(self.session,
+                          int(self.request.matchdict['user_id']))
+
+        if self.user.has_no_role:
+            # can only see own requests
+            if user.id != self.user.id:
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        if self.user.is_manager:
+            # can only see own requests and managed user requests
+            if ((user.id != self.user.id)
+                    and (user.manager_id != self.user.id)):
+                return HTTPFound(location=route_url('list_request',
+                                                    self.request))
+
+        today = datetime.now()
+        year = int(self.request.params.get('year', today.year))
+
+        start = datetime(2014, 5, 1)
+        years = [item for item in reversed(range(start.year, today.year + 1))]
+
+        if today.year > year:
+            if user.country == 'lu':
+                today = datetime(year, 12, 31)
+            else:
+                today = datetime(year, 5, 31)
+
+        if year >= 2018:
+            pool_history = self.get_new_history(user, today, year)
+        else:
+            pool_history = self.get_old_history(user, today, year)
 
         ret = {'user': user,
                'year': year,

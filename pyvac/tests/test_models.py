@@ -1,9 +1,17 @@
 from datetime import datetime
 from freezegun import freeze_time
 from dateutil.relativedelta import relativedelta
-from mock import patch, PropertyMock
+from mock import patch, PropertyMock, MagicMock
 
 from .case import ModelTestCase
+
+
+def mock_pool(amount, date_start, date_end):
+    mocked_pool = MagicMock()
+    type(mocked_pool).amount = PropertyMock(return_value=amount)
+    type(mocked_pool).date_start = PropertyMock(return_value=date_start) # noqa
+    type(mocked_pool).date_end = PropertyMock(return_value=date_end) # noqa
+    return mocked_pool
 
 
 class GroupTestCase(ModelTestCase):
@@ -329,31 +337,47 @@ class CPVacationTestCase(ModelTestCase):
 
     def test_lu_validate_request(self):
         from pyvac.models import CPLUVacation, CompensatoireVacation, User
-        user = User.by_login(self.session, u'sarah.doe')
-        self.assertIsInstance(user, User)
 
+        date_start = datetime.now() - relativedelta(months=3)
+        date_end = datetime.now() + relativedelta(months=3)
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=5)
-            pool = user.get_cp_usage(self.session)
-            days = 3
-            date_from = datetime.now()
-            date_to = datetime.now() + relativedelta(days=3)
-            err = CPLUVacation.validate_request(user, pool, days,
-                                                date_from, date_to)
-            self.assertEqual(err, None)
+            with patch('pyvac.models.User.pool',
+                       new_callable=PropertyMock) as mock_foo:
+                mocked_pool1 = mock_pool(200, date_start, date_end)
+                mocked_pool2 = mock_pool(0, date_start, date_end)
+                mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                         'CP restant': mocked_pool2}
+                user = User.by_login(self.session, u'sarah.doe')
+                self.assertIsInstance(user, User)
+
+                days = 3
+                date_from = datetime.now()
+                date_to = datetime.now() + relativedelta(days=3)
+                err = CPLUVacation.validate_request(user, None, days,
+                                                    date_from, date_to)
+                self.assertEqual(err, None)
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=2)
-            pool = user.get_cp_usage(self.session)
-            days = 3
-            date_from = datetime.now()
-            date_to = datetime.now() + relativedelta(days=3)
-            err = CPLUVacation.validate_request(user, pool, days,
-                                                date_from, date_to)
-            msg = 'You need 3 months of seniority before using your CP'
-            self.assertEqual(err, msg)
+            with patch('pyvac.models.User.pool',
+                       new_callable=PropertyMock) as mock_foo:
+                mocked_pool1 = mock_pool(200, date_start, date_end)
+                mocked_pool2 = mock_pool(0, date_start, date_end)
+                mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                         'CP restant': mocked_pool2}
+                user = User.by_login(self.session, u'sarah.doe')
+                self.assertIsInstance(user, User)
+
+                days = 3
+                date_from = datetime.now()
+                date_to = datetime.now() + relativedelta(days=3)
+                err = CPLUVacation.validate_request(user, None, days,
+                                                    date_from, date_to)
+                msg = 'You need 3 months of seniority before using your CP'
+                self.assertEqual(err, msg)
 
         with freeze_time('2017-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
@@ -361,14 +385,21 @@ class CPVacationTestCase(ModelTestCase):
             with patch('pyvac.models.User.arrival_date',
                        new_callable=PropertyMock) as mock_foo:
                 mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
-                pool = user.get_cp_usage(self.session)
-                days = 3
-                date_from = datetime.now().replace(year=datetime.now().year + 1) # noqa
-                date_to = date_from + relativedelta(days=3)
-                err = CPLUVacation.validate_request(user, pool, days,
-                                                    date_from, date_to)
-                msg = 'CP can only be used until 31/03/%d.' % pool['acquis']['expire'].year # noqa
-                self.assertEqual(err, msg)
+                with patch('pyvac.models.User.pool',
+                           new_callable=PropertyMock) as mock_foo:
+                    mocked_pool1 = mock_pool(200, date_start, date_end)
+                    mocked_pool2 = mock_pool(0, date_start, date_end)
+                    mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                             'CP restant': mocked_pool2}
+                    user = User.by_login(self.session, u'sarah.doe')
+                    self.assertIsInstance(user, User)
+                    days = 3
+                    date_from = datetime.now().replace(year=datetime.now().year + 1) # noqa
+                    date_to = date_from + relativedelta(days=3)
+                    err = CPLUVacation.validate_request(user, None, days,
+                                                        date_from, date_to)
+                    msg = 'CP can only be used until %s.' % user.pool['CP acquis'].date_end.strftime('%d/%m/%Y') # noqa
+                    self.assertEqual(err, msg)
 
         with freeze_time('2016-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
@@ -376,29 +407,40 @@ class CPVacationTestCase(ModelTestCase):
             with patch('pyvac.models.User.arrival_date',
                        new_callable=PropertyMock) as mock_foo:
                 mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
-                pool = user.get_cp_usage(self.session)
-                days = 250
-                date_from = datetime.now()
-                date_to = datetime.now() + relativedelta(days=3)
-                err = CPLUVacation.validate_request(user, pool, days,
-                                                    date_from, date_to)
-                msg = 'You only have 164 CP to use.'
-                self.assertEqual(err, msg)
+                with patch('pyvac.models.User.pool',
+                           new_callable=PropertyMock) as mock_foo:
+                    mocked_pool1 = mock_pool(200, date_start, date_end)
+                    mocked_pool2 = mock_pool(0, date_start, date_end)
+                    mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                             'CP restant': mocked_pool2}
+                    user = User.by_login(self.session, u'sarah.doe')
+                    self.assertIsInstance(user, User)
+                    days = 250
+                    date_from = datetime.now()
+                    date_to = datetime.now() + relativedelta(days=3)
+                    err = CPLUVacation.validate_request(user, None, days,
+                                                        date_from, date_to)
+                    msg = 'You only have 200 CP to use.'
+                    self.assertEqual(err, msg)
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=5)
-            pool = user.get_cp_usage(self.session)
-            # lower the amount of pool left
-            pool['acquis']['left'] = 0
-            pool['restant']['left'] = 0
-            days = 20
-            date_from = datetime.now()
-            date_to = datetime.now() + relativedelta(days=3)
-            err = CPLUVacation.validate_request(user, pool, days,
-                                                date_from, date_to)
-            msg = 'No CP left to take.'
-            self.assertEqual(err, msg)
+            with patch('pyvac.models.User.pool',
+                       new_callable=PropertyMock) as mock_foo:
+                mocked_pool1 = mock_pool(0, date_start, date_end)
+                mocked_pool2 = mock_pool(0, date_start, date_end)
+                mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                         'CP restant': mocked_pool2}
+                user = User.by_login(self.session, u'sarah.doe')
+                self.assertIsInstance(user, User)
+                days = 20
+                date_from = datetime.now()
+                date_to = datetime.now() + relativedelta(days=3)
+                err = CPLUVacation.validate_request(user, None, days,
+                                                    date_from, date_to)
+                msg = 'No CP left to take.'
+                self.assertEqual(err, msg)
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
@@ -463,31 +505,57 @@ class CPVacationTestCase(ModelTestCase):
 
     def test_cp_validate_request(self):
         from pyvac.models import CPVacation, User
-        user = User.by_login(self.session, u'jdoe')
-        self.assertIsInstance(user, User)
+
+        date_start = datetime.now() - relativedelta(months=3)
+        date_end = datetime.now() + relativedelta(months=3)
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=7)
+            with patch('pyvac.models.User.pool',
+                       new_callable=PropertyMock) as mock_foo:
+                mocked_pool1 = mock_pool(12.48, date_start, date_end)
+                mocked_pool2 = mock_pool(0, date_start, date_end)
+                mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                         'CP restant': mocked_pool2}
+
+                user = User.by_login(self.session, u'jdoe')
+                self.assertIsInstance(user, User)
+                cp_pool = user.pool.get('CP acquis')
+                self.assertTrue(cp_pool)
+                cp_pool = user.pool.get('CP restant')
+                self.assertTrue(cp_pool)
+
+                days = 3
+                date_from = datetime.now()
+                date_to = datetime.now() + relativedelta(days=3)
+                err = CPVacation.validate_request(user, None, days,
+                                                  date_from, date_to)
+                self.assertEqual(err, None)
 
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=7)
-            pool = user.get_cp_usage(self.session)
-            days = 3
-            date_from = datetime.now()
-            date_to = datetime.now() + relativedelta(days=3)
-            err = CPVacation.validate_request(user, pool, days,
-                                              date_from, date_to)
-            self.assertEqual(err, None)
+            with patch('pyvac.models.User.pool',
+                       new_callable=PropertyMock) as mock_foo:
+                mocked_pool1 = mock_pool(12.48, date_start, date_end)
+                mocked_pool2 = mock_pool(0, date_start, date_end)
+                mock_foo.return_value = {'CP acquis': mocked_pool1,
+                                         'CP restant': mocked_pool2}
 
-        with patch('pyvac.models.User.arrival_date',
-                   new_callable=PropertyMock) as mock_foo:
-            mock_foo.return_value = datetime.now() - relativedelta(months=7)
-            pool = user.get_cp_usage(self.session)
-            days = 3
-            date_from = datetime.now().replace(year=datetime.now().year + 2)
-            date_to = date_from + relativedelta(days=3)
-            err = CPVacation.validate_request(user, pool, days,
-                                              date_from, date_to)
-            msg = 'CP can only be used until 31/05/%d.' % pool['acquis']['expire'].year # noqa
-            self.assertEqual(err, msg)
+                user = User.by_login(self.session, u'jdoe')
+                self.assertIsInstance(user, User)
+                cp_pool = user.pool.get('CP acquis')
+                self.assertTrue(cp_pool)
+                cp_pool = user.pool.get('CP restant')
+                self.assertTrue(cp_pool)
+
+                days = 3
+                date_from = datetime.now().replace(year=datetime.now().year + 2) # noqa
+                date_to = date_from + relativedelta(days=3)
+                err = CPVacation.validate_request(user, None, days,
+                                                  date_from, date_to)
+                msg = 'CP can only be used until %s.' % user.pool['CP acquis'].date_end.strftime('%d/%m/%Y') # noqa
+                self.assertEqual(err, msg)
 
 
 class SudoerTestCase(ModelTestCase):

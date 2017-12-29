@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="pools-contain">
+  <legend>Active Pools</legend>
+  <a href="{{ route_url('create_pool') }}">{% trans %}Create new Pool{% endtrans %}</a>
+</div>
+
+  <table id="pools" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Name{% endtrans %}</th>
+        <th>{% trans %}Alias{% endtrans %}</th>
+        <th>{% trans %}Country{% endtrans %}</th>
+        <th>{% trans %}Date start{% endtrans %}</th>
+        <th>{% trans %}Date end{% endtrans %}</th>
+        <th>{% trans %}Status{% endtrans %}</th>
+        <th>{% trans %}Action{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pool in pools %}
+      <tr>
+            <td>{{ pool.fullname }}</td>
+            <td>{{ pool.alias|default('', true) }}</td>
+            <td>{{ pool.country.name|upper }}</td>
+            <td>{{ pool.date_start.strftime('%d/%m/%Y') }}</td>
+            <td>{{ pool.date_end.strftime('%d/%m/%Y') }}</td>
+            <td>{{ pool.status }}</td>
+            <td>
+                <a href="{{ route_url('edit_pool', pool_id=pool.id) }}">
+                    edit
+                </a>
+                <a href="{{ route_url('delete_pool', pool_id=pool.id) }}">
+                    delete
+                </a>
+            </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<div id="pools-contain">
+  <legend>Inactive Pools</legend>
+</div>
+
+  <table id="pastpools" class="table table-bordered table-condensed table-striped table-hover tablesorter">
+    <thead>
+      <tr>
+        <th>{% trans %}Name{% endtrans %}</th>
+        <th>{% trans %}Alias{% endtrans %}</th>
+        <th>{% trans %}Country{% endtrans %}</th>
+        <th>{% trans %}Date start{% endtrans %}</th>
+        <th>{% trans %}Date end{% endtrans %}</th>
+        <th>{% trans %}Status{% endtrans %}</th>
+        <th>{% trans %}Action{% endtrans %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pool in pastpools %}
+      <tr>
+            <td>{{ pool.fullname }}</td>
+            <td>{{ pool.alias|default('', true) }}</td>
+            <td>{{ pool.country.name|upper }}</td>
+            <td>{{ pool.date_start.strftime('%d/%m/%Y') }}</td>
+            <td>{{ pool.date_end.strftime('%d/%m/%Y') }}</td>
+            <td>{{ pool.status }}</td>
+            <td>
+                <a href="{{ route_url('edit_pool', pool_id=pool.id) }}">
+                    edit
+                </a>
+                <a href="{{ route_url('delete_pool', pool_id=pool.id) }}">
+                    delete
+                </a>
+            </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function()
+        {
+            $("#pools").tablesorter({
+                theme : 'blue',
+                debug: false,
+            });
+
+            $("#pastpools").tablesorter({
+                theme : 'blue',
+                debug: false,
+            });
+        }
+    );
+</script>
+{% endblock %}

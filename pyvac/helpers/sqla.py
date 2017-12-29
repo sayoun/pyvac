@@ -28,6 +28,10 @@ class _Base(object):
                       'mysql_charset': 'utf8'
                       }
 
+    @property
+    def session(self):
+        return SessionFactory.get_object_session(self)
+
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=func.now())
 
@@ -148,6 +152,13 @@ class SessionFactory(object):
     @classmethod
     def get(cls, name):
         return cls.sessions[name]
+
+    @classmethod
+    def get_object_session(cls, object_):
+        try:
+            return cls.sessions[object_.__database__].object_session(object_)
+        except KeyError:
+            return None
 
 
 def create_engine(db_name, settings, prefix='sqlalchemy.', scoped=False):
