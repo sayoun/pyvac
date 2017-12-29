@@ -207,7 +207,7 @@ class User(Base):
     def arrival_date(self):
         """Get arrival date in the company for a user."""
         if not self.ldap_user:
-            return
+            return self.created_at
 
         ldap = LdapCache()
         try:

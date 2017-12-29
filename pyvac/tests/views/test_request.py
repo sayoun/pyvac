@@ -929,13 +929,17 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        request = self.create_request({
-            'days': 4,
-            'date_from': '05/10/2016 - 10/10/2016',
-            'type': '1',
-            'breakdown': 'FULL',
-        })
-        view = Send(request)()
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
+            request = self.create_request({
+                'days': 4,
+                'date_from': '05/10/2016 - 10/10/2016',
+                'type': '1',
+                'breakdown': 'FULL',
+            })
+            view = Send(request)()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
@@ -947,13 +951,17 @@ class RequestTestCase(case.ViewTestCase):
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
-        request = self.create_request({
-            'days': 0.5,
-            'date_from': '17/10/2016 - 17/10/2016',
-            'type': '1',
-            'breakdown': 'AM',
-        })
-        view = Send(request)()
+
+        with patch('pyvac.models.User.arrival_date',
+                   new_callable=PropertyMock) as mock_foo:
+            mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
+            request = self.create_request({
+                'days': 0.5,
+                'date_from': '17/10/2016 - 17/10/2016',
+                'type': '1',
+                'breakdown': 'AM',
+            })
+            view = Send(request)()
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
