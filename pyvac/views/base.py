@@ -202,7 +202,7 @@ class CreateView(RedirectView):
             if not errors:
                 try:
                     self.update_model(model)
-                    model.validate(self.session, ldap)
+                    model.validate(self.session, ldap=ldap)
                 except ModelError as err:
                     errors.extend(err.errors)
 

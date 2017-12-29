@@ -108,7 +108,7 @@ class _Base(object):
 
         return query
 
-    def validate(self, session):
+    def validate(self, session, **kwargs):
         """
         return True or raise a :class:`ModelError` Exception
         """
