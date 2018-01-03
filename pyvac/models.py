@@ -782,7 +782,7 @@ class User(Base):
         if extra and extra.get('absolute'):
             raw_acquired.append({'date': extra['expire_date'],
                                  'flavor': 'expiration',
-                                 'value': -extra['absolute']})
+                                 'value': -abs(extra['absolute'])})
 
         acquired = []
         total = 0
