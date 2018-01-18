@@ -780,6 +780,9 @@ class User(Base):
         # XXX: handle expiration date for extra pool
         extra = allowed.get('extra')
         if extra and extra.get('absolute'):
+            if extra['absolute'] < 0:
+                # don't substract 2 times, it's already accounted in restants
+                extra['absolute'] = 0
             raw_acquired.append({'date': extra['expire_date'],
                                  'flavor': 'expiration',
                                  'value': -abs(extra['absolute'])})
