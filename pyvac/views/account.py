@@ -96,8 +96,8 @@ class ListPool(View):
                     data.append('%s,%s,%s,%s' %
                                 (user.login,
                                  rtt_usage.get(user.login, 0),
-                                 cps.get('extra', {}).get('left', 0) if cps else 0, # noqa
-                                 cps['restant']['left'] if cps else 0,
+                                 cps['restant']['left'] if cps else 0, # noqa
+                                 cps['acquis']['left'] if cps else 0,
                                  ))
 
         if data:
