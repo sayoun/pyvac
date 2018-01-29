@@ -657,6 +657,9 @@ class User(Base):
         if cycle_start.day != 1:
             cycle_start = cycle_start + relativedelta(days=1)
 
+        if user.arrival_date > cycle_start:
+            cycle_start = user.arrival_date
+
         if user.country == 'lu':
             return [{'date': cycle_start, 'value': 200}]
 
@@ -679,6 +682,10 @@ class User(Base):
 
         if cycle_start.day != 1:
             cycle_start = cycle_start + relativedelta(days=1)
+
+        if user.arrival_date > cycle_start:
+            cycle_start = user.arrival_date
+
         thresholds = [cycle_start, cycle_end]
 
         def get_restant(date):
