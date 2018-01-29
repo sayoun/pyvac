@@ -79,6 +79,8 @@ class ListPool(View):
         rtt_usage = {}
         cp_usage = {}
         for user in users:
+            if user.login in self.ignore_users:
+                continue
             if self.user.country == 'fr':
                 rtts = user.get_rtt_usage(self.session)
                 if rtts:
