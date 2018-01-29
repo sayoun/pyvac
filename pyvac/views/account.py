@@ -88,8 +88,6 @@ class ListPool(View):
             total = 0
             if cps:
                 total = cps['restant']['left'] + cps['acquis']['left']
-                if self.user.country == 'fr':
-                    total = total + cps['n_1']['left'] + cps.get('extra', {}).get('left', 0) # noqa
             cp_usage[user.login] = total
             if self.user.country == 'fr':
                 if user.login not in self.ignore_users:
