@@ -86,7 +86,7 @@ class ListPool(View):
                 if rtts:
                     rtt_usage[user.login] = rtts['left']
 
-            cps = user.get_cp_usage(self.session, today=today, taken_end=today)
+            cps = user.get_cp_usage(self.session, today=today)
             total = 0
             if cps:
                 total = cps['restant']['left'] + cps['acquis']['left']
