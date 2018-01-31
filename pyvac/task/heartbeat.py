@@ -4,6 +4,7 @@ import uuid
 import logging
 import transaction
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from celery.task import Task
 
@@ -28,12 +29,11 @@ class HeartBeat(Task):
         """Disable expired pool, create new ones."""
         today = datetime.now().replace(hour=0, minute=0, second=0,
                                        microsecond=0)
-
         # handle pools cycle expiration
         active_pools = Pool.by_status(session, 'active')
         self.log.debug('found %d active pool' % len(active_pools))
         for pool in active_pools:
-            if today >= pool.date_end:
+            if today > pool.date_end:
                 self.log.info('pool %r must expire: %s' % (pool, pool.date_end)) # noqa
                 # retrieve the other pools if pool is in a pool group
                 if pool.pool_group:
@@ -45,9 +45,11 @@ class HeartBeat(Task):
                     new_restant = Pool.clone(session, restant,
                                              date_start=acquis.date_start,
                                              date_end=acquis.date_end,
-                                             pool_group=pool_group)
+                                             pool_group=pool_group,
+                                             date_last_increment=today)
                     new_acquis = Pool.clone(session, acquis, shift=12,
-                                            pool_group=pool_group)
+                                            pool_group=pool_group,
+                                            date_last_increment=today)
 
                     if pool.country.name == 'lu':
                         initial_amount = 200
@@ -55,16 +57,27 @@ class HeartBeat(Task):
                         pool_class = acquis.vacation_class
                         initial_amount = pool_class.get_increment_step()
 
+                    yesterday = today - relativedelta(days=1)
+                    acquis.date_last_increment = yesterday
                     # switch current amounts from old acquis to new restant
                     # and grant initial amount for new cycle
                     for up in acquis.user_pools:
+                        # need to increment one last time the acquis pool
+                        # before expiring it, as we acquire CP after a full
+                        # worked month not at the start of month like RTT
+                        if pool.country.name == 'fr':
+                            up.increment_month(session, True)
+                            up.amount = round(up.amount)
+
                         self.log.debug('user:%s amount:%s' % (up.user.name, up.amount)) # noqa
                         entry = UserPool(amount=0, user=up.user, pool=new_restant) # noqa
                         session.flush()
                         entry.increment(session, up.amount, 'heartbeat')
                         entry = UserPool(amount=0, user=up.user, pool=new_acquis) # noqa
                         session.flush()
-                        entry.increment(session, initial_amount, 'heartbeat')
+                        # don't increment acquis after creation for fr
+                        if pool.country.name != 'fr':
+                            entry.increment(session, initial_amount, 'heartbeat') # noqa
 
                     restant.expire(session)
                     acquis.expire(session)
@@ -92,9 +105,17 @@ class HeartBeat(Task):
                 self.log.info('pool %r already incremented this month' % pool)
                 need_increment = False
 
+            if pool.country.name == 'lu':
+                need_increment = False
+
             pool_to_inc = pool
             if pool.pool_group:
                 # if we have a group, only increment acquis not restant
+                # but update date_last_increment
+                if pool.name == 'restant':
+                    if need_increment:
+                        pool.date_last_increment = today
+                    continue
                 all_pools = Pool.by_pool_group(session, pool.pool_group)
                 acquis = [p for p in all_pools if p.name == 'acquis'][0]
                 pool_to_inc = acquis

@@ -2431,7 +2431,8 @@ class Pool(Base):
     @declared_attr
     def __table_args__(cls):  # noqa
         return (UniqueConstraint('date_start', 'date_end', 'vacation_type_id',
-                                 'country_id', name='uq_start_end_type_ctry'),
+                                 'country_id', 'name',
+                                 name='uq_start_end_type_ctry_name'),
                 )
 
     @classmethod
@@ -2467,7 +2468,7 @@ class Pool(Base):
 
     @classmethod
     def clone(cls, session, pool, shift=None, date_start=None, date_end=None,
-              pool_group=None):
+              pool_group=None, date_last_increment=None):
         """Clone a pool from an existing one
 
         with a 12 months shift for date boundaries if nothing is provided."""
@@ -2477,6 +2478,7 @@ class Pool(Base):
             new_date_start = date_start
         if date_end:
             new_date_end = date_end
+        date_last_increment = date_last_increment or datetime.now()
 
         entry = cls(name=pool.name,
                     alias=pool.alias,
@@ -2486,7 +2488,7 @@ class Pool(Base):
                     vacation_type=pool.vacation_type,
                     country=pool.country,
                     pool_group=pool_group,
-                    date_last_increment=datetime.now(),
+                    date_last_increment=date_last_increment,
                     )
         session.add(entry)
         session.flush()
@@ -2592,13 +2594,15 @@ class UserPool(Base):
         today = datetime.now()
         pool_class = self.pool.vacation_class
         if need_increment:
-            log.info('pool %r to increment' % self.pool)
+            log.info('pool %r to increment for user %s' % (self.pool, self.user.login)) # noqa
             months = diff_month(today, self.pool.date_last_increment)
             log.info('%d months since last update' % months)
             for cpt in range(months):
                 date = self.pool.date_last_increment + relativedelta(months=cpt + 1) # noqa
                 delta = pool_class.get_increment_step(user=self.user, date=date) # noqa
                 self.amount = self.amount + delta
+
+                log.debug('incremented user %s -> %s' % (self.user.login, delta)) # noqa
 
                 EventLog.add(session, self, 'increment', comment='heartbeat',
                              delta=delta)
@@ -2612,9 +2616,6 @@ class UserPool(Base):
 
                 EventLog.add(session, self, 'increment', comment='seniority',
                              delta=seniority_bonus)
-
-        if self.pool.in_last_month:
-            self.amount = round(self.amount)
 
     def decrement(self, session, amount, comment, created_at=None):
         self.amount = self.amount - amount
