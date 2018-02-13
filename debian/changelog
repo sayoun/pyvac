@@ -1,3 +1,9 @@
+pyvac (1.8.43) unstable; urgency=medium
+
+  * Pre release 1.9
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 14 Feb 2018 00:30:08 +0100
+
 pyvac (1.8.42) unstable; urgency=medium
 
   * Add blacklist_users feature to disable access if needed 
