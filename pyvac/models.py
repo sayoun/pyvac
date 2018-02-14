@@ -2629,6 +2629,8 @@ class UserPool(Base):
         comment = 'Request #%d' % request.id
         userpools = [up for up in request.user.pools
                      if up.pool.vacation_type == request.vacation_type]
+        if not userpools:
+            return
         created_at = request.date_from
         userpool = userpools[0]
         if userpool.pool.pool_group:
