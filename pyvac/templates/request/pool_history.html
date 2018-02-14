@@ -35,7 +35,9 @@
           <td>{{ entry.value|plusify if loop.index0 else '-'}}
           {% if entry.flavor %}
               {% if entry.req_id %}<a href="{{ route_url('request_history', req_id=entry.req_id) }}">({{entry.flavor}})
-          {% endif %}
+              {%else%}
+                ({{entry.flavor}})
+              {% endif %}
           {%endif%}</td>
           <td>{{ pool_balance }}</td>
         </tr>
