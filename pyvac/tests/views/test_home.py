@@ -74,6 +74,7 @@ class HomeTestCase(case.ViewTestCase):
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
+            view_user.rtt = view_user.get_rtt_usage(self.session)
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 10, 'left': 9.5, 'state': 'warning',
                         'taken': 0.5, 'year': 2014}
@@ -92,6 +93,7 @@ class HomeTestCase(case.ViewTestCase):
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
+            view_user.rtt = view_user.get_rtt_usage(self.session)
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 1, 'left': 0.5, 'state': 'success',
                         'taken': 0.5, 'year': 2011}
@@ -112,6 +114,7 @@ class HomeTestCase(case.ViewTestCase):
                                   u'futures_breakdown']))
             self.assertEqual(len(view[u'types']), 5)
             view_user = view['pyvac']['user']
+            view_user.rtt = view_user.get_rtt_usage(self.session)
             self.assertTrue(view_user.rtt)
             expected = {'allowed': 5, 'left': 2.0, 'state': 'success',
                         'taken': 3.0, 'year': 2016}
