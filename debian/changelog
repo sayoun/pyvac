@@ -1,3 +1,9 @@
+pyvac (1.8.45) unstable; urgency=medium
+
+  * Add support for partial time work which is used for RTT acquisition
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 16 Feb 2018 17:36:02 +0100
+
 pyvac (1.8.44) unstable; urgency=medium
 
   * Fix: Only decrement userpool for a request if userpool exists
