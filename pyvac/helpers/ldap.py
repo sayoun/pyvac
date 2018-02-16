@@ -341,6 +341,89 @@ class LdapWrapper(object):
             # Do the actual modification if needed
             self._conn.modify_s(dn, ldif)
 
+    def update_managers(self, old, new):
+        """Update manager list in ldap directory."""
+        # dn of object we want to update
+        dn = 'cn=managers,%s' % self.team_dn
+
+        # Convert place-holders for modify-operation using modlist-module
+        ldif = modlist.modifyModlist(old, new)
+        if ldif:
+            # rebind with system dn
+            self._bind(self.system_DN, self.system_password)
+            log.info('sending for dn %r: %r' % (dn, ldif))
+            # Do the actual modification if needed
+            self._conn.modify_s(dn, ldif)
+
+    def add_manager(self, user_dn):
+        """ Add new user to manager list in ldap directory """
+        # retrieve current managers members
+        managers = self.list_manager()
+        new_user = user_dn.encode('utf-8')
+        if new_user in managers:
+            return
+        new_managers = managers + [new_user]
+        log.info('add %s to managers list in ldap' % user_dn)
+
+        old = {'member': managers}
+        new = {'member': new_managers}
+        self.update_managers(old, new)
+
+    def remove_manager(self, user_dn):
+        """ Remove new user from manager list in ldap directory """
+        # retrieve current managers members
+        managers = self.list_manager()
+        new_user = user_dn.encode('utf-8')
+        if new_user not in managers:
+            return
+        new_managers = [user for user in managers if user != new_user]
+        log.info('remove %s from managers list in ldap' % user_dn)
+
+        old = {'member': managers}
+        new = {'member': new_managers}
+        self.update_managers(old, new)
+
+    def update_admins(self, old, new):
+        """Update admins list in ldap directory."""
+        # dn of object we want to update
+        dn = self.admin_dn
+        # Convert place-holders for modify-operation using modlist-module
+        ldif = modlist.modifyModlist(old, new)
+        if ldif:
+            # rebind with system dn
+            self._bind(self.system_DN, self.system_password)
+            log.info('sending for dn %r: %r' % (dn, ldif))
+            # Do the actual modification if needed
+            self._conn.modify_s(dn, ldif)
+
+    def add_admin(self, user_dn):
+        """ Add new user to admin list in ldap directory """
+        # retrieve current admins members
+        admins = self.list_admin()
+        new_user = user_dn.encode('utf-8')
+        if new_user in admins:
+            return
+        new_admins = admins + [new_user]
+        log.info('add %s to admins list in ldap' % user_dn)
+
+        old = {'member': admins}
+        new = {'member': new_admins}
+        self.update_admins(old, new)
+
+    def remove_admin(self, user_dn):
+        """ Remove user from admin list in ldap directory """
+        # retrieve current admins members
+        admins = self.list_admin()
+        new_user = user_dn.encode('utf-8')
+        if new_user not in admins:
+            return
+        new_admins = [user for user in admins if user != new_user]
+        log.info('remove %s from admins list in ldap' % user_dn)
+
+        old = {'member': admins}
+        new = {'member': new_admins}
+        self.update_admins(old, new)
+
     def get_hr_by_country(self, country):
         """ Get hr mail of country for a user_dn"""
         what = '(member=*)'
