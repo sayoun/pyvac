@@ -599,28 +599,11 @@ class Exported(View):
             sage_order = int(self.request.params.get('sage_order', 0))
             log.info('exporting for: %d/%d' % (int(month), int(year)))
 
-            export_month = int(self.request.params.get('export_month', 0))
+            export_month = int(self.request.params.get('export_month', 0)) # noqa
             export_day = int(self.request.params.get('export_day', 0))
             boundary_date = int(self.request.params.get('boundary_date', 0))
 
-            if export_month:
-                all_reqs = Request.get_by_month(self.session, country,
-                                                month, year,
-                                                sage_order=sage_order)
-                # filter request which overlap 2 months, only keep the ones
-                # which are ending in the selected month
-                requests = []
-                for req in all_reqs:
-                    if req.date_from.month != req.date_to.month:
-                        if req.date_to.month == int(month):
-                            log.info('using overlapping req: %r' % req.summary)
-                            requests.append(req)
-                        else:
-                            log.info('discarding overlapping req: %r' %
-                                     req.summary)
-                    else:
-                        requests.append(req)
-            elif export_day:
+            if export_day:
                 last_month_date = datetime(year, month, boundary_date, 23, 59, 59) # noqa
                 first_month_date = last_month_date - relativedelta(months=1)
                 first_month_date = first_month_date.replace(
@@ -646,6 +629,24 @@ class Exported(View):
                     elif req.date_from <= last_month_date < req.date_to:
                         log.info('discarding overlapping req: %r' %
                                  req.summary)
+                    else:
+                        requests.append(req)
+            else:
+                # assume it's export_month as it's a radio button choice
+                all_reqs = Request.get_by_month(self.session, country,
+                                                month, year,
+                                                sage_order=sage_order)
+                # filter request which overlap 2 months, only keep the ones
+                # which are ending in the selected month
+                requests = []
+                for req in all_reqs:
+                    if req.date_from.month != req.date_to.month:
+                        if req.date_to.month == int(month):
+                            log.info('using overlapping req: %r' % req.summary)
+                            requests.append(req)
+                        else:
+                            log.info('discarding overlapping req: %r' %
+                                     req.summary)
                     else:
                         requests.append(req)
 

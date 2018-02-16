@@ -263,7 +263,8 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = Export(self.create_request())()
             self.assertEqual(set(view.keys()),
-                             set(['months', 'current_month', 'pyvac']))
+                             set(['months', 'current_month', 'pyvac',
+                                  'export_day_tooltip']))
             self.assertEqual(len(view[u'months']), 24)
 
     def test_get_exported_ok(self):
