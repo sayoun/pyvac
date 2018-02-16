@@ -62,7 +62,7 @@ override = {'zh': {2016: [('2016-01-01', 'New Years Day'),
                           ('2018-04-04', "Combination of Women's Day and Children's Day"), # noqa
                           ('2018-04-05', 'Qingming Festival'),
                           ('2018-04-06', 'Qingming Festival'),
-                          ('2017-05-01', '1st May'),
+                          ('2018-05-01', '1st May'),
                           ('2018-06-18', 'Dragon Boat Festival'),
                           ('2018-09-24', 'Mid-Autumn Festival'),
                           ('2018-10-10', 'National Day/Double Tenth Day'),
