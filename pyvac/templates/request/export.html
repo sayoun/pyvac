@@ -2,17 +2,42 @@
 
 {% block body %}
 
-<form class="form-inline">
-    <label>{% trans %}Select month:{% endtrans %}</label>
-    <select id="month_select">
-    {% for (entry, text) in months %}
-        <option  value="{{ entry }}" {% if entry == current_month %}selected="selected"{% endif %}>{{ text }}</option>
-    {% endfor %}
-     </select>
-    <label class="checkbox">
-        <input type="checkbox" name="sage_order" value="1" id="sage_order"/> Sage output ordering
-    </label>
+<form class="form-horizontal" action="" method="post" id="exportDataForm">
+    <div class="control-group-no-bottom">
+        <span class="control-label">{% trans %}Select month:{% endtrans %}</span>
+        <div class="controls">
+            <select id="month_select">
+            {% for (entry, text) in months %}
+                <option  value="{{ entry }}" {% if entry == current_month %}selected="selected"{% endif %}>{{ text }}</option>
+            {% endfor %}
+             </select>
+        </div>
+    </div>
+    <div class="control-group-no-bottom">
+        <span class="control-label">{% trans %}Sage output ordering{% endtrans %}</span>
+        <div class="controls">
+            <label class="checkbox inline">
+                <input type="checkbox" name="sage_order" value="1" id="sage_order"/>
+            </label>
+        </div>
+    </div>
+    <div class="control-group-no-bottom">
+        <span class="control-label">{% trans %}Export format{% endtrans %}</span>
+        <div class="controls">
+            <label class="radio inline">
+                <input type="radio" name="export_type" id="export_month" value="month" {% if pyvac.user.country not in ['fr'] %}checked="checked"{% endif %}>Full month
+            </label>
+            <label class="radio inline">
+                <input type="radio" name="export_type" id="export_day" value="until" {% if pyvac.user.country in ['fr'] %}checked="checked"{% endif %}>Until day in month
+                 <a id="export_day_info" href="#" data-toggle="tooltip" title="" data-original-title="{{ export_day_tooltip }}">
+                    <span class="badge badge-small">?</span>
+                 </a>
+                <input class="input-mini" type="text" name="boundary_date" id="boundary_date" value="20"/>
+            </label>
+        </div>
+    </div>
 </form>
+
 
 <textarea class='exportedlist' id="textexport" rows="20"></textarea>
 
@@ -23,13 +48,26 @@
 
 function get_data() {
     sage_order = 0;
+    export_month = 0;
+    export_day = 0;
+    boundary_date = 0;
     if ($('#sage_order').prop('checked')){
         sage_order = 1;
+    };
+    if ($('#export_month').prop('checked')){
+        export_month = 1;
+    };
+    if ($('#export_day').prop('checked')){
+        export_day = 1;
+        boundary_date = parseInt($('#boundary_date').val());
+        if (isNaN(boundary_date) || boundary_date <= 0) {
+            return;
+        }
     };
     $.ajax({
         url: "{{ route_url('request_export') }}",
         type: 'post',
-        data: {'month': $('#month_select').val(), 'sage_order': sage_order},
+        data: {'month': $('#month_select').val(), 'sage_order': sage_order, 'export_month': export_month, 'export_day': export_day, 'boundary_date': boundary_date},
         success: function(html) {
             $('#textexport').val(html);
         }
@@ -42,9 +80,25 @@ $("#month_select").change(function(){
 $("#sage_order").change(function(){
     get_data();
 });
+$("#export_month").change(function(){
+    get_data();
+});
+$("#export_day").change(function(){
+    get_data();
+});
+$("#boundary_date").change(function(){
+    get_data();
+});
 $(document).ready(function(){
     get_data();
 });
+
+$('#exportDataForm').submit(function(event){
+    event.preventDefault();
+    get_data();
+});
+
+$("#export_day_info").tooltip({});
 
 </script>
 

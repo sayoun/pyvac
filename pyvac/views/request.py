@@ -575,8 +575,13 @@ class Export(View):
                 entries.append(('%d/%d' % (month, year),
                                temp.strftime('%B %Y')))
 
+        export_day_tooltip = """\
+Example: If you use 20 for Feb month, export will be from 21 Jan to 20 Feb.
+"""
+
         return {'months': entries,
-                'current_month': '%d/%d' % (today.month, today.year)}
+                'current_month': '%d/%d' % (today.month, today.year),
+                'export_day_tooltip': export_day_tooltip}
 
 
 class Exported(View):
@@ -589,25 +594,60 @@ class Exported(View):
         if self.user.is_admin:
             country = self.user.country
             month, year = self.request.params.get('month').split('/')
+            month = int(month)
+            year = int(year)
             sage_order = int(self.request.params.get('sage_order', 0))
             log.info('exporting for: %d/%d' % (int(month), int(year)))
-            all_reqs = Request.get_by_month(self.session, country,
-                                            int(month), int(year),
-                                            sage_order=sage_order)
 
-            # filter request which overlap 2 months, only keep the ones which
-            # are ending in the selected month
-            requests = []
-            for req in all_reqs:
-                if req.date_from.month != req.date_to.month:
-                    if req.date_to.month == int(month):
+            export_month = int(self.request.params.get('export_month', 0))
+            export_day = int(self.request.params.get('export_day', 0))
+            boundary_date = int(self.request.params.get('boundary_date', 0))
+
+            if export_month:
+                all_reqs = Request.get_by_month(self.session, country,
+                                                month, year,
+                                                sage_order=sage_order)
+                # filter request which overlap 2 months, only keep the ones
+                # which are ending in the selected month
+                requests = []
+                for req in all_reqs:
+                    if req.date_from.month != req.date_to.month:
+                        if req.date_to.month == int(month):
+                            log.info('using overlapping req: %r' % req.summary)
+                            requests.append(req)
+                        else:
+                            log.info('discarding overlapping req: %r' %
+                                     req.summary)
+                    else:
+                        requests.append(req)
+            elif export_day:
+                last_month_date = datetime(year, month, boundary_date, 23, 59, 59) # noqa
+                first_month_date = last_month_date - relativedelta(months=1)
+                first_month_date = first_month_date.replace(
+                    day=boundary_date + 1, hour=0, minute=0, second=0,
+                    microsecond=0)
+                log.info('exporting from %s -> %s' % (first_month_date,
+                                                      last_month_date))
+
+                all_reqs = Request.get_by_month(
+                    self.session, country, month, year,
+                    sage_order=sage_order,
+                    first_month_date=first_month_date,
+                    last_month_date=last_month_date
+                )
+
+                # filter requests which overlap the boundary date, only keep
+                # the ones which are ending in the selected period
+                requests = []
+                for req in all_reqs:
+                    if req.date_from < first_month_date <= req.date_to:
                         log.info('using overlapping req: %r' % req.summary)
                         requests.append(req)
-                    else:
+                    elif req.date_from <= last_month_date < req.date_to:
                         log.info('discarding overlapping req: %r' %
                                  req.summary)
-                else:
-                    requests.append(req)
+                    else:
+                        requests.append(req)
 
             data = []
             header = ('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s' %
@@ -617,6 +657,7 @@ class Exported(View):
             for idx, req in enumerate(requests, start=1):
                 data.append('%d,%s' % (idx, req.summarycsv))
             exported = '\n'.join(data)
+
         return {u'exported': exported}
 
 

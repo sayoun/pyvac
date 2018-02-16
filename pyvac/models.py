@@ -1868,7 +1868,8 @@ class Request(Base):
                         eagerload=['user'])
 
     @classmethod
-    def get_by_month(cls, session, country, month, year, sage_order=False):
+    def get_by_month(cls, session, country, month, year, sage_order=False,
+                     first_month_date=None, last_month_date=None):
         """
         Get all requests for a given month.
 
@@ -1879,18 +1880,22 @@ class Request(Base):
         date = datetime.now()
         # retrieve first day of the previous month
         # first_month_day = date.replace(day=1) - relativedelta(months=1)
-        first_month_day = date.replace(day=1, month=month, year=year)
-        # set date at 00:00:00
-        first_month_date = first_month_day.replace(hour=0, minute=0, second=0,
-                                                   microsecond=0)
+        if not first_month_date:
+            first_month_day = date.replace(day=1, month=month, year=year)
+            # set date at 00:00:00
+            first_month_date = first_month_day.replace(hour=0, minute=0,
+                                                       second=0,
+                                                       microsecond=0)
 
         # retrieve last day of the previous month
-        last_month_day = monthrange(first_month_day.year,
-                                    first_month_day.month)[1]
-        # set time at 23:59:59 for this date
-        last_month_date = (first_month_day.replace(day=last_month_day, hour=23,
-                                                   minute=59, second=59,
-                                                   microsecond=0))
+        if not last_month_date:
+            last_month_day = monthrange(first_month_day.year,
+                                        first_month_day.month)[1]
+            # set time at 23:59:59 for this date
+            last_month_date = (first_month_day.replace(day=last_month_day,
+                                                       hour=23,
+                                                       minute=59, second=59,
+                                                       microsecond=0))
 
         country_id = Countries.by_name(session, country).id
 
