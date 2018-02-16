@@ -1,3 +1,12 @@
+pyvac (1.8.44) unstable; urgency=medium
+
+  * Fix: Only decrement userpool for a request if userpool exists
+  * Display flavor in pool history for RTT
+  * Update export view to allow new type of export, until a day in month
+  * Allow admins to update role of user for LDAP users
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 16 Feb 2018 13:56:19 +0100
+
 pyvac (1.8.43) unstable; urgency=medium
 
   * Pre release 1.9
