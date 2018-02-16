@@ -204,6 +204,18 @@
                 {% if user.has_feature('disable_rtt') %}checked="checked"{% endif %}/>
             </div>
         </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputPartialTime">{% trans %}partial time:{% endtrans %}
+               <a id="partial_time_info" href="#" data-toggle="tooltip" title="" data-original-title="{{ partial_time_tooltip }}">
+                  <span class="badge badge-small">?</span>
+               </a>
+            </label>
+            <div class="controls">
+               <input type="text" name="user.partial_time" id="inputPartialTime" value="{{user.partial_time|default('', true)}}" placeholder="X/5" />
+            </div>
+        </div>
+
         {% endif %}
 
         <div class="control-group">
@@ -244,6 +256,8 @@
 $(document).ready(function(){
 
     _passwordIsOk = true;
+
+    $("#partial_time_info").tooltip({});
 
     $('#createUserForm').submit(function(){
         return _passwordIsOk;

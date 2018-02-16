@@ -161,6 +161,14 @@ class AccountMixin:
             if jpeg:
                 view['ldap_user']['photo'] = base64.b64encode(jpeg)
 
+        partial_time_tooltip = """\
+This value will be used to compute how much RTT you will acquire.
+Example: If you use 2/5, you will acquire 0.4 RTT instead of 1 RTT.
+
+This has no effect on CP acquisition.
+"""
+        view['partial_time_tooltip'] = partial_time_tooltip
+
     def append_groups(self, account):
         settings = self.request.registry.settings
         use_ldap = False

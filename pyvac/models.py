@@ -139,6 +139,8 @@ class User(Base):
 
     registration_number = Column(Integer, nullable=True)
 
+    partial_time = Column(Unicode(5), nullable=True)
+
     firm = ''
     feature_flags = {}
     users_flagfile = ''
@@ -1021,8 +1023,11 @@ class RTTVacation(BaseVacation):
     def get_increment_step(cls, user=None, date=None, **kwargs):
         """Get the amount to use to increment a User Pool each cycle."""
 
-        # TODO: check if user is using partial time
+        # check if user is using partial time
         # in which case increment should be a fraction of 1 RTT
+        if user and user.partial_time:
+            # this would return 0.4 for a partial time of '2/5'
+            return eval('%s.' % user.partial_time)
 
         today = date or datetime.now()
         if today.month not in cls.except_months:
