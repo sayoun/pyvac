@@ -350,6 +350,9 @@ class Edit(AccountMixin, EditView):
                 except:
                     photo = None
 
+            if photo:
+                log.info('uploading photo size: %d' % len(photo))
+
             ldap = LdapCache()
             ldap.update_user(account, password=password, unit=unit,
                              arrival_date=arrival_date, uid=uid,

@@ -232,7 +232,10 @@
         <label class="control-label" for="photofile">{% trans %}Photo:{% endtrans %}</label>
         <div class="controls">
             <div id="filedrag">
-            <image id="profileimg" name="profileimg" {% if ldap_user.photo %}src="data:image/png;base64,{{ ldap_user.photo }}"{% endif %}/>
+                <div id="filedrag_text">
+                    Drag & drop image file here<br/>or<br/>click the button below
+                </div>
+                <image id="profileimg" name="profileimg" {% if ldap_user.photo %}src="data:image/png;base64,{{ ldap_user.photo }}"{% endif %}/>
             </div>
             <button class="btn btn-inverse btn-mini pull-right" type="button" id="deletephoto" name="deletephoto">Delete</button>
         </div>
@@ -291,17 +294,25 @@ $(document).ready(function(){
     $("#inputArrivalDate").datepicker({dateFormat: 'dd/mm/yy'});
 
     $('#deletephoto').on('click', function(event) {
-        $('#profileimg').attr('src', '');
+        $('#profileimg').removeAttr('src');
         $('#remove_photo').val('yes');
         $('#photofile').val(null);
         $('#messages').html('Preview');
+        $('#filedrag_text').show();
     });
 
     // file drag hover
     function FileDragHover(e) {
         e.stopPropagation();
         e.preventDefault();
-        e.target.className = (e.type == "dragover" ? "hover" : "");
+        if (e.type == "dragover")
+        {
+            $('#filedrag').addClass('hover');
+        }
+        else {
+             $('#filedrag').removeClass('hover');
+        }
+        // e.target.className = (e.type == "dragover" ? "hover" : "");
     }
 
     // file selection
@@ -359,6 +370,8 @@ $(document).ready(function(){
 
         // display info panel
         ParseFile(file);
+
+        $('#filedrag_text').hide();
     }
 
     // output file information
@@ -394,12 +407,9 @@ $(document).ready(function(){
         Init();
     }
 
-    if (typeof window.chrome === "undefined"){
-        var filedrag = $('#filedrag')
-        filedrag[0].removeEventListener("dragover", FileDragHover, false);
-        filedrag[0].removeEventListener("dragleave", FileDragHover, false);
-        filedrag[0].removeEventListener("drop", FileSelectHandler, false);
-    }
+    {% if ldap_user.photo %}
+        $('#filedrag_text').hide();
+    {% endif %}
 });
 </script>
 {% endblock %}
