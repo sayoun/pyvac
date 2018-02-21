@@ -1,3 +1,10 @@
+pyvac (1.8.46) unstable; urgency=medium
+
+  * Fix bug with ldap profile edition when not admin
+  * Fix photo profile upload to work on firefox again 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 21 Feb 2018 16:23:11 +0100
+
 pyvac (1.8.45) unstable; urgency=medium
 
   * Add support for partial time work which is used for RTT acquisition
