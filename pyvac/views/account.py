@@ -379,17 +379,19 @@ class Edit(AccountMixin, EditView):
 
             # update role for user in LDAP
             old_role = account.role
-            new_role = self.request.params['ldap_role']
-            if old_role != new_role:
-                log.info('LDAP role changed: %s -> %s' % (old_role, new_role))
-                if new_role == 'manager':
-                    ldap.add_manager(account.dn)
-                elif old_role == 'manager':
-                    ldap.remove_manager(account.dn)
-                if new_role == 'admin':
-                    ldap.add_admin(account.dn)
-                elif old_role == 'admin':
-                    ldap.remove_admin(account.dn)
+            if 'ldap_role' in r.params:
+                new_role = r.params['ldap_role']
+                if old_role != new_role:
+                    log.info('LDAP role changed: %s -> %s' % (old_role,
+                                                              new_role))
+                    if new_role == 'manager':
+                        ldap.add_manager(account.dn)
+                    elif old_role == 'manager':
+                        ldap.remove_manager(account.dn)
+                    if new_role == 'admin':
+                        ldap.add_admin(account.dn)
+                    elif old_role == 'admin':
+                        ldap.remove_admin(account.dn)
 
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'
