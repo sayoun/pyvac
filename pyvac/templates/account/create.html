@@ -364,9 +364,12 @@ $(document).ready(function(){
         }
 
         // update fileselect with files but disable eventlistener to avoid triggering itself
-        fileselect[0].removeEventListener("change", FileSelectHandler, false);
-        fileselect[0].files = files;
-        fileselect[0].addEventListener("change", FileSelectHandler, false);
+        if (e.type == "drop")
+        {
+            fileselect[0].removeEventListener("change", FileSelectHandler, false);
+            fileselect[0].files = files;
+            fileselect[0].addEventListener("change", FileSelectHandler, false);
+        }
 
         // display info panel
         ParseFile(file);
