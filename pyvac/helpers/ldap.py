@@ -98,7 +98,8 @@ class LdapWrapper(object):
 
     def _search_by_item(self, item):
         required_fields = ['cn', 'mail', 'uid', 'givenName', 'sn', 'manager',
-                           'ou', 'userPassword', 'arrivalDate', 'jpegPhoto']
+                           'ou', 'userPassword', 'arrivalDate', 'jpegPhoto',
+                           'mobile']
         res = self._search(self._filter % item, required_fields)
         if not res:
             raise UnknownLdapUser
@@ -243,7 +244,7 @@ class LdapWrapper(object):
         return dn
 
     def update_user(self, user, password=None, unit=None, arrival_date=None,
-                    uid=None, photo=None):
+                    uid=None, photo=None, mobile=None):
         """ Update user params in ldap directory """
         # convert fields to ldap fields
         # retrieve them from model as it was updated before
@@ -268,6 +269,12 @@ class LdapWrapper(object):
         if photo is not None:
             fields['jpegPhoto'] = [photo]
 
+        if mobile is not None:
+            if mobile:
+                fields['mobile'] = [mobile.encode('utf-8')]
+            else:
+                fields['mobile'] = []
+
         # dn of object we want to update
         dn = 'cn=%s,c=%s,%s' % (user.login, user.country, self._base)
         log.info('updating user %s from ldap' % dn)
@@ -275,7 +282,7 @@ class LdapWrapper(object):
         # retrieve current user information
         required = ['objectClass', 'employeeType', 'cn', 'givenName', 'sn',
                     'manager', 'mail', 'ou', 'uid', 'userPassword',
-                    'arrivalDate', 'jpegPhoto']
+                    'arrivalDate', 'jpegPhoto', 'mobile']
         item = 'cn=*%s*' % user.login
         res = self._search(self._filter % item, required)
         USER_DN, entry = res[0]

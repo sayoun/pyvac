@@ -353,10 +353,14 @@ class Edit(AccountMixin, EditView):
             if photo:
                 log.info('uploading photo size: %d' % len(photo))
 
+            mobile = None
+            if 'mobile' in r.params:
+                mobile = r.params['mobile']
+
             ldap = LdapCache()
             ldap.update_user(account, password=password, unit=unit,
                              arrival_date=arrival_date, uid=uid,
-                             photo=photo)
+                             photo=photo, mobile=mobile)
 
             # only for admins
             if account.role == 'admin':
@@ -533,7 +537,7 @@ class Whoswho(View):
                 if jpeg:
                     photo = base64.b64encode(jpeg)
                 item['photo'] = photo
-                item['mobile'] = ldap_user.get('mobile')
+                item['mobile'] = ldap_user.get('mobile', '-')
 
             data['users'].append(item)
 
