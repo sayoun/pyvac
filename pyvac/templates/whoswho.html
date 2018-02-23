@@ -1,6 +1,11 @@
+<!doctype html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <style>
+body {
+    font-family: sans-serif;
+}
 .flex-container {
   padding: 0;
   margin: 0;
@@ -24,15 +29,15 @@
   -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
 }
-.wrap div {
-  /*background: #11aaaa;*/
+
+form {
+    margin-bottom: 12px;
 }
 
 .flex-item {
-  border: 1px solid silver;
 
   /*background: tomato;*/
-  padding: 5px;
+  padding: 0 0 8px 8px;
   width: 500px;
   height: 200px;
   margin: 5px;
@@ -40,48 +45,53 @@
   line-height: 10px;
   /*color: white;*/
   /*font-weight: bold;*/
-  font-size: 16px;
   /*font-size: 1em;*/
   text-align: right;
+  flex-grow: 1;
+  display: flex;
+
+  background-color: #27736f;
+  background-image: linear-gradient(to bottom,#aaaaaa4d, #aaaaaa4d),
+                    linear-gradient(to right,#38a6a0 0,#42b8b0 10%,#4bc9c1 20%,#56dbce 50%,#32c9c2 80%,#23baba 90%, #1897ab 100%);
+}
+
+.flex-item img {
+    border-bottom: 8px solid white;
+    border-left: 8px solid white;
 }
 
 .off {
-  background: #777;
+    -background-image: repeating-linear-gradient(135deg,
+        #94d4d4, #94d4d4 10px,
+        #82baba 10px, #82baba 20px);
+    background-color: #737373;
+    background-image: linear-gradient(to bottom,#aaaaaa4d, #aaaaaa4d),
+                      linear-gradient(to right,#a6a6a6 0,#b8b8b8 10%,#c9c9c9 20%,#dbdbdb 50%,#c9c9c9 80%,#bababa 90%, #ababab 100%);
 }
 
 .div-item-thumb {
   /*background: tomato;*/
   /*padding: 5px;*/
-  width: 200px;
-  height: 200px;
+
   /*margin: 10px;*/
   overflow: hidden;
 
-  line-height: 10px;
-  /*color: white;*/
-  /*font-weight: bold;*/
-  font-size: 16px;
-  /*font-size: 1em;*/
+ /
   text-align: right;
+  flex-grow: 1;
 }
 
 .div-item {
-  /*background: tomato;*/
-  /*padding: 5px;*/
-  width: 300px;
-  height: 200px;
-  /*margin: 10px;*/
-/*  overflow: hidden;
-*/
-  line-height: 10px;
   /*color: white;*/
   /*font-weight: bold;*/
-  font-size: 15px;
-  font-size-adjust: 0.4;
+  font-size: 16px;
+  
   /*font-size: 1em;*/
   text-align: left;
+  flex-grow: 2;
   /*word-wrap: break-word;*/
 }
+
 .thumb {
   /*height: 135px;*/
   /*width: 135px;*/
@@ -90,6 +100,7 @@
   max-width: 200px;
   max-height: 200px;
 }
+
 
 #left {
   float:left;
@@ -149,6 +160,7 @@
       </div>
   </form>
 </div>
+<hr>
 <div class="flex-container wrap">
   {% for user in data['users'] %}
   <div class="flex-item flex-container nowrap{% if user.vacation %} off{% endif %}" bu-attr="{{ user.bu }}" status-attr="{{ user.status }}" team-attr="{{ user.teams }}">
