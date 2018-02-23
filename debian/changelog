@@ -1,3 +1,9 @@
+pyvac (1.8.49) unstable; urgency=medium
+
+  * Add support for mobile phone in LDAP user profile
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 23 Feb 2018 16:16:15 +0100
+
 pyvac (1.8.48) unstable; urgency=medium
 
   * Improve who'swho page CSS 
