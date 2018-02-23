@@ -358,43 +358,45 @@ class Edit(AccountMixin, EditView):
                              arrival_date=arrival_date, uid=uid,
                              photo=photo)
 
-            # update teams
-            uteams = {}
-            for team, members in ldap.list_teams().iteritems():
-                for member in members:
-                    uteams.setdefault(member, []).append(team)
-            user_teams = uteams.get(account.dn, [])
+            # only for admins
+            if account.role == 'admin':
+                # update teams
+                uteams = {}
+                for team, members in ldap.list_teams().iteritems():
+                    for member in members:
+                        uteams.setdefault(member, []).append(team)
+                user_teams = uteams.get(account.dn, [])
 
-            # add to new teams
-            for team in r.params.getall('teams'):
-                members = ldap.get_team_members(team)
-                if account.dn not in members:
-                    members.append(account.dn.encode('utf-8'))
-                    ldap.update_team(team, members)
-
-            # remove from old teams
-            for team in user_teams:
-                if team not in r.params.getall('teams'):
+                # add to new teams
+                for team in r.params.getall('teams'):
                     members = ldap.get_team_members(team)
-                    if account.dn in members:
-                        members.remove(account.dn)
-                    ldap.update_team(team, members)
+                    if account.dn not in members:
+                        members.append(account.dn.encode('utf-8'))
+                        ldap.update_team(team, members)
 
-            # update role for user in LDAP
-            old_role = account.role
-            if 'ldap_role' in r.params:
-                new_role = r.params['ldap_role']
-                if old_role != new_role:
-                    log.info('LDAP role changed: %s -> %s' % (old_role,
-                                                              new_role))
-                    if new_role == 'manager':
-                        ldap.add_manager(account.dn)
-                    elif old_role == 'manager':
-                        ldap.remove_manager(account.dn)
-                    if new_role == 'admin':
-                        ldap.add_admin(account.dn)
-                    elif old_role == 'admin':
-                        ldap.remove_admin(account.dn)
+                # remove from old teams
+                for team in user_teams:
+                    if team not in r.params.getall('teams'):
+                        members = ldap.get_team_members(team)
+                        if account.dn in members:
+                            members.remove(account.dn)
+                        ldap.update_team(team, members)
+
+                # update role for user in LDAP
+                old_role = account.role
+                if 'ldap_role' in r.params:
+                    new_role = r.params['ldap_role']
+                    if old_role != new_role:
+                        log.info('LDAP role changed: %s -> %s' % (old_role,
+                                                                  new_role))
+                        if new_role == 'manager':
+                            ldap.add_manager(account.dn)
+                        elif old_role == 'manager':
+                            ldap.remove_manager(account.dn)
+                        if new_role == 'admin':
+                            ldap.add_admin(account.dn)
+                        elif old_role == 'admin':
+                            ldap.remove_admin(account.dn)
 
         if self.user and not self.user.is_admin:
             self.redirect_route = 'list_request'
