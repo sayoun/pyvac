@@ -1,3 +1,9 @@
+pyvac (1.8.47) unstable; urgency=medium
+
+  * Add dynamic who's whos page on new route /who 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 23 Feb 2018 11:01:34 +0100
+
 pyvac (1.8.46) unstable; urgency=medium
 
   * Fix bug with ldap profile edition when not admin
