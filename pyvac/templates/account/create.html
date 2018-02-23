@@ -289,7 +289,9 @@ $(document).ready(function(){
         }
     });
 
+    {% if has_permission('admin_view') %}
     $('#teams').multiselect();
+    {% endif %}
 
     $("#inputArrivalDate").datepicker({dateFormat: 'dd/mm/yy'});
 
