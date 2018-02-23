@@ -1,3 +1,9 @@
+pyvac (1.8.48) unstable; urgency=medium
+
+  * Improve who'swho page CSS 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Fri, 23 Feb 2018 14:50:21 +0100
+
 pyvac (1.8.47) unstable; urgency=medium
 
   * Add dynamic who's whos page on new route /who 
