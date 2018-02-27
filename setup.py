@@ -36,7 +36,7 @@ requires = [
     'workalendar',
 
     'psycopg2',
-    'translationstring==1.1',
+    'translationstring',
     # dev only
     # 'waitress',
 ]

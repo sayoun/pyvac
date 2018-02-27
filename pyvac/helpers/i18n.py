@@ -27,7 +27,7 @@ def locale_negotiator(request):
 
     return None
 
-trans = TranslationStringFactory(domain='pyvac')
+trans = TranslationStringFactory('pyvac')
 
 localizers = {}
 
