@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 
+import os.path
 from pyramid.interfaces import IBeforeRender
 from pyramid.security import has_permission
 from pyramid.url import static_path, route_path
@@ -21,6 +22,7 @@ except ImportError:
 
 from pyvac.helpers.ldap import LdapCache
 from pyvac.helpers.i18n import locale_negotiator
+from pyvac.helpers.holiday import init_override
 
 
 def configure(filename='conf/pyvac.yaml', init_celery=True, default_app=None):
@@ -68,6 +70,15 @@ def includeme(config):
         ldap = asbool(settings['pyvac.use_ldap'])
         if ldap:
             LdapCache.configure(settings['pyvac.ldap.yaml'])
+
+    # initiatlize holiday override from yaml configuration
+    if 'pyvac.override_holidays_file' in settings:
+        filename = settings['pyvac.override_holidays_file']
+        content = None
+        if os.path.isfile(filename):
+            with open(filename) as fdesc:
+                content = yaml.load(fdesc, YAMLLoader)
+        init_override(content)
 
     # call includeme for models configuration
     config.include('pyvac.models')
