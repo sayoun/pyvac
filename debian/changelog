@@ -1,3 +1,12 @@
+pyvac (1.8.51) unstable; urgency=medium
+
+  * Add code to handle custom renderer to be used as template for who's who
+    page
+  * Remove comments from whoswho template 
+  * Move holidays override to an external configuration file
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 28 Feb 2018 10:43:26 +0100
+
 pyvac (1.8.50) unstable; urgency=medium
 
   * update packaging for translationstring
