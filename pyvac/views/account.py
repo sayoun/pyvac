@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import base64
+import os.path
 import logging
 from datetime import datetime
 
@@ -470,9 +471,13 @@ class Delete(AccountMixin, DeleteView):
 class Whoswho(View):
 
     ignore_users = []
+    who_template = None
+
+    def update_response(self, response):
+        if self.who_template:
+            self.request.override_renderer = self.who_template
 
     def render(self):
-
         duration = 1
 
         def fmt_req_type(req):
@@ -555,3 +560,12 @@ def includeme(config):
         ListPool.ignore_users = ignore_users
         Whoswho.ignore_users = ignore_users
         log.info('Loaded ListPool ignore_users: %s' % ListPool.ignore_users)
+
+    if 'pyvac.override_who_template' in settings:
+        filename = settings['pyvac.override_who_template']
+        # only set this if file exists, to avoid errors
+        if os.path.isfile(filename):
+            Whoswho.who_template = filename
+            log.info('Loaded custom who template: %s' % Whoswho.who_template)
+        else:
+            log.warn('custom who template file not found: %s' % filename)
