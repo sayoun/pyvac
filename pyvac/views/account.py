@@ -366,7 +366,7 @@ class Edit(AccountMixin, EditView):
                              photo=photo, mobile=mobile)
 
             # only for admins
-            if account.role == 'admin':
+            if self.user.is_admin:
                 # update teams
                 uteams = {}
                 for team, members in ldap.list_teams().iteritems():
