@@ -1,3 +1,10 @@
+pyvac (1.8.52) unstable; urgency=medium
+
+  * Fixes bug with user deletion and history desync
+  * Fixes bug with team update not working anymore for admin 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Thu, 08 Mar 2018 00:26:00 +0100
+
 pyvac (1.8.51) unstable; urgency=medium
 
   * Add code to handle custom renderer to be used as template for who's who
