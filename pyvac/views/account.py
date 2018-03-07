@@ -11,7 +11,9 @@ from pyramid.url import route_url
 
 from .base import View, CreateView, EditView, DeleteView
 
-from pyvac.models import User, Group, Countries, Pool, UserPool, Request
+from pyvac.models import (
+    User, Group, Countries, Pool, UserPool, Request, RequestHistory,
+)
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
     LdapCache, hashPassword, randomstring, UnknownLdapUser,
@@ -453,6 +455,14 @@ class Delete(AccountMixin, DeleteView):
             # otherwise it will raise a integrity error
             for entry in req.history:
                 self.session.delete(entry)
+        self.session.flush()
+
+        # cancel all request history entries in case there are entries in
+        # this table but without an existing request
+        histo_reqs = RequestHistory.by_user(self.session, account.id)
+        for entry in histo_reqs:
+            self.session.delete(entry)
+        self.session.flush()
 
         # cancel associated password recovery attempts for this user
         for item in account.recovery:

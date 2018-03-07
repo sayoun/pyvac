@@ -2335,6 +2335,11 @@ class RequestHistory(Base):
 
         return entry
 
+    @classmethod
+    def by_user(cls, session, user_id):
+        """Return all entries for given user"""
+        return cls.find(session, where=(cls.user_id == user_id,))
+
 
 class EventLog(Base):
     """Store an event log of all actions/changes happening."""
