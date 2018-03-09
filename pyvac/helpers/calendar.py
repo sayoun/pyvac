@@ -1,3 +1,4 @@
+import urllib
 import logging
 import caldav
 from dateutil.relativedelta import relativedelta
@@ -36,6 +37,7 @@ END:VCALENDAR
     log.info('Event %s created' % event)
 
     url_obj = event.url
+    url_obj = urllib.quote(url_obj, safe='/:')
     return str(url_obj)
 
 
