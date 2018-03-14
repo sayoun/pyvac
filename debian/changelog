@@ -1,3 +1,9 @@
+pyvac (1.8.54) unstable; urgency=medium
+
+  * Fix bug with calendar adding
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Wed, 14 Mar 2018 15:00:12 +0100
+
 pyvac (1.8.53) unstable; urgency=medium
 
   * Fix bug with ics url format with latest vobject version
