@@ -37,8 +37,9 @@ END:VCALENDAR
     log.info('Event %s created' % event)
 
     url_obj = event.url
+    url_obj = str(url_obj)
     url_obj = urllib.quote(url_obj, safe='/:')
-    return str(url_obj)
+    return url_obj
 
 
 def delFromCal(url, ics):
