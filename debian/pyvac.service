@@ -1,0 +1,18 @@
+[Unit]
+Description=pyvac service, in charge of managing employee vacation
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=pyvac
+Group=nogroup
+Restart=always
+ExecStart=/usr/bin/gunicorn --paste /etc/gandi/pyvac/production.ini --user=pyvac --group=nogroup --workers=2 --log-level=info --timeout=60 --bind=127.0.0.1:8000
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+WorkingDirectory=/usr/lib/python2.7/dist-packages/pyvac
+Environment=PYTHONPATH='/usr/lib/python2.7/dist-packages/pyvac'
+PrivateTmp=true
+
