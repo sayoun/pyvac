@@ -1,0 +1,16 @@
+[Unit]
+Description=pyvac poller, in charge of employee vacation
+After=network.target pyvac-worker.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=pyvac
+Group=nogroup
+ExecStart=/usr/bin/pyvac_celeryd /etc/gandi/pyvac/pyvac.yaml -l INFO -B -Q pyvac_poll -c 1 --schedule=/run/pyvac-poller/beat.db
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+WorkingDirectory=/usr/lib/python2.7/dist-packages/pyvac
+Environment=PYTHONPATH='/usr/lib/python2.7/dist-packages/pyvac'
+PrivateTmp=true

@@ -1,13 +1,22 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-PYVERS=$(shell pyversions -r)
-
 %:
 	dh $@ --with python2
+
+override_dh_auto_install:
+	dh_auto_install
+	#
+	install -d -m 0755 debian/python-pyvac/usr/lib/tmpfiles.d
+	install -m 0644 debian/pyvac.conf debian/python-pyvac/usr/lib/tmpfiles.d/
+	#
+	install -d -m 0755 debian/python-pyvac/lib/systemd/system
+	for u in pyvac pyvac-worker pyvac-poller; do \
+		install -m 0644 debian/$$u.service debian/python-pyvac/lib/systemd/system/; \
+	done
 
 override_dh_installinit:
 	dh_installinit --name=pyvac-poller --no-restart-on-upgrade --no-start
 	dh_installinit --name=pyvac-worker --no-restart-on-upgrade --no-start
 
-.PHONY: override_dh_installinit
+.PHONY: override_dh_installinit, override_dh_auto_install
