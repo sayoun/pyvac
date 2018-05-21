@@ -149,6 +149,7 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
                            content=content)
 
             # send mail to HR
+            # TODO: if multiple admins in a BU, send a mail to each one.
             admin = req.user.get_admin(self.session)
             dst = self.get_admin_mail(admin)
             content = """Manager %s has accepted a new request. Waiting for your validation.
@@ -214,7 +215,12 @@ class WorkerApproved(BaseWorker):
         """
         req = Request.by_id(self.session, data['req_id'])
 
+        # retrieve admin
         admin = req.user.get_admin(self.session)
+        req_admin = req.get_admin(self.session)
+        if req_admin:
+            admin = req_admin
+
         # send mail to user
         src = self.get_admin_mail(admin)
         dst = req.user.email
@@ -235,7 +241,7 @@ You can find the corresponding .ics file as attachment.""" % req.summarymail
             dst = req.user.manager_mail
             if 'autoaccept' in data:
                 content = """A request you accepted was automatically approved, it has been added to calendar.
-Request details: %s""" % req.summarymail
+Request details: %s""" % req.summarymail # noqa
             else:
                 content = """HR has approved a request you accepted, it has been added to calendar.
 Request details: %s""" % req.summarymail
@@ -254,7 +260,7 @@ Request details: %s""" % req.summarymail
             else:
                 conf_file = sys.argv[1]
                 with open(conf_file) as fdesc:
-                    Conf = yaml.load(fdesc, YAMLLoader)
+                    Conf = yaml.load(fdesc, YAMLLoader) # noqa
                 caldav_url = Conf.get('caldav').get('url')
 
             # add new entry in caldav

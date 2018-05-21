@@ -290,12 +290,14 @@ class Send(View):
                 log.info('scheduling task worker_pending for %s' % data)
 
             if request and sudo_use:
+                # save who performed this action
+                request.last_action_user_id = self.user.id
                 settings = self.request.registry.settings
                 if 'pyvac.celery.yaml' in settings:
-                    with open(settings['pyvac.celery.yaml']) as fdesc:
-                        Conf = yaml.load(fdesc, YAMLLoader)
-                    caldav_url = Conf.get('caldav').get('url')
-                    request.add_to_cal(caldav_url, self.session)
+                    # with open(settings['pyvac.celery.yaml']) as fdesc:
+                    #     Conf = yaml.load(fdesc, YAMLLoader)
+                    # caldav_url = Conf.get('caldav').get('url')
+                    # request.add_to_cal(caldav_url, self.session)
                     msg = 'Request added to calendar and DB.'
                     self.request.session.flash('info;%s' % msg)
 

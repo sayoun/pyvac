@@ -1670,6 +1670,13 @@ class Request(Base):
         self.status = 'ERROR'
         self.error_message = message
 
+    def get_admin(self, session):
+        if self.status == 'APPROVED_ADMIN' and self.last_action_user_id:
+            last_user = User.by_id(session, self.last_action_user_id)
+            if last_user and last_user.is_admin:
+                return last_user
+        return
+
     @classmethod
     def by_manager(cls, session, manager, count=None):
         """Get requests for users under given manager."""
