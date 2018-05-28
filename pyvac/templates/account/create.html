@@ -419,7 +419,7 @@ $(document).ready(function(){
         Init();
     }
 
-    {% if ldap_user.photo %}
+    {% if use_ldap and ldap_user.photo %}
         $('#filedrag_text').hide();
     {% endif %}
 });
