@@ -372,13 +372,16 @@ class User(Base):
         return cls.find(session, where=((cls.country_id == country_id),))
 
     @classmethod
-    def get_admin_by_country(cls, session, country):
+    def get_admin_by_country(cls, session, country, full=False):
         """Get user with role admin for a specific country."""
-        return cls.first(session,
-                         join=(cls._country),
-                         where=(Countries.name == country,
-                                cls.role == 'admin'),
-                         order_by=cls.id)
+        method = cls.first
+        if full:
+            method = cls.find
+        return method(session,
+                      join=(cls._country),
+                      where=(Countries.name == country,
+                             cls.role == 'admin'),
+                      order_by=cls.id)
 
     @classmethod
     def by_dn(cls, session, user_dn):
@@ -513,14 +516,14 @@ class User(Base):
                 if group_id not in exists:
                     user.groups.append(Group.by_id(session, group_id))
 
-    def get_admin(self, session):
+    def get_admin(self, session, full=False):
         """Get admin for country of user."""
         if not self.ldap_user:
-            return self.get_admin_by_country(session, self.country)
+            return self.get_admin_by_country(session, self.country, full=full)
         else:
             # retrieve from ldap
             ldap = LdapCache()
-            return ldap.get_hr_by_country(self.country)
+            return ldap.get_hr_by_country(self.country, full=full)
 
     @property
     def country(self):

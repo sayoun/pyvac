@@ -69,6 +69,14 @@ class UserTestCase(ModelTestCase):
         self.assertEqual(admin.login, u'admin')
         self.assertEqual(admin.country, u'fr')
 
+    def test_get_admin_by_country_full(self):
+        from pyvac.models import User
+        admins = User.get_admin_by_country(self.session, u'fr', full=True)
+        self.assertEqual(len(admins), 1)
+        admin = admins[0]
+        self.assertEqual(admin.login, u'admin')
+        self.assertEqual(admin.country, u'fr')
+
     def test_by_country(self):
         from pyvac.models import User
         country_id = 1

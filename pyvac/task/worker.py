@@ -149,13 +149,14 @@ Request details: %s""" % (req.user.manager_name, req.summarymail)
                            content=content)
 
             # send mail to HR
-            # TODO: if multiple admins in a BU, send a mail to each one.
-            admin = req.user.get_admin(self.session)
-            dst = self.get_admin_mail(admin)
-            content = """Manager %s has accepted a new request. Waiting for your validation.
-Request details: %s""" % (req.user.manager_name, req.summarymail)
-            self.send_mail(sender=src, target=dst, request=req,
-                           content=content)
+            # if multiple admins in a BU, send a mail to each one.
+            admins = req.user.get_admin(self.session, full=True)
+            for admin in admins:
+                dst = self.get_admin_mail(admin)
+                content = """Manager %s has accepted a new request. Waiting for your validation.
+    Request details: %s""" % (req.user.manager_name, req.summarymail)
+                self.send_mail(sender=src, target=dst, request=req,
+                               content=content)
 
             # update request status after sending email
             req.notified = True

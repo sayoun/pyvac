@@ -434,10 +434,11 @@ class LdapWrapper(object):
         new = {'member': new_admins}
         self.update_admins(old, new)
 
-    def get_hr_by_country(self, country):
+    def get_hr_by_country(self, country, full=False):
         """ Get hr mail of country for a user_dn"""
         what = '(member=*)'
         results = self._search_admin(what, None)
+        users = []
         for USER_DN, res_entry in results:
             for entry in res_entry['member']:
                 item = self._extract_country(entry)
@@ -445,12 +446,20 @@ class LdapWrapper(object):
                     # found valid hr user for this country
                     login = self._extract_cn(entry)
                     user_data = self.search_user_by_login(login)
-                    return user_data
+                    if not full:
+                        return user_data
+                    else:
+                        users.append(user_data)
+        if full and users:
+            return users
 
         # security if no admin per country found, take the last one
         login = self._extract_cn(entry)
         user_data = self.search_user_by_login(login)
-        return user_data
+        if not full:
+            return user_data
+        else:
+            return [user_data]
 
     def list_users(self):
         """ Retrieve users informations """
