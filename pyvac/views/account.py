@@ -229,6 +229,23 @@ This has no effect on CP acquisition.
             self.session.flush()
             entry.increment(self.session, initial_amount, 'creation')
 
+    def update_userpool(self, user):
+        r = self.request
+
+        for up in user.pools:
+            key = 'up%d' % up.id
+            if key in r.params:
+                new = r.params[key]
+                # add some sanity checks
+                try:
+                    new = float(new)
+                    if new != up.amount:
+                        log.info('%s update %s: %s -> %s' %
+                                 (self.user.login, up, up.amount, new))
+                        up.amount = new
+                except Exception as exc:
+                    log.error('cannot update %s: %s' % (up, exc))
+
 
 class Create(AccountMixin, CreateView):
     """
@@ -313,6 +330,7 @@ class Edit(AccountMixin, EditView):
         super(Edit, self).update_model(account)
         self.set_country(account)
         self.append_groups(account)
+        self.update_userpool(account)
 
         if 'disable_rtt' in self.request.params:
             account.add_feature('disable_rtt', save=True)

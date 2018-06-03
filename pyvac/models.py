@@ -2737,6 +2737,14 @@ class UserPool(Base):
 
         return history
 
+    def __repr__(self):
+        try:
+            return "<UserPool #%d: %s (%s) | %s>" % (self.id, self.fullname,
+                                                     self.amount,
+                                                     self.user.login)
+        except:
+            return object.__repr__(self)
+
 
 def includeme(config):
     """

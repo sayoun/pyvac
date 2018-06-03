@@ -253,6 +253,19 @@
     </div>
     </fieldset>
     {% endif %}
+
+    {% if has_permission('admin_view') %}
+    <fieldset>
+    {% for userpool in user.pools|sort(attribute='id') %}
+    <div class="control-group">
+        <label class="control-label" for="input{{ userpool.name }}">{{ userpool.fullname }}</label>
+        <div class="controls">
+           <input type="text" name="up{{ userpool.id }}" id="input{{ userpool.name }}" value="{{ userpool.amount }}" required="required"/>
+        </div>
+    </div>
+    {% endfor %}
+    </fieldset>
+    {% endif %}
 </div>
 </form>
 
