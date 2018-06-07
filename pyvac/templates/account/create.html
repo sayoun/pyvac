@@ -255,7 +255,12 @@
     {% endif %}
 
     {% if has_permission('admin_view') %}
-    <fieldset>
+    <fieldset class="pooledition">
+    <div class="control-group">
+        <blockquote>
+            <p>Be careful, changing these values will take effect immediately and cannot be reversed (unless you edit the values again)</p>
+        </blockquote>
+    </div>
     {% for userpool in user.pools|sort(attribute='id') %}
     <div class="control-group">
         <label class="control-label" for="input{{ userpool.name }}">{{ userpool.fullname }}</label>
