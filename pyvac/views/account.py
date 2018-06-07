@@ -244,7 +244,9 @@ This has no effect on CP acquisition.
                                  (self.user.login, up, up.amount, new))
                         up.amount = new
                 except Exception as exc:
-                    log.error('cannot update %s: %s' % (up, exc))
+                    msg = 'cannot update %s: %s' % (up, exc)
+                    log.error(msg)
+                    self.request.session.flash('error;%s' % msg)
 
 
 class Create(AccountMixin, CreateView):
@@ -452,6 +454,18 @@ class Edit(AccountMixin, EditView):
                     errors.append(_(u'Invalid photo size: %d' % photo_size))
             except:
                 pass
+
+        for up in model.pools:
+            key = 'up%d' % up.id
+            if key in r.params:
+                new = r.params[key]
+                # add some sanity checks
+                try:
+                    float(new)
+                except Exception as exc:
+                    log.error('cannot update %s: %s' % (up, exc))
+                    errors.append(_(u'Wrong value for %s: %s' %
+                                  (up.fullname, new)))
 
         if errors:
             self.request.session.flash('error;%s' % ','.join(errors))
