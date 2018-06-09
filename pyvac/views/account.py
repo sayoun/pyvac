@@ -13,6 +13,7 @@ from .base import View, CreateView, EditView, DeleteView
 
 from pyvac.models import (
     User, Group, Countries, Pool, UserPool, Request, RequestHistory,
+    EventLog,
 )
 from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.ldap import (
@@ -232,6 +233,9 @@ This has no effect on CP acquisition.
     def update_userpool(self, user):
         r = self.request
 
+        comment = r.params.get('pool_edit_reason', 'adjustement')
+        if not comment:
+            comment = 'adjustement'
         for up in user.pools:
             key = 'up%d' % up.id
             if key in r.params:
@@ -240,9 +244,16 @@ This has no effect on CP acquisition.
                 try:
                     new = float(new)
                     if new != up.amount:
+                        if new > up.amount:
+                            shift = 'increment'
+                        else:
+                            shift = 'decrement'
+                        delta = abs(up.amount - new)
                         log.info('%s update %s: %s -> %s' %
                                  (self.user.login, up, up.amount, new))
                         up.amount = new
+                        EventLog.add(self.session, up, shift,
+                                     comment=comment, delta=delta)
                 except Exception as exc:
                     msg = 'cannot update %s: %s' % (up, exc)
                     log.error(msg)
