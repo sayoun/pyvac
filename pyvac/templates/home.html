@@ -339,9 +339,10 @@ function DateDiff(date1, date2) {
   $("#exception_info").tooltip({});
   $("#recovered_info").tooltip({});
 
+  {% if pyvac.user.is_admin %}
   $('#todoForm').submit(function(){
       var sudo_user = $('#sudo_user').val();
-      if (sudo_user != "-1") {
+      if (sudo_user && (sudo_user != "-1")) {
         var sudo_user_name = $('#sudo_user option:selected').text().trim();
         if (window.confirm("You're about to submit a SUDO request for user " + sudo_user_name + ". Please confirm.")) {
           return true;
@@ -352,7 +353,7 @@ function DateDiff(date1, date2) {
       }
       return true;
   });
-
+  {% endif %}
   </script>
 
 
