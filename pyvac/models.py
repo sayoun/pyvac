@@ -2713,7 +2713,8 @@ class UserPool(Base):
             up = UserPool.by_id(session, event.source_id)
             up.amount = up.amount + event.delta
             EventLog.add(session, up, 'increment', comment=comment,
-                         delta=event.delta, extra_id=request.id)
+                         delta=event.delta, extra_id=request.id,
+                         created_at=request.date_from)
 
     def get_pool_history(self, session, user):
         """Return all events for a userpool."""
