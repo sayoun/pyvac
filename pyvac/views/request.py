@@ -836,6 +836,12 @@ class PoolHistory(View):
                 next_entry = None
             # merge events in case of split decrement when using 2 pools
             if next_entry and entry['req_id'] and (entry['date'] == next_entry['date']) and (entry['req_id'] == next_entry['req_id']): # noqa
+                # check for refunded request
+                # refunded requests are when both value are either
+                # positive or negative
+                if ((entry['value'] > 0) and (next_entry['value'] < 0)) or ((entry['value'] < 0) and (next_entry['value'] > 0)): # noqa
+                    next_entry['flavor'] = '%s refunded' % next_entry['flavor']
+                    continue
                 if entry['name'] == 'restant':
                     skip_idx.append(idx)
                     entry['restant'] = 0
