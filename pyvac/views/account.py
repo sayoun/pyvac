@@ -526,7 +526,20 @@ class Whoswho(View):
     ignore_users = []
     who_template = None
 
+    def return_json(self):
+        try:
+            if 'application/json' in self.request.headers['Accept']:
+                return True
+        except Exception:
+            pass
+
+        return False
+
     def update_response(self, response):
+        if self.return_json():
+            self.request.override_renderer = 'json'
+            return
+
         if self.who_template:
             self.request.override_renderer = self.who_template
 
@@ -577,6 +590,7 @@ class Whoswho(View):
                 for member in members:
                     users_teams.setdefault(member, []).append(team)
 
+        return_json = self.return_json()
         for user in users:
             uteams = users_teams.get(user.dn, [])
             item = {
@@ -590,11 +604,12 @@ class Whoswho(View):
             item['status'] = 'off' if item['vacation'] else 'on'
             if use_ldap:
                 ldap_user = ldap_users[user.dn]
-                jpeg = ldap_user.get('jpegPhoto')
-                photo = None
-                if jpeg:
-                    photo = base64.b64encode(jpeg)
-                item['photo'] = photo
+                if not return_json:
+                    jpeg = ldap_user.get('jpegPhoto')
+                    photo = None
+                    if jpeg:
+                        photo = base64.b64encode(jpeg)
+                    item['photo'] = photo
                 item['mobile'] = ldap_user.get('mobile', '-')
 
             data['users'].append(item)
