@@ -621,36 +621,45 @@ class Exported(View):
                     last_month_date=last_month_date
                 )
 
-                # filter requests which overlap the boundary date, only keep
-                # the ones which are ending in the selected period
-                requests = []
-                for req in all_reqs:
-                    if req.date_from < first_month_date <= req.date_to:
-                        log.info('using overlapping req: %r' % req.summary)
-                        requests.append(req)
-                    elif req.date_from <= last_month_date < req.date_to:
-                        log.info('discarding overlapping req: %r' %
-                                 req.summary)
-                    else:
-                        requests.append(req)
+                # don't filter for LU country
+                if country == 'lu':
+                    requests = all_reqs
+                else:
+                    # filter requests which overlap the boundary date, only
+                    # keep the ones which are ending in the selected period
+                    requests = []
+                    for req in all_reqs:
+                        if req.date_from < first_month_date <= req.date_to:
+                            log.info('using overlapping req: %r' % req.summary)
+                            requests.append(req)
+                        elif req.date_from <= last_month_date < req.date_to:
+                            log.info('discarding overlapping req: %r' %
+                                     req.summary)
+                        else:
+                            requests.append(req)
             else:
                 # assume it's export_month as it's a radio button choice
                 all_reqs = Request.get_by_month(self.session, country,
                                                 month, year,
                                                 sage_order=sage_order)
-                # filter request which overlap 2 months, only keep the ones
-                # which are ending in the selected month
-                requests = []
-                for req in all_reqs:
-                    if req.date_from.month != req.date_to.month:
-                        if req.date_to.month == int(month):
-                            log.info('using overlapping req: %r' % req.summary)
-                            requests.append(req)
+                # don't filter for LU country
+                if country == 'lu':
+                    requests = all_reqs
+                else:
+                    # filter request which overlap 2 months, only keep the ones
+                    # which are ending in the selected month
+                    requests = []
+                    for req in all_reqs:
+                        if req.date_from.month != req.date_to.month:
+                            if req.date_to.month == int(month):
+                                log.info('using overlapping req: %r'
+                                         % req.summary)
+                                requests.append(req)
+                            else:
+                                log.info('discarding overlapping req: %r' %
+                                         req.summary)
                         else:
-                            log.info('discarding overlapping req: %r' %
-                                     req.summary)
-                    else:
-                        requests.append(req)
+                            requests.append(req)
 
             data = []
             header = ('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s' %
