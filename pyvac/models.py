@@ -2068,6 +2068,8 @@ class Request(Base):
                 days = CPLUVacation.convert_days(days)
             if self.type == 'Compensatoire':
                 days = CPLUVacation.convert_days(days)
+            if self.type == 'Exceptionnel':
+                days = CPLUVacation.convert_days(days)
 
         return ('%s,%s,%s,%s,%s,%.1f,%s,%s,%s' %
                 (self.user.registration_number or '',
