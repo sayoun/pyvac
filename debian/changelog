@@ -1,3 +1,11 @@
+pyvac (1.8.56) unstable; urgency=medium
+
+  * Don't discard overlapping requests in export for LU country
+  * Convert exceptionnal requests to hours for LU export
+  * Add a json export for who's who page 
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Sun, 24 Jun 2018 15:12:11 +0200
+
 pyvac (1.8.55) unstable; urgency=medium
 
   * Add systemd support and lintian fixes in Debian package
