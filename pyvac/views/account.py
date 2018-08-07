@@ -549,7 +549,7 @@ class Whoswho(View):
         def fmt_req_type(req):
             label = ' %s' % req.label if req.label else ''
             if duration and req.days > 1:
-                label = '%s (until %s)' % (label,
+                label = '%s (throughout %s)' % (label,
                                            req.date_to.strftime('%d/%m/%Y'))
             return '%s%s' % (req.type, label)
 
