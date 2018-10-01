@@ -392,9 +392,13 @@ class Edit(AccountMixin, EditView):
                 mobile = r.params['mobile']
 
             ldap = LdapCache()
-            ldap.update_user(account, password=password, unit=unit,
-                             arrival_date=arrival_date, uid=uid,
-                             photo=photo, mobile=mobile)
+            try:
+                ldap.search_user_by_login(account.login)
+                ldap.update_user(account, password=password, unit=unit,
+                                 arrival_date=arrival_date, uid=uid,
+                                 photo=photo, mobile=mobile)
+            except UnknownLdapUser:
+                pass
 
             # only for admins
             if self.user.is_admin:
