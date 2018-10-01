@@ -510,6 +510,12 @@ class Delete(AccountMixin, DeleteView):
         # cancel associated password recovery attempts for this user
         for item in account.recovery:
             self.session.delete(item)
+        self.session.flush()
+
+        # delete existing user pools
+        for up in UserPool.by_user(self.session, account):
+            self.session.delete(up)
+        self.session.flush()
 
         super(Delete, self).delete(account)
         if account.ldap_user:
