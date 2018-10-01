@@ -2584,7 +2584,7 @@ class UserPool(Base):
     @classmethod
     def by_user(cls, session, user):
         """Get all userpools for a given user."""
-        return cls.find(session, where=(cls.user == user,))
+        return cls.find(session, where=(cls.user_id == user.id,))
 
     @classmethod
     def by_pool(cls, session, pool):
