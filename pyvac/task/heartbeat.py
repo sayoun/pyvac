@@ -78,6 +78,8 @@ class HeartBeat(Task):
                         # don't increment acquis after creation for fr
                         if pool.country.name != 'fr':
                             entry.increment(session, initial_amount, 'heartbeat') # noqa
+                        else:
+                            entry.increment(session, 0, 'heartbeat') # noqa
 
                     restant.expire(session)
                     acquis.expire(session)
