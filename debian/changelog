@@ -1,3 +1,15 @@
+pyvac (1.8.57) unstable; urgency=medium
+
+  * Add an event for acquis pool creation
+  * Fix EventLog ordering for pool history
+  * Update home summary for fr users
+  * Fix search parameter for deletion of user
+  * Fix code to allow update of user even if deleted from ldap
+  * Fix bug with user pools when deleting a user
+  * Handle user without acquis pool
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Mon, 01 Oct 2018 23:40:49 +0200
+
 pyvac (1.8.56) unstable; urgency=medium
 
   * Don't discard overlapping requests in export for LU country
