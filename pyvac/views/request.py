@@ -814,7 +814,10 @@ class PoolHistory(View):
             acquis = pools['acquis'].get_pool_history(self.session, self.user)
             pool_restant = restant[0]['value']
             restant[0]['value'] = 0
-            pool_acquis = acquis.pop(0)['value']
+            if acquis:
+                pool_acquis = acquis.pop(0)['value']
+            else:
+                pool_acquis = 0
             history = sorted(restant + acquis)
 
         cp_history = []
