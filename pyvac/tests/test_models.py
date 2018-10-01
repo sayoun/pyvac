@@ -347,7 +347,7 @@ class CPVacationTestCase(ModelTestCase):
         from pyvac.models import CPLUVacation, CompensatoireVacation, User
 
         date_start = datetime.now() - relativedelta(months=3)
-        date_end = datetime.now() + relativedelta(months=3)
+        date_end = datetime.now() + relativedelta(months=2)
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=5)
