@@ -262,6 +262,29 @@ class User(Base):
         """Return current pool status amounts for user"""
         return dict([(up.fullname, up) for up in self.pools])
 
+    @property
+    def pool_summary(self):
+        """Return summary for current pools for user"""
+        if self.country == 'fr':
+            ups = [up for up in self.pools if up.pool.name != 'acquis']
+        else:
+            ups = self.pools
+        summary = []
+        for up in ups:
+            if up.pool.alias:
+                pool_name = '%s %s' % (up.pool.vacation_type.name,
+                                       up.pool.alias)
+                pool_name = pool_name.upper()
+            else:
+                pool_name = up.pool.fullname
+            if self.country == 'fr' and up.pool.pool_group:
+                pool_name = 'CP'
+            item = {'amount': up.group_amount,
+                    'name': pool_name,
+                    'date_end': up.pool.date_end}
+            summary.append(item)
+        return summary
+
     def set_pool_amount(self, session, poolname, amount, created_at=None):
         """Set pool amount for user, create userpool if it does not exists"""
         pool = Pool.by_name_country(session, poolname, self._country)
@@ -2590,6 +2613,15 @@ class UserPool(Base):
     def by_pool(cls, session, pool):
         """Get all userpools for a given pool."""
         return cls.find(session, where=(cls.pool == pool,))
+
+    @property
+    def group_amount(self):
+        """Return name of associated pool."""
+        if not self.pool.pool_group or self.user.country != 'fr':
+            return self.amount
+        ups = [up for up in self.user.pools
+               if up.pool.pool_group == self.pool.pool_group]
+        return sum([up.amount for up in ups])
 
     @property
     def name(self):

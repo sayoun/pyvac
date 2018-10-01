@@ -137,13 +137,8 @@
         <li><b>{{ pyvac.user.anniversary[1] }}</b> days until your {{ (pyvac.user.seniority + 1)|english_suffix}} {% if pyvac.user.firm %}{{ pyvac.user.firm }}{% else %}anni{% endif %}versary ! ({{ pyvac.user.arrival_date.strftime('%d/%m/%Y') }})</li>
         {% endif %}
 
-        {% for userpool in pyvac.user.pools|sort(attribute="pool.date_end")|sort(attribute="pool.pool_group") %}
-         {% if userpool.pool.alias %}
-         {% set pool_name = '%s %s'|format(userpool.pool.vacation_type.name, userpool.pool.alias)|upper %}
-         {% else %}
-         {% set pool_name = userpool.pool.fullname %}
-         {% endif %}
-          <li>You have <b>{{userpool.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}{{pool_name}}</b> to use before {{userpool.pool.date_end.strftime('%d/%m/%Y')}}</li>
+        {% for item in pyvac.user.pool_summary|sort(attribute="date_end") %}
+          <li>You have <b>{{item.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}{{item.name}}</b> to use before {{item.date_end.strftime('%d/%m/%Y')}}</li>
         {% endfor %}
     </ul>
 </div>
