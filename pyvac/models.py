@@ -2756,7 +2756,7 @@ class UserPool(Base):
         events = EventLog.find(session,
                                where=(EventLog.source == "userpool",
                                       EventLog.source_id == self.id),
-                               order_by=EventLog.id)
+                               order_by=(EventLog.created_at, EventLog.id))
         for evt in events:
             delta = evt.delta
             if evt.type == 'decrement' and delta > 0:
