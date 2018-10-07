@@ -1,3 +1,9 @@
+pyvac (1.8.58) unstable; urgency=medium
+
+  * Force user login to be in ascii during user creation
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Sun, 07 Oct 2018 21:47:08 +0200
+
 pyvac (1.8.57) unstable; urgency=medium
 
   * Add an event for acquis pool creation
