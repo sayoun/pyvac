@@ -34,6 +34,7 @@ requires = [
     'python-ldap',
 
     'workalendar',
+    'unidecode',
 
     'psycopg2',
     'translationstring',

@@ -12,3 +12,4 @@ PasteScript python-pastescript (>= 1.7.5)
 passlib python-passlib
 caldav python-caldav
 workalendar python-workalendar
+unidecode python-unidecode

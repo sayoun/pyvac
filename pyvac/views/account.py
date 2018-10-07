@@ -5,6 +5,7 @@ import os.path
 import logging
 from datetime import datetime
 
+import unidecode
 from pyramid.settings import asbool
 from pyramid.httpexceptions import HTTPFound
 from pyramid.url import route_url
@@ -327,6 +328,8 @@ class Create(AccountMixin, CreateView):
                                    r.params['user.lastname'].strip().lower())
                 # remove all spaces
                 login = r_space.sub('', login)
+                # remove all accented characters to be closer to ascii
+                login = unidecode.unidecode(login)
                 model.login = login
             else:
                 errors.append(_('login is required'))
