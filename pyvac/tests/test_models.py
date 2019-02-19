@@ -347,7 +347,7 @@ class CPVacationTestCase(ModelTestCase):
         from pyvac.models import CPLUVacation, CompensatoireVacation, User
 
         date_start = datetime.now() - relativedelta(months=3)
-        date_end = datetime.now() + relativedelta(months=2)
+        date_end = datetime.now() + relativedelta(months=3)
         with patch('pyvac.models.User.arrival_date',
                    new_callable=PropertyMock) as mock_foo:
             mock_foo.return_value = datetime.now() - relativedelta(months=5)
@@ -395,6 +395,8 @@ class CPVacationTestCase(ModelTestCase):
                 mock_foo.return_value = datetime.now() - relativedelta(months=5) # noqa
                 with patch('pyvac.models.User.pool',
                            new_callable=PropertyMock) as mock_foo:
+                    date_start = datetime.now() - relativedelta(months=3)
+                    date_end = datetime.now() + relativedelta(months=3)
                     mocked_pool1 = mock_pool(200, date_start, date_end)
                     mocked_pool2 = mock_pool(0, date_start, date_end)
                     mock_foo.return_value = {'CP acquis': mocked_pool1,
