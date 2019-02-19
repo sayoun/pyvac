@@ -44,20 +44,20 @@ def replay(settings):
     requests = Request.find(session,
                             where=(Request.status == 'APPROVED_ADMIN',),
                             order_by=Request.user_id)
-    print 'total requests', len(requests)
-    print ''
+    print('total requests', len(requests))
+    print()
 
     req_to_add = []
 
     # for each requests
     for req in requests:
-        print '-' * 10
-        print req.id, req.summarycal, req.date_from, req.date_to
+        print('-' * 10)
+        print(req.id, req.summarycal, req.date_from, req.date_to)
         # check if entry in caldav exists
         results = calendar.date_search(req.date_from, req.date_to)
         if not results:
             # need to add missing entry in caldav
-            print 'need to insert request'
+            print('need to insert request')
             req_to_add.append(req.id)
         else:
             summaries = []
@@ -74,12 +74,12 @@ def replay(settings):
                 summary = event.instance.vevent.summary.value
                 summaries.append(summary)
             if req.summarycal not in summaries:
-                print 'need to insert request'
+                print('need to insert request')
                 req_to_add.append(req.id)
 
     for req_id in set(req_to_add):
         req = Request.by_id(session, req_id)
-        print 'processing', req.id, req.summarycal, req.date_from, req.date_to
+        print('processing', req.id, req.summarycal, req.date_from, req.date_to)
         ics_url = addToCal(caldav_url,
                            req.date_from,
                            req.date_to,
