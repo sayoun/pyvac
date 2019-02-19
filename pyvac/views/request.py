@@ -732,7 +732,7 @@ class Off(View):
             if duration and req.days > 1:
                 label = '%s (until %s)' % (label,
                                            req.date_to.strftime('%d/%m/%Y'))
-            return '%s%s' % (req.type, label)
+            return 'OFF%s' % label
 
         filter_nick = self.request.params.get('nick')
         filter_name = self.request.params.get('name')
