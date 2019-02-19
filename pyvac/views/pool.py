@@ -61,6 +61,7 @@ class PoolMixin:
         if date_start and date_end:
             where = (Pool.date_start == date_start,
                      Pool.date_end == date_end,
+                     Pool.name == r.params['pool.name'],
                      Pool.vacation_type_id == r.params['set_vacation_type'],
                      Pool.country_id == r.params['set_country'])
             exists = Pool.find(self.session, where=where)
