@@ -271,6 +271,7 @@ class User(Base):
             ups = self.pools
         summary = []
         for up in ups:
+            pools = []
             if up.pool.alias:
                 pool_name = '%s %s' % (up.pool.vacation_type.name,
                                        up.pool.alias)
@@ -279,9 +280,12 @@ class User(Base):
                 pool_name = up.pool.fullname
             if self.country == 'fr' and up.pool.pool_group:
                 pool_name = 'CP'
+                pools = [p for p in self.pools
+                         if p.pool.pool_group == up.pool.pool_group]
             item = {'amount': up.group_amount,
                     'name': pool_name,
-                    'date_end': up.pool.date_end}
+                    'date_end': up.pool.date_end,
+                    'pools': pools}
             summary.append(item)
         return summary
 

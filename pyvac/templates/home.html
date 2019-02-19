@@ -138,7 +138,16 @@
         {% endif %}
 
         {% for item in pyvac.user.pool_summary|sort(attribute="date_end") %}
+          {% if item.name == 'CP' %}
+          <li>You have <b>{{item.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}{{item.name}}</b> (+2.08 per month)</li>
+          <ul>
+            {% for userpool in item.pools|sort(attribute="pool.date_end")|sort(attribute="pool.pool_group") %}
+              <li><b>{{userpool.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}</b> to use before {{userpool.pool.date_end.strftime('%d/%m/%Y')}}</li>
+            {% endfor %}
+          </ul>
+          {% else %}
           <li>You have <b>{{item.amount|mayberound}} {% if pyvac.user.country == 'lu' %}hours {% endif %}{{item.name}}</b> to use before {{item.date_end.strftime('%d/%m/%Y')}}</li>
+          {% endif %}
         {% endfor %}
     </ul>
 </div>
