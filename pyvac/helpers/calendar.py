@@ -21,7 +21,8 @@ END:VCALENDAR
 """
 
     client = caldav.DAVClient(url)
-    principal = client.principal()
+    # use url parameter to force calendar to use
+    principal = caldav.Principal(client, url)
     calendars = principal.calendars()
     if not len(calendars):
         return False
@@ -50,6 +51,5 @@ def delFromCal(url, ics):
 
     client = caldav.DAVClient(url)
     log.info('Deleting entry %r' % ics)
-    client.delete(ics)
-
+    return client.delete(ics)
     return True
