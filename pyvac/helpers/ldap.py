@@ -157,7 +157,7 @@ class LdapWrapper(object):
         """
         Format ldap entry and parse user_dn to output dict with expected values
         """
-        if not user_dn or not entry:
+        if not user_dn or not entry or not entry.get(self.mail_attr):
             return
 
         data = {

@@ -495,7 +495,7 @@ class User(Base):
         pools = Pool.by_country_active(session, country.id)
         for pool in pools:
             pool_class = pool.vacation_class
-            initial_amount = pool_class.get_increment_step(user)
+            initial_amount = pool_class.get_increment_step(user=user)
             entry = UserPool(amount=0, user=user, pool=pool)
             session.flush()
             entry.increment(session, initial_amount, 'creation')

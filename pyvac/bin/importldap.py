@@ -35,6 +35,8 @@ def populate(engine, ldap):
     users = ldap._search(searchFilter, required)
     for user_dn, user_entry in users:
         user_data = ldap.parse_ldap_entry(user_dn, user_entry)
+        if not user_data or not user_data.get('login'):
+            continue
         login = user_data['login'].decode('utf-8')
         # check what type of user it is
         group = u'user'
