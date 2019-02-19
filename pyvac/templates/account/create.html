@@ -268,13 +268,20 @@
            <input type="text" name="up{{ userpool.id }}" id="input{{ userpool.name }}" value="{{ userpool.amount }}" required="required"/>
         </div>
     </div>
+    {% else %}
+    <div class="control-group">
+        <span class="label label-important">No pools found for this user</span><br/>
+        Please add an arrival date and submit this form for pools to be created.
+    </div>
     {% endfor %}
+    {% if user.pools %}
     <div class="control-group">
         <label class="control-label" for="inputPoolEditReason">Edit reason</label>
         <div class="controls">
            <input type="text" name="pool_edit_reason" id="inputPoolEditReason" value="" placeholder="adjustment"/>
         </div>
     </div>
+    {% endif %}
     </fieldset>
     {% endif %}
 </div>

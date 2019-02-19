@@ -346,6 +346,16 @@ class Edit(AccountMixin, EditView):
         super(Edit, self).update_model(account)
         self.set_country(account)
         self.append_groups(account)
+
+        r = self.request
+        arrival_date = account.arrival_date
+        if 'arrival_date' in r.params and r.params['arrival_date']:
+            # cast to datetime
+            arrival_date = datetime.strptime(r.params['arrival_date'],
+                                             '%d/%m/%Y')
+
+        if not account.pools and arrival_date:
+            self.assign_pools(account)
         self.update_userpool(account)
 
         if 'disable_rtt' in self.request.params:
@@ -360,7 +370,7 @@ class Edit(AccountMixin, EditView):
 
         if ldap:
             # update in ldap
-            r = self.request
+
             password = None
             if 'user.password' in r.params and r.params['user.password']:
                 password = [hashPassword(r.params['user.password'])]
