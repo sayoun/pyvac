@@ -16,7 +16,7 @@ from pyramid.url import route_url
 from pyramid.settings import asbool
 
 from pyvac.models import (
-    Request, VacationType, User, RequestHistory, UserPool,
+    Request, VacationType, User, RequestHistory, UserPool, Pool,
 )
 # from pyvac.helpers.i18n import trans as _
 from pyvac.helpers.calendar import delFromCal
@@ -797,12 +797,27 @@ class PoolHistory(View):
     def get_new_history(self, user, today, year):
         """Retrieve pool history using Pool and UserPool models."""
         # group userpools per vacation_type
-        pools = {}
-        for up in user.pools:
-            if up.pool.pool_group:
-                pools[up.pool.name] = up
-            else:
-                pools[up.pool.vacation_type.name] = up
+        if datetime.now().year == year:
+            pools = {}
+            for up in user.pools:
+                if up.pool.pool_group:
+                    pools[up.pool.name] = up
+                else:
+                    pools[up.pool.vacation_type.name] = up
+        else:
+            pools = {}
+            ups = UserPool.by_user(self.session, user)
+            # only select active pool for the selected year of pool history
+            for up in ups:
+                if up.pool.date_start <= today <= up.pool.date_end:
+                    if up.pool.pool_group:
+                        p2 = Pool.by_pool_group_raw(self.session,
+                                                    up.pool.pool_group)
+                        for pool in p2:
+                            pools[pool.name] = UserPool.by_user_pool_id(
+                                self.session, user.id, pool.id)
+                    else:
+                        pools[up.pool.vacation_type.name] = up
 
         pool_history = {}
         if 'RTT' in pools:
@@ -884,6 +899,7 @@ class PoolHistory(View):
                 today = datetime(year, 5, 31)
 
         history, restant = User.get_cp_history(self.session, user, year, today)
+
         vac_class = user.get_cp_class(self.session)
 
         cp_history = []

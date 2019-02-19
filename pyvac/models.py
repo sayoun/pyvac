@@ -767,13 +767,14 @@ class User(Base):
         return ret
 
     @classmethod
-    def get_cp_taken_history(cls, session, user, date):
+    def get_cp_taken_history(cls, session, user, date_start, date_end):
         """Get CP taken history."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         entries = [req for req in user.requests
                    if (req.vacation_type.name == u'CP') and
                    (req.status in valid_status) and
-                   (req.date_from >= date)]
+                   (req.date_from >= date_start) and
+                   (req.date_to <= date_end)]
 
         # set taken to 12h hour so sorted history correctly put the acquired
         # before the taken
@@ -831,6 +832,7 @@ class User(Base):
 
         raw_restant = cls.get_cp_restant_history(vac, session, user, today)
         raw_acquired = cls.get_cp_acquired_history(vac, allowed, user, today)
+
         # add seniority CP bonus if any
         anniv_date = user.get_cycle_anniversary(cycle_start, today)
         cp_bonus = int(math.floor(user.get_seniority(today) / 5))
@@ -875,7 +877,7 @@ class User(Base):
                     item['value'] = total
                     total = 0
                 acquired.append(item)
-        taken = cls.get_cp_taken_history(session, user, cycle_start)
+        taken = cls.get_cp_taken_history(session, user, cycle_start, today)
 
         history = sorted(acquired + taken)
 
@@ -1079,6 +1081,9 @@ class RTTVacation(BaseVacation):
         user = kwargs.get('user')
         if user and (user.created_at.year == today.year):
             start_month = user.created_at.month
+        if user and user.arrival_date:
+            if today < user.arrival_date:
+                return
 
         use_dt = kwargs.get('dt')
         if use_dt:
@@ -2491,6 +2496,11 @@ class Pool(Base):
         return cls.find(session, where=(cls.name == name,))
 
     @classmethod
+    def by_pool_group_raw(cls, session, pool_group):
+        """Get pools in the same pool_group."""
+        return cls.find(session, where=(cls.pool_group == pool_group,))
+
+    @classmethod
     def by_pool_group(cls, session, pool_group):
         """Get pools in the same pool_group."""
         return cls.find(session, where=(cls.pool_group == pool_group,
@@ -2603,6 +2613,12 @@ class UserPool(Base):
         """Get a userpool for a given user and pool."""
         return cls.first(session, where=(cls.user == user,
                                          cls.pool == pool))
+
+    @classmethod
+    def by_user_pool_id(cls, session, user_id, pool_id):
+        """Get a userpool for a given user and pool."""
+        return cls.first(session, where=(cls.user_id == user_id,
+                                         cls.pool_id == pool_id))
 
     @classmethod
     def by_user(cls, session, user):

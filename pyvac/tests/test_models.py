@@ -96,14 +96,17 @@ class UserTestCase(ModelTestCase):
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
-            expected = {'allowed': 10, 'left': 9.5, 'state': 'warning',
-                        'taken': 0.5, 'year': 2014}
-            self.assertEqual(user.get_rtt_usage(self.session), expected)
-            # no RTT for us country
-            user = User.by_login(self.session, u'manager3')
-            self.assertIsInstance(user, User)
-            self.assertEqual(user.country, u'us')
-            self.assertIsNone(user.get_rtt_usage(self.session))
+            with patch('pyvac.models.User.arrival_date',
+                       new_callable=PropertyMock) as mock_foo:
+                mock_foo.return_value = datetime(2014, 1, 1)
+                expected = {'allowed': 10, 'left': 9.5, 'state': 'warning',
+                            'taken': 0.5, 'year': 2014}
+                self.assertEqual(user.get_rtt_usage(self.session), expected)
+                # no RTT for us country
+                user = User.by_login(self.session, u'manager3')
+                self.assertIsInstance(user, User)
+                self.assertEqual(user.country, u'us')
+                self.assertIsNone(user.get_rtt_usage(self.session))
 
     def test_get_rtt_taken_year(self):
         from pyvac.models import User
