@@ -11,8 +11,8 @@ from pyvac.models import DBSession, Countries, VacationType
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd))
+    print(('usage: %s <config_uri>\n'
+          '(example: "%s development.ini")' % (cmd, cmd)))
     sys.exit(1)
 
 
@@ -25,13 +25,13 @@ def populate(engine):
     parent = VacationType.by_id(session, 3)
     recovery = VacationType.by_id(session, 4)
 
-    fr_country = Countries.by_name(session, u'fr')
+    fr_country = Countries.by_name(session, 'fr')
     session.add(fr_country)
-    lu_country = Countries.by_name(session, u'lu')
+    lu_country = Countries.by_name(session, 'lu')
     session.add(lu_country)
-    us_country = Countries.by_name(session, u'us')
+    us_country = Countries.by_name(session, 'us')
     session.add(us_country)
-    zh_country = Countries.by_name(session, u'zh')
+    zh_country = Countries.by_name(session, 'zh')
     session.add(zh_country)
 
     # CP is available for everyone

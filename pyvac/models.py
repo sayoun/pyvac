@@ -124,12 +124,12 @@ class User(Base):
                   nullable=False,
                   default='user')
 
-    manager_id = Column(Integer, ForeignKey(u'user.id'))
-    manager = relationship(u'User', remote_side=u'User.id', backref=u'users')
-    manager_dn = Column(Unicode(255), nullable=False, default=u'')
+    manager_id = Column(Integer, ForeignKey('user.id'))
+    manager = relationship('User', remote_side='User.id', backref='users')
+    manager_dn = Column(Unicode(255), nullable=False, default='')
 
     ldap_user = Column(Boolean, nullable=False, default=False)
-    dn = Column(Unicode(255), nullable=False, default=u'')
+    dn = Column(Unicode(255), nullable=False, default='')
 
     country_id = Column('country_id', ForeignKey(Countries.id))
     _country = relationship(Countries, backref='users')
@@ -148,7 +148,7 @@ class User(Base):
     @property
     def name(self):
         """Internal helper to retrieve user name."""
-        return u'%s %s' % (self.firstname.capitalize(),
+        return '%s %s' % (self.firstname.capitalize(),
                            self.lastname.capitalize())\
             if self.firstname and self.lastname else self.login
 
@@ -156,7 +156,7 @@ class User(Base):
         return self._password
 
     def _set_password(self, password):
-        self._password = unicode(crypt.encode(password))
+        self._password = str(crypt.encode(password))
 
     password = property(_get_password, _set_password)
     password = synonym('_password', descriptor=password)
@@ -371,18 +371,18 @@ class User(Base):
         """
         errors = []
         if not self.login:
-            errors.append(u'login is required')
+            errors.append('login is required')
         else:
             other = User.by_login(session, self.login)
             if other and other.id != self.id:
-                errors.append(u'duplicate login %s' % self.login)
+                errors.append('duplicate login %s' % self.login)
         # no need for password for ldap users
         if not ldap and not self.password:
-            errors.append(u'password is required')
+            errors.append('password is required')
         if not self.email:
-            errors.append(u'email is required')
+            errors.append('email is required')
         elif not re_email.match(self.email):
-            errors.append(u'%s is not a valid email' % self.email)
+            errors.append('%s is not a valid email' % self.email)
 
         if len(errors):
             raise ModelError(errors)
@@ -425,18 +425,18 @@ class User(Base):
         ldap = LdapCache()
         user_data = ldap.authenticate(login, password)
         if user_data is not None:
-            login = unicode(user_data['login'])
+            login = str(user_data['login'])
             user = User.by_login(session, login)
             # check what type of user it is
-            group = u'user'
+            group = 'user'
             # if it's a manager members should have him associated as such
             what = '(manager=%s)' % user_data['dn']
             if len(ldap._search(what, None)) > 0:
-                group = u'manager'
+                group = 'manager'
             # if it's an admin he should be in admin group
             what = '(member=%s)' % user_data['dn']
             if len(ldap._search_admin(what, None)) > 0:
-                group = u'admin'
+                group = 'admin'
             log.info('group found for %s: %s' % (login, group))
             # create user if needed
             if not user:
@@ -519,13 +519,13 @@ class User(Base):
         managers = ldap.list_manager()
         admins = ldap.list_admin()
         for user in User.find(session, order_by=[User.dn]):
-            group = u'user'
+            group = 'user'
             # if it's a manager members should have him associated as such
             if user.dn in managers:
-                group = u'manager'
+                group = 'manager'
             # if it's an admin he should be in admin group
             if user.dn in admins:
-                group = u'admin'
+                group = 'admin'
 
             user.role = group
             # handle update of groups if it has changed
@@ -636,13 +636,13 @@ class User(Base):
         """Retrieve taken RTT for a user for current year."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         return sum([req.days for req in self.requests
-                    if (req.vacation_type.name == u'RTT') and
+                    if (req.vacation_type.name == 'RTT') and
                     (req.status in valid_status) and
                     (req.date_from.year == year)])
 
     def get_rtt_usage(self, session):
         """Get RTT usage for a user."""
-        kwargs = {'name': u'RTT',
+        kwargs = {'name': 'RTT',
                   'country': self.country,
                   'user': self,
                   'session': session}
@@ -673,7 +673,7 @@ class User(Base):
     @classmethod
     def get_rtt_acquired_history(cls, session, user, year):
         """Get RTT acquired history."""
-        kwargs = {'name': u'RTT',
+        kwargs = {'name': 'RTT',
                   'country': user.country,
                   'user': user,
                   'session': session,
@@ -694,7 +694,7 @@ class User(Base):
         """Get RTT taken history."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         entries = [req for req in user.requests
-                   if (req.vacation_type.name == u'RTT') and
+                   if (req.vacation_type.name == 'RTT') and
                    (req.status in valid_status) and
                    (req.date_from.year == year)]
 
@@ -738,7 +738,7 @@ class User(Base):
 
         return [{'date': cycle_start + relativedelta(months=idx),
                  'value': vac.coeff}
-                for idx, item in enumerate(xrange(months + 1))]
+                for idx, item in enumerate(range(months + 1))]
 
     @classmethod
     def get_cp_restant_history(cls, vac, session, user, today=None):
@@ -775,7 +775,7 @@ class User(Base):
         """Get CP taken history."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         entries = [req for req in user.requests
-                   if (req.vacation_type.name == u'CP') and
+                   if (req.vacation_type.name == 'CP') and
                    (req.status in valid_status) and
                    (req.date_from >= date_start) and
                    (req.date_to <= date_end)]
@@ -791,7 +791,7 @@ class User(Base):
         """Retrieve taken CP for a user for current year."""
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         return sum([req.days for req in self.requests
-                    if (req.vacation_type.name == u'CP') and
+                    if (req.vacation_type.name == 'CP') and
                     (req.status in valid_status) and
                     (req.date_from >= date)])
 
@@ -801,13 +801,13 @@ class User(Base):
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         if return_req:
             return [req for req in self.requests
-                    if (req.vacation_type.name == u'CP') and
+                    if (req.vacation_type.name == 'CP') and
                     (req.status in valid_status) and
                     (req.date_from >= date_start) and
                     (req.date_to <= date_end)]
 
         return sum([req.days for req in self.requests
-                    if (req.vacation_type.name == u'CP') and
+                    if (req.vacation_type.name == 'CP') and
                     (req.status in valid_status) and
                     (req.date_from >= date_start) and
                     (req.date_to <= date_end)])
@@ -817,7 +817,7 @@ class User(Base):
         """Get CP history for given user: taken + acquired, sorted by date."""
         today = today.replace(year=year) or datetime.now().replace(year=year)
         kwargs = {'session': session,
-                  'name': u'CP',
+                  'name': 'CP',
                   'country': user.country,
                   'user': user,
                   'today': today}
@@ -903,7 +903,7 @@ class User(Base):
                      taken_end=None):
         """Get CP usage for a user."""
         kwargs = {'session': session,
-                  'name': u'CP',
+                  'name': 'CP',
                   'country': self.country,
                   'user': self,
                   'today': today,
@@ -929,7 +929,7 @@ class User(Base):
 
     def get_cp_class(self, session):
         kwargs = {'session': session,
-                  'name': u'CP',
+                  'name': 'CP',
                   'country': self.country,
                   'user': self}
         vac = VacationType.by_name_country(**kwargs)
@@ -941,7 +941,7 @@ class User(Base):
         valid_status = ['PENDING', 'ACCEPTED_MANAGER', 'APPROVED_ADMIN']
         taken = [datetime.strptime(req.message, '%d/%m/%Y')
                  for req in self.requests
-                 if (req.vacation_type.name == u'Compensatoire') and
+                 if (req.vacation_type.name == 'Compensatoire') and
                  (req.status in valid_status)]
 
         now = today or datetime.now()
@@ -997,8 +997,8 @@ class BaseVacation(object):
 class CompensatoireVacation(BaseVacation):
     """Implement Compensatoire vacation behavior."""
 
-    name = u'Compensatoire'
-    country = u'lu'
+    name = 'Compensatoire'
+    country = 'lu'
 
     @classmethod
     def acquired(cls, **kwargs):
@@ -1041,8 +1041,8 @@ class CompensatoireVacation(BaseVacation):
 class RTTVacation(BaseVacation):
     """Implement RTT vacation behavior."""
 
-    name = u'RTT'
-    country = u'fr'
+    name = 'RTT'
+    country = 'fr'
     except_months = []
 
     @classmethod
@@ -1093,18 +1093,18 @@ class RTTVacation(BaseVacation):
         if use_dt:
             # we want to return datetimes
             return [datetime(today.year, i, 1)
-                    for i in xrange(start_month, today.month + 1)
+                    for i in range(start_month, today.month + 1)
                     if i not in cls.except_months]
 
-        return len([i for i in xrange(start_month, today.month + 1)
+        return len([i for i in range(start_month, today.month + 1)
                     if i not in cls.except_months])
 
 
 class CPVacation(BaseVacation):
     """Implement CP vacation behavior."""
 
-    name = u'CP'
-    country = u'fr'
+    name = 'CP'
+    country = 'fr'
     epoch = datetime(2015, 6, 1)
     coeff = 2.08  # per month
     users_base = {}
@@ -1393,8 +1393,8 @@ class CPVacation(BaseVacation):
 class CPLUVacation(BaseVacation):
     """Implement CP vacation behavior for Luxembourg."""
 
-    name = u'CP'
-    country = u'lu'
+    name = 'CP'
+    country = 'lu'
     epoch = datetime(2016, 1, 1)
     coeff = 2.083 * 8  # per month 16.664 hours
     users_base = {}
@@ -2419,7 +2419,7 @@ class EventLog(Base):
     def add(cls, session, source, type, comment=None, delta=None,
             created_at=None, extra_id=None):
         source_name = source
-        if not isinstance(source, basestring):
+        if not isinstance(source, str):
             source_name = source.__class__.__name__.lower()
 
         kwargs = {

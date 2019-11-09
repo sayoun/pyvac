@@ -85,7 +85,7 @@ class Send(View):
 
             # check if user is sudoed
             check_user = self.get_target_user(self.user)
-            pool = dict([(k, v.amount) for k, v in check_user.pool.items()])
+            pool = dict([(k, v.amount) for k, v in list(check_user.pool.items())])
             # retrieve future requests for user so we can check overlap
             futures = [d for req in
                        Request.by_user_future(self.session, check_user)
@@ -129,14 +129,14 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
 
             # check RTT usage access
-            if vac_type.name == u'RTT':
+            if vac_type.name == 'RTT':
                 if self.user.has_feature('disable_rtt'):
                     msg = 'You are not allowed to use type: %s' % vac_type.name
                     self.request.session.flash('error;%s' % msg)
                     return HTTPFound(location=route_url('home', self.request))
 
             # label field is used when requesting half day
-            label = u''
+            label = ''
             if breakdown != 'FULL':
                 # handle half day
                 if (days > 1):
@@ -146,10 +146,10 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
                 else:
                     days = 0.5
-                    label = unicode(breakdown)
+                    label = str(breakdown)
 
             # check RTT usage
-            if vac_type.name == u'RTT':
+            if vac_type.name == 'RTT':
                 rtt_pool = check_user.pool.get('RTT')
                 if rtt_pool is not None and rtt_pool.amount <= 0:
                     msg = 'No RTT left to take.'
@@ -172,7 +172,7 @@ class Send(View):
 
             message = None
             # check Exceptionnel mandatory field
-            if vac_type.name == u'Exceptionnel':
+            if vac_type.name == 'Exceptionnel':
                 message = self.request.params.get('exception_text')
                 message = message.strip() if message else message
                 if not message:
@@ -188,7 +188,7 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
 
             # check for Compensatoire type (LU holiday recovery)
-            if vac_type.name == u'Compensatoire':
+            if vac_type.name == 'Compensatoire':
                 to_recover = self.request.params.get('recovered_holiday')
                 if to_recover == '-1':
                     msg = 'You must select a date for %s' % vac_type.name
@@ -207,7 +207,7 @@ class Send(View):
                     message = to_recover
 
             # check Récupération reason field
-            if vac_type.name == u'Récupération':
+            if vac_type.name == 'Récupération':
                 message = self.request.params.get('exception_text')
                 message = message.strip() if message else message
                 # check size
@@ -218,7 +218,7 @@ class Send(View):
                     return HTTPFound(location=route_url('home', self.request))
 
             # check CP usage
-            if vac_type.name == u'CP':
+            if vac_type.name == 'CP':
                 cp_class = check_user.get_cp_class(self.session)
 
                 if cp_class:
@@ -236,7 +236,7 @@ class Send(View):
 
             # create the request
             # default values
-            target_status = u'PENDING'
+            target_status = 'PENDING'
             target_user = self.user
             target_notified = False
 
@@ -248,7 +248,7 @@ class Send(View):
                     if user:
                         sudo_use = True
                         target_user = user
-                        target_status = u'APPROVED_ADMIN'
+                        target_status = 'APPROVED_ADMIN'
                         target_notified = True
 
             # save pool status when making the request
@@ -411,7 +411,7 @@ class List(View):
             if use_ldap:
                 ldap = LdapCache()
                 users_teams = {}
-                for team, members in ldap.list_teams().iteritems():
+                for team, members in list(ldap.list_teams().items()):
                     for member in members:
                         users_teams.setdefault(member, []).append(team)
 
@@ -571,8 +571,8 @@ class Export(View):
         start = datetime(2014, 5, 1)
         today = datetime.now()
         entries = []
-        for year in reversed(range(start.year, today.year + 1)):
-            for month in reversed(range(1, 13)):
+        for year in reversed(list(range(start.year, today.year + 1))):
+            for month in reversed(list(range(1, 13))):
                 temp = datetime(year, month, 1)
                 entries.append(('%d/%d' % (month, year),
                                temp.strftime('%B %Y')))
@@ -670,7 +670,7 @@ class Exported(View):
                 data.append('%d,%s' % (idx, req.summarycsv))
             exported = '\n'.join(data)
 
-        return {u'exported': exported}
+        return {'exported': exported}
 
 
 class Prevision(View):
@@ -700,7 +700,7 @@ class Prevision(View):
             ldap = LdapCache()
             user_attr = ldap.get_users_units()
             users_teams = {}
-            for team, members in ldap.list_teams().iteritems():
+            for team, members in list(ldap.list_teams().items()):
                 for member in members:
                     users_teams.setdefault(member, []).append(team)
 
@@ -770,7 +770,7 @@ class Off(View):
             if val:
                 ret = {filter_nick: val}
             elif not strict:
-                val = dict([(k, v) for k, v in data_nick.items()
+                val = dict([(k, v) for k, v in list(data_nick.items())
                             if filter_nick.lower() in k])
                 return val
             else:
@@ -781,11 +781,11 @@ class Off(View):
             if val:
                 ret = {filter_name: val}
             else:
-                val = dict([(k, v) for k, v in data_name.items()
+                val = dict([(k, v) for k, v in list(data_name.items())
                             if filter_name.lower() in k])
                 return val
 
-        data_name = OrderedDict(sorted(data_name.items(), key=lambda t: t[0]))
+        data_name = OrderedDict(sorted(list(data_name.items()), key=lambda t: t[0]))
         return ret if ret else data_name
 
 
@@ -833,7 +833,8 @@ class PoolHistory(View):
                 pool_acquis = acquis.pop(0)['value']
             else:
                 pool_acquis = 0
-            history = sorted(restant + acquis)
+            history = restant + acquis
+            history.sort(key=lambda x: x['date'], reverse=False)
 
         cp_history = []
         for idx, entry in enumerate(history, start=1):
@@ -959,7 +960,7 @@ class PoolHistory(View):
         year = int(self.request.params.get('year', today.year))
 
         start = datetime(2014, 5, 1)
-        years = [item for item in reversed(range(start.year, today.year + 1))]
+        years = [item for item in reversed(list(range(start.year, today.year + 1)))]
 
         if today.year > year:
             if user.country == 'lu':
@@ -1002,7 +1003,7 @@ class History(View):
                                                     self.request))
 
         if request:
-            return {u'history': request.history, 'req': request}
+            return {'history': request.history, 'req': request}
 
         return {}
 
@@ -1030,7 +1031,7 @@ class OverviewMixin(object):
         date_from = today - relativedelta(days=15)
 
         all_reqs = []
-        for user_id, user in users_per_id.items():
+        for user_id, user in list(users_per_id.items()):
             user_req = Request.by_user_future_approved(self.session, user,
                                                        date_from=date_from)
             all_reqs.extend(user_req)
@@ -1088,7 +1089,7 @@ class SquadOverview(OverviewMixin, View):
         User.sync_ldap_info(self.session)
         ldap = LdapCache()
         users_entity = {}
-        for team, members in ldap.list_teams().iteritems():
+        for team, members in list(ldap.list_teams().items()):
             for member in members:
                 users_entity.setdefault(member, []).append(team)
 
@@ -1096,7 +1097,7 @@ class SquadOverview(OverviewMixin, View):
         # use all users for admin
         overviews = {}
         if self.user.is_admin or self.user.has_feature('squad_overview_full'):
-            for _, target_squad in self.squad_leaders.items():
+            for _, target_squad in list(self.squad_leaders.items()):
                 squad_stats = self.get_squad_stats(target_squad, users_entity)
                 overviews.update({target_squad: squad_stats})
         elif self.user.is_manager:
@@ -1117,7 +1118,7 @@ class ChapterOverview(OverviewMixin, View):
     def get_chapter_stats(self, target_chapter, users_entity):
         # retrieve chapter members
         users_per_id = {}
-        for user_dn, chapters in users_entity.iteritems():
+        for user_dn, chapters in list(users_entity.items()):
             if target_chapter not in chapters:
                 continue
             user = User.by_dn(self.session, user_dn)
@@ -1132,7 +1133,7 @@ class ChapterOverview(OverviewMixin, View):
         User.sync_ldap_info(self.session)
         ldap = LdapCache()
         users_entity = {}
-        for chapter, members in ldap.list_chapters().iteritems():
+        for chapter, members in list(ldap.list_chapters().items()):
             for member in members:
                 users_entity.setdefault(member, []).append(chapter)
 
@@ -1140,7 +1141,7 @@ class ChapterOverview(OverviewMixin, View):
         # use all users for admin
         overviews = {}
         if self.user.is_admin or self.user.has_feature('chapter_overview_full'):  # noqa
-            for _, target_chapter in self.chapter_leaders.items():
+            for _, target_chapter in list(self.chapter_leaders.items()):
                 chapter_stats = self.get_chapter_stats(target_chapter, users_entity)  # noqa
                 overviews.update({target_chapter: chapter_stats})
         elif self.user.is_manager:
@@ -1170,6 +1171,7 @@ class ManagerOverview(OverviewMixin, View):
         # use all users for admin
         overviews = {}
         extra_managers = []
+        users_entity = []
         # check if admin user is also a manager
         if User.managed_users(self.session, self.user):
             extra_managers = [self.user]

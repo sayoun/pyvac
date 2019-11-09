@@ -15,72 +15,72 @@ def setUpModule():
     populate(engine)
 
     session = DBSession()
-    user_group = Group.by_name(session, u'user')
-    manager_group = Group.by_name(session, u'manager')
-    sudoer_group = Group.by_name(session, u'sudoer')
-    common_password = u'changeme'
+    user_group = Group.by_name(session, 'user')
+    manager_group = Group.by_name(session, 'manager')
+    sudoer_group = Group.by_name(session, 'sudoer')
+    common_password = 'changeme'
 
-    cp_vacation = VacationType.by_name(session, u'CP')
-    rtt_vacation = VacationType.by_name(session, u'RTT')
-    recovery_vacation = VacationType.by_name(session, u'Récupération')
-    sickness_vacation = VacationType.by_name(session, u'Maladie')
-    exception_vacation = VacationType.by_name(session, u'Exceptionnel')
+    cp_vacation = VacationType.by_name(session, 'CP')
+    rtt_vacation = VacationType.by_name(session, 'RTT')
+    recovery_vacation = VacationType.by_name(session, 'Récupération')
+    sickness_vacation = VacationType.by_name(session, 'Maladie')
+    exception_vacation = VacationType.by_name(session, 'Exceptionnel')
 
-    fr_country = Countries.by_name(session, u'fr')
-    us_country = Countries.by_name(session, u'us')
-    lu_country = Countries.by_name(session, u'lu')
+    fr_country = Countries.by_name(session, 'fr')
+    us_country = Countries.by_name(session, 'us')
+    lu_country = Countries.by_name(session, 'lu')
 
-    manager1 = User(login=u'manager1',
+    manager1 = User(login='manager1',
                     password=common_password,
-                    email=u'manager1@example.net',
-                    firstname=u'First',
-                    lastname=u'Manager',
-                    role=u'manager',
+                    email='manager1@example.net',
+                    firstname='First',
+                    lastname='Manager',
+                    role='manager',
                     _country=fr_country,
                     )
     manager1.groups.append(manager_group)
     session.add(manager1)
 
-    manager2 = User(login=u'manager2',
+    manager2 = User(login='manager2',
                     password=common_password,
-                    email=u'manager2@example.net',
-                    firstname=u'Second',
-                    lastname=u'Manager',
-                    role=u'manager',
+                    email='manager2@example.net',
+                    firstname='Second',
+                    lastname='Manager',
+                    role='manager',
                     _country=fr_country,
                     )
     manager2.groups.append(manager_group)
     session.add(manager2)
 
-    manager_us = User(login=u'manager3',
+    manager_us = User(login='manager3',
                       password=common_password,
-                      email=u'manager3@example.net',
-                      firstname=u'Third',
-                      lastname=u'Manager',
-                      role=u'manager',
+                      email='manager3@example.net',
+                      firstname='Third',
+                      lastname='Manager',
+                      role='manager',
                       _country=us_country,
                       )
     manager_us.groups.append(manager_group)
     session.add(manager_us)
 
-    user1 = User(login=u'jdoe',
+    user1 = User(login='jdoe',
                  password=common_password,
-                 email=u'jdoe@example.net',
+                 email='jdoe@example.net',
                  manager=manager1,
-                 firstname=u'John',
-                 lastname=u'Doe',
+                 firstname='John',
+                 lastname='Doe',
                  _country=fr_country,
                  registration_number=1337,
                  )
     user1.groups.append(user_group)
     session.add(user1)
 
-    user2 = User(login=u'janedoe',
+    user2 = User(login='janedoe',
                  password=common_password,
-                 email=u'janedoe@example.net',
+                 email='janedoe@example.net',
                  manager=manager2,
-                 firstname=u'Jane',
-                 lastname=u'Doe',
+                 firstname='Jane',
+                 lastname='Doe',
                  _country=fr_country,
                  )
     user2.groups.append(user_group)
@@ -91,12 +91,12 @@ def setUpModule():
     sudoer = Sudoer(source_id=user2.id, target_id=1)
     session.add(sudoer)
 
-    user3 = User(login=u'sarah.doe',
+    user3 = User(login='sarah.doe',
                  password=common_password,
-                 email=u'sarah@example.net',
+                 email='sarah@example.net',
                  manager=manager1,
-                 firstname=u'Sarah',
-                 lastname=u'Doe',
+                 firstname='Sarah',
+                 lastname='Doe',
                  _country=lu_country,
                  )
     user3.groups.append(user_group)
@@ -108,7 +108,7 @@ def setUpModule():
                    date_to=date_to,
                    days=5,
                    vacation_type=cp_vacation,
-                   status=u'PENDING',
+                   status='PENDING',
                    user=user1,
                    notified=False)
     session.add(req1)
@@ -119,7 +119,7 @@ def setUpModule():
                    date_to=date_to,
                    days=10,
                    vacation_type=cp_vacation,
-                   status=u'PENDING',
+                   status='PENDING',
                    user=user2,
                    notified=False,)
     session.add(req2)
@@ -130,7 +130,7 @@ def setUpModule():
                    date_to=date_to,
                    days=5,
                    vacation_type=rtt_vacation,
-                   status=u'ACCEPTED_MANAGER',
+                   status='ACCEPTED_MANAGER',
                    user=user1,
                    notified=True,)
     session.add(req3)
@@ -141,7 +141,7 @@ def setUpModule():
                    date_to=date_to,
                    days=5,
                    vacation_type=rtt_vacation,
-                   status=u'CANCELED',
+                   status='CANCELED',
                    user=user1,
                    notified=True,)
     session.add(req4)
@@ -152,7 +152,7 @@ def setUpModule():
                    date_to=date_to,
                    days=5,
                    vacation_type=rtt_vacation,
-                   status=u'APPROVED_ADMIN',
+                   status='APPROVED_ADMIN',
                    user=manager_us,
                    notified=True,)
     session.add(req5)
@@ -163,10 +163,10 @@ def setUpModule():
                    date_to=date_to,
                    days=0.5,
                    vacation_type=rtt_vacation,
-                   status=u'APPROVED_ADMIN',
+                   status='APPROVED_ADMIN',
                    user=user1,
                    notified=True,
-                   label=u'AM')
+                   label='AM')
     session.add(req6)
 
     date_from = datetime.strptime('14/07/2014', '%d/%m/%Y')
@@ -175,10 +175,10 @@ def setUpModule():
                    date_to=date_to,
                    days=0.5,
                    vacation_type=rtt_vacation,
-                   status=u'APPROVED_ADMIN',
+                   status='APPROVED_ADMIN',
                    user=user1,
                    notified=True,
-                   label=u'AM')
+                   label='AM')
     session.add(req7)
 
     # used for rtt vacation checks
@@ -189,7 +189,7 @@ def setUpModule():
                    date_to=date_to,
                    days=1,
                    vacation_type=rtt_vacation,
-                   status=u'PENDING',
+                   status='PENDING',
                    user=user1,
                    notified=True)
     session.add(req8)
@@ -200,7 +200,7 @@ def setUpModule():
                    date_to=date_to,
                    days=1,
                    vacation_type=rtt_vacation,
-                   status=u'ACCEPTED_MANAGER',
+                   status='ACCEPTED_MANAGER',
                    user=user1,
                    notified=True)
     session.add(req9)
@@ -211,7 +211,7 @@ def setUpModule():
                     date_to=date_to,
                     days=1,
                     vacation_type=rtt_vacation,
-                    status=u'APPROVED_ADMIN',
+                    status='APPROVED_ADMIN',
                     user=user1,
                     notified=True)
     session.add(req10)
@@ -222,7 +222,7 @@ def setUpModule():
                     date_to=date_to,
                     days=1,
                     vacation_type=recovery_vacation,
-                    status=u'APPROVED_ADMIN',
+                    status='APPROVED_ADMIN',
                     user=user1,
                     notified=True)
     session.add(req11)
@@ -233,7 +233,7 @@ def setUpModule():
                     date_to=date_to,
                     days=1,
                     vacation_type=rtt_vacation,
-                    status=u'DENIED',
+                    status='DENIED',
                     user=user1,
                     notified=True)
     session.add(req12)
@@ -244,7 +244,7 @@ def setUpModule():
                     date_to=date_to,
                     days=1,
                     vacation_type=sickness_vacation,
-                    status=u'APPROVED_ADMIN',
+                    status='APPROVED_ADMIN',
                     user=user1,
                     notified=True)
     session.add(req13)
@@ -255,9 +255,9 @@ def setUpModule():
                     date_to=date_to,
                     days=1,
                     vacation_type=exception_vacation,
-                    status=u'APPROVED_ADMIN',
+                    status='APPROVED_ADMIN',
                     user=user2,
-                    message=u"I need to see Star Wars, I'm a huge fan",
+                    message="I need to see Star Wars, I'm a huge fan",
                     notified=True)
     session.add(req14)
 

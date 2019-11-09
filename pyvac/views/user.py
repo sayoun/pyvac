@@ -37,11 +37,11 @@ class ChangePassword(UserMixin, EditView):
 
         if not User.by_credentials(self.session, model.login,
                                    r.params['current_password']):
-            errors.append(_(u'current password is not correct'))
+            errors.append(_('current password is not correct'))
         elif r.params['user.password'] == r.params['current_password']:
-            errors.append(_(u'password is inchanged'))
+            errors.append(_('password is inchanged'))
 
         if r.params['user.password'] != r.params['confirm_password']:
-            errors.append(_(u'passwords do not match'))
+            errors.append(_('passwords do not match'))
 
         return len(errors) == 0

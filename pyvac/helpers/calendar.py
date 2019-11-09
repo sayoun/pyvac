@@ -1,4 +1,4 @@
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import logging
 import caldav
 from dateutil.relativedelta import relativedelta
@@ -39,7 +39,7 @@ END:VCALENDAR
 
     url_obj = event.url
     url_obj = str(url_obj)
-    url_obj = urllib.quote(url_obj, safe='/:')
+    url_obj = urllib.parse.quote(url_obj, safe='/:')
     return url_obj
 
 

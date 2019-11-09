@@ -5,12 +5,12 @@ from pyvac.models import VacationType, User, Request
 
 
 class Index(RedirectView):
-    redirect_route = u'login'
+    redirect_route = 'login'
 
 
 class Home(RedirectView):
 
-    redirect_route = u'login'
+    redirect_route = 'login'
 
     def render(self):
         if not self.user:

@@ -2,17 +2,18 @@
 
 import sys
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from pyramid.interfaces import IAuthenticationPolicy
-from pyramid.authentication import CallbackAuthenticationPolicy, \
-        AuthTktAuthenticationPolicy
+from pyramid.authentication import (
+    CallbackAuthenticationPolicy, AuthTktAuthenticationPolicy,
+)
 
 from pyvac.models import DBSession, User
 
 
+@implementer(IAuthenticationPolicy)
 class AuthBasicAuthenticationPolicy(CallbackAuthenticationPolicy):
-    implements(IAuthenticationPolicy)
 
     def __init__(self, callback=None):
         self.callback = callback
@@ -32,7 +33,7 @@ class AuthBasicAuthenticationPolicy(CallbackAuthenticationPolicy):
             # Python 3's string is already unicode
             auth = auth.strip().decode('base64')
             if sys.version_info[0] == 2:
-                auth = unicode(auth)
+                auth = str(auth)
         except binascii.Error:  # can't decode
             return None
         try:
@@ -55,10 +56,10 @@ class AuthBasicAuthenticationPolicy(CallbackAuthenticationPolicy):
         return []
 
 
+@implementer(IAuthenticationPolicy)
 class RouteSwithchAuthPolicy(CallbackAuthenticationPolicy):
-    implements(IAuthenticationPolicy)
 
-    def __init__(self, secret='key',callback=None):
+    def __init__(self, secret='key', callback=None):
         self.impl = {'basic': AuthBasicAuthenticationPolicy(callback=callback),
                      'tk': AuthTktAuthenticationPolicy(secret,
                                                        callback=callback,
@@ -68,9 +69,10 @@ class RouteSwithchAuthPolicy(CallbackAuthenticationPolicy):
 
     def get_impl(self, request):
         if request.matched_route and request.matched_route.name in (
-        'list_simple','show_simple',
-        'show_release_file','show_external_release_file',
-        'upload_releasefile'):
+            'list_simple', 'show_simple',
+            'show_release_file', 'show_external_release_file',
+            'upload_releasefile'
+        ):
             return self.impl['basic']
         return self.impl['tk']
 

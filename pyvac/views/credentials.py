@@ -39,7 +39,7 @@ class Login(View):
 
         login = self.request.params.get('login', '')
         if 'submit' in self.request.params:
-            password = self.request.params.get('password', u'')
+            password = self.request.params.get('password', '')
             if password:
                 settings = self.request.registry.settings
                 ldap = False
@@ -163,10 +163,10 @@ class ChangePassword(View):
                     ldap = asbool(settings.get('pyvac.use_ldap'))
 
                 if not len(r.params['user.password']):
-                    errors.append(_(u'password cannot be empty'))
+                    errors.append(_('password cannot be empty'))
 
                 if r.params['user.password'] != r.params['confirm_password']:
-                    errors.append(_(u'passwords do not match'))
+                    errors.append(_('passwords do not match'))
 
                 if errors:
                     self.request.session.flash('error;%s' % ','.join(errors))

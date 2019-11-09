@@ -51,14 +51,14 @@ class List(View):
 
             user_attr = ldap.get_users_units()
             users_teams = {}
-            for team, members in ldap.list_teams().iteritems():
+            for team, members in list(ldap.list_teams().items()):
                 for member in members:
                     users_teams.setdefault(member, []).append(team)
 
             active_users = ldap.list_active_users()
 
-        return {u'user_count': User.find(self.session, count=True),
-                u'users': User.find(self.session, order_by=[User.dn]),
+        return {'user_count': User.find(self.session, count=True),
+                'users': User.find(self.session, order_by=[User.dn]),
                 'use_ldap': use_ldap,
                 'ldap_info': user_attr,
                 'users_teams': users_teams,
@@ -87,7 +87,7 @@ class ListPool(View):
             if user.login in self.ignore_users:
                 continue
 
-            usage = dict([(k, v.amount) for k, v in user.pool.items()])
+            usage = dict([(k, v.amount) for k, v in list(user.pool.items())])
             rtt_usage[user.login] = usage.get('RTT', 0)
             cp_total = usage.get('CP acquis', 0) + usage.get('CP restant', 0)
             cp_usage[user.login] = cp_total
@@ -104,11 +104,11 @@ class ListPool(View):
             header = ('%s,%s,%s' % ('Login', 'RTT', 'CP'))
             data.insert(0, header)
 
-        ret = {u'user_count': User.find(self.session, count=True),
-               u'users': users,
-               u'today': today,
-               u'cp_usage': cp_usage,
-               u'exported': '\n'.join(data)}
+        ret = {'user_count': User.find(self.session, count=True),
+               'users': users,
+               'today': today,
+               'cp_usage': cp_usage,
+               'exported': '\n'.join(data)}
 
         if self.user.country == 'fr':
             ret['rtt_usage'] = rtt_usage
@@ -150,7 +150,7 @@ class AccountMixin:
 
             view['teams'] = ldap.list_teams()
             uteams = {}
-            for team, members in view['teams'].iteritems():
+            for team, members in list(view['teams'].items()):
                 for member in members:
                     uteams.setdefault(member, []).append(team)
             view['user_teams'] = uteams.get(view['ldap_user'].get('dn'), [])
@@ -189,7 +189,7 @@ This has no effect on CP acquisition.
         if not group_ids:
             # ensure that account has at least user group otherwise
             # he cannot access anything
-            group_ids = [Group.by_name(self.session, u'user').id]
+            group_ids = [Group.by_name(self.session, 'user').id]
 
         # only update if there is at least one group provided
         if group_ids:
@@ -215,7 +215,7 @@ This has no effect on CP acquisition.
             if self.user:
                 _ct = self.user.country
             else:
-                _ct = u'fr'
+                _ct = 'fr'
         country = Countries.by_name(self.session, _ct)
         account._country = country
 
@@ -417,7 +417,7 @@ class Edit(AccountMixin, EditView):
             if self.user.is_admin:
                 # update teams
                 uteams = {}
-                for team, members in ldap.list_teams().iteritems():
+                for team, members in list(ldap.list_teams().items()):
                     for member in members:
                         uteams.setdefault(member, []).append(team)
                 user_teams = uteams.get(account.dn, [])
@@ -467,19 +467,19 @@ class Edit(AccountMixin, EditView):
         if 'current_password' in r.params and r.params['current_password']:
             if not User.by_credentials(self.session, model.login,
                                        r.params['current_password'], ldap):
-                errors.append(_(u'current password is not correct'))
+                errors.append(_('current password is not correct'))
             elif r.params['user.password'] == r.params['current_password']:
-                errors.append(_(u'password is unchanged'))
+                errors.append(_('password is unchanged'))
 
             if r.params['user.password'] != r.params['confirm_password']:
-                errors.append(_(u'passwords do not match'))
+                errors.append(_('passwords do not match'))
 
         if (r.params.get('remove_photo', 'no') == 'no'):
             try:
                 photo = r.POST['photofile'].file.read()
                 photo_size = len(photo)
                 if photo_size > 200000:
-                    errors.append(_(u'Invalid photo size: %d' % photo_size))
+                    errors.append(_('Invalid photo size: %d' % photo_size))
             except:
                 pass
 
@@ -492,7 +492,7 @@ class Edit(AccountMixin, EditView):
                     float(new)
                 except Exception as exc:
                     log.error('cannot update %s: %s' % (up, exc))
-                    errors.append(_(u'Wrong value for %s: %s' %
+                    errors.append(_('Wrong value for %s: %s' %
                                   (up.fullname, new)))
 
         if errors:
@@ -608,8 +608,8 @@ class Whoswho(View):
                      if user.dn in ldap_users]
 
             teams = ldap.list_teams()
-            data['teams'] = teams.keys()
-            for team, members in teams.iteritems():
+            data['teams'] = list(teams.keys())
+            for team, members in list(teams.items()):
                 for member in members:
                     users_teams.setdefault(member, []).append(team)
 

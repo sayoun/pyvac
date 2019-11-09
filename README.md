@@ -46,38 +46,63 @@ Each step in the workflow generates a notification email to affected parties.
 -> a new entry is added to caldav for this leave request
 
 
+Requirements
+------------
+
+You will need at least a python 3.5 and a Redis server (for Celery backend).
+
 Getting Started
 ---------------
 
     cd <directory containing this file>
 
-Install package in venv
+Install requirements and package in venv. Cryptacular will generate a scons error if not installed before setup.py.
 
-    $venv/bin/python setup.py develop
+    pip install cryptacular
+    python setup.py develop
 
-Initialize database
+Initialize database (sqlite by default)
 
-    $venv/bin/pyvac_install development.ini
+    pyvac_install development.ini
 
 Optional: Import ldap users if using ldap
 
-    $venv/bin/pyvac_import development.ini
+    pyvac_import development.ini
 
 Start the website
 
-    $venv/bin/pserve development.ini
+    pserve development.ini
 
 Start celery worker process
 
-    $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -Q pyvac_work
+    pyvac_celeryd conf/pyvac.yaml -l DEBUG -c 1 -Q pyvac_work
 
 Start celery poller process
 
-    $venv/bin/pyvac_celeryd pyvac/conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
+    pyvac_celeryd conf/pyvac.yaml -l DEBUG -c 1 -B -Q pyvac_poll
 
 ### Finally, to be ready to use:
 
 - log in using admin account (default credentials: admin/changeme)
 - go to profile page and change password and email
-- create users/managers
+- create a manager and some users
 
+
+Use postgresql instead of sqlite
+--------------------------------
+
+You need to first create a database for pyvac to work
+
+    sudo -u postgres psql
+    postgres=# create database pyvac;
+    postgres=# create user pyvac with encrypted password 'pyvac';
+    postgres=# grant all privileges on database pyvac to pyvac;
+
+Then you need to update configuration files to use this. You need to uncomment line `sqlalchemy.url` to enable postgresql usage.
+
+* update `development.ini` file to frontend
+* update `pyvac.yaml` file for backend
+
+Then initialize database again
+
+    pyvac_install development.ini

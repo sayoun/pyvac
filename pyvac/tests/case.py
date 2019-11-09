@@ -32,10 +32,10 @@ class DummyRoute(object):
 
 
 class DummyRequest(testing.DummyRequest):
-    method = u'GET'
-    application_url = u'http://pyvac.example.net'
-    host = u'pyvac.example.net:80'
-    client_addr = u'127.0.0.8'
+    method = 'GET'
+    application_url = 'http://pyvac.example.net'
+    host = 'pyvac.example.net:80'
+    client_addr = '127.0.0.8'
     matched_route = DummyRoute
 
     def auto_translate(string, country):
@@ -81,7 +81,7 @@ class UnauthenticatedViewTestCase(TestCase):
                        headers=None, path='/', cookies=None, post=None, **kw):
         if params and not isinstance(params, MultiDict):
             mparams = MultiDict()
-            for k, v in params.items():
+            for k, v in list(params.items()):
                 if hasattr(v, '__iter__'):
                     [mparams.add(k, vv) for vv in v]
                 else:
@@ -100,7 +100,7 @@ class ViewTestCase(UnauthenticatedViewTestCase):
     def setUp(self):
         super(ViewTestCase, self).setUp()
 
-    def set_userid(self, userid=u'admin', permissive=False):
+    def set_userid(self, userid='admin', permissive=False):
         self.config.testing_securitypolicy(userid=userid,
                                            permissive=permissive)
 
@@ -109,5 +109,5 @@ class ViewAdminTestCase(ViewTestCase):
 
     def setUp(self):
         super(ViewAdminTestCase, self).setUp()
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)

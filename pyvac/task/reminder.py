@@ -32,7 +32,7 @@ class TrialReminderPoller(Task):
         arrivals = ldap.list_arrivals_country(country)
 
         matched = []
-        for user_dn, dt in arrivals.items():
+        for user_dn, dt in list(arrivals.items()):
             if not dt:
                 continue
 

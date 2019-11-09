@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import logging
 import random
@@ -672,6 +672,6 @@ def randomstring(length=8):
     chars = string.letters + string.digits
 
     # Generate string from population
-    data = [random.choice(chars) for _ in xrange(length)]
+    data = [random.choice(chars) for _ in range(length)]
 
     return ''.join(data)
