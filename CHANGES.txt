@@ -1,3 +1,98 @@
+1.9
+---
+
+- Big refactor of CP Pool codebase
+  * CP are now using a vacation pool (acquis+restant for french CP)
+  * CP are automatically incremented by a cron like system
+  * Request consumes from a vacation pool, canceling a request will refund the amount
+  * Add new event log table so we can track what is happening
+- New dynamic who's who page
+  * Add dynamic who's whos page on new route /who
+  * Add a json export for who's who page
+  * Add code to handle custom renderer to be used as template for who's who page
+  * LDAP users can now upload their photos
+- Handle multiple admins per BU
+  * Adapt admin mail sender for APPROVED_ADMIN requests
+  * All BU admins will receive a copy for ACCEPTED_MANAGER requests
+- New feature: Chapter Overview
+- New feature: Manager Overview
+- New feature: Request history
+- New feature: Squad overview
+- Improve Off view
+  * Add an HTML version for the "off" view
+  * Add new parameter to Off route, to display duration
+  * Sort results for Off view when no filter provided
+  * Hide request type detail from Off view
+- Various UI fixes
+  * Update CP summary block for french users on home page
+  * Allow users to edit their nicknames (uid field) in profile page
+  * Add confirmation box when requesting a sudo user
+  * Admin who are also managers can now sudo managed users
+  * Add registration number field for each user
+  * Force user login to be in ascii during user creation
+  * Account creation in LDAP should send nickname when provided
+  * Add support for mobile phone in LDAP user profile
+  * Admin can click already approved/pending future for sudo requests
+  * Admin should see in the past requests going back to the 1st of current month
+  * Admins are able to use any type of vacation when sudoing.
+  * Admins can change a user current pool amount from the edit user page
+  * Admins can now set arrival_date for LDAP users
+  * Admins should always be able to select RTT, in case of sudoing
+  * Allow admins to update role of user for LDAP users
+  * Add option to sort exported data using Sage format
+  * Create user pool upon user edition if not existing and arrival date is set
+  * Do not include future taken vacation for pool export data
+  * Update export view to allow new type of export, until a day in month
+  * Small improvment on display for export page
+  * Improve pool history page display of refunded request
+- Add new vacation type for Lu: Compensatoire
+  * Add CP for Luxembourg country
+  * Add Pool History feature for LU users
+  * Don't discard overlapping requests in export for LU country
+- Add support for partial time work which is used for RTT acquisition
+- Debian packaging
+  * Add systemd support and lintian fixes in Debian package
+- Move holidays override to an external configuration file
+- Add blacklist_users feature to disable access if needed
+- Add feature flag: disable_rtt to disable this vacation type per user
+- Multiple fixes:
+  * Add seniority bonus CP to users for 1st cycle
+  * Overlap request check should handle half day requests correctly
+  * When checking for future requests, check correct user when using sudo
+  * Seniority CP fix: display in pool history and use it in acquis not restants
+  * Fix account deletion to work again
+  * Fix bug with calendar adding
+  * Fix bug with CP not consuming taken properly upon new cycle
+  * Fix bug with ics url format with latest vobject version
+  * Fix bug with ldap profile edition when not admin
+  * Fix bug with user pools when deleting a user
+  * Fix bug: only FR and LU have a dedicated CP class to use
+  * Fix bugs with pool history and user pools
+  * Fix code to allow update of user even if deleted from ldap
+  * Fix EventLog ordering for pool history
+  * Fix issue with calendar to use
+  * Fix Manager overview when admin is also a manager
+  * Fix off.html titlecase with accentuated names
+  * Fix on holiday retrieval for LU Compensatoire vacation
+  * Fix on squad overview (ldap filtered and month=0)
+  * Fix photo profile upload to work on firefox again
+  * Fix reminder trial task to save reminder to DB
+  * Fix search parameter for deletion of user
+  * Fix template breaking on account form
+  * Fix: Only decrement userpool for a request if userpool exists
+  * Fixes anniversary formula when date is already past this year.
+  * Fixes bug in pool history page when user arrival date was current year but after cycle start
+  * Fixes bug on squad overview page when in february (28 days not 31)
+  * Fixes bug on users list pool view for user without CP Pool available
+  * Fixes bug with calendar sometimes not working for non UTC timezones
+  * Fixes bug with feature flag saving and unicode
+  * Fixes bug with LU CP vacation and total CP available
+  * Fixes bug with overlapping request in export
+  * Fixes bug with photo upload not working anymore
+  * Fixes bug with team update not working anymore for admin
+  * Fixes bug with user deletion and history desync
+  * Fixes date selection to work regardless of timezones
+
 1.8
 ---
 

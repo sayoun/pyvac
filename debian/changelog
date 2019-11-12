@@ -1,3 +1,9 @@
+pyvac (1.9.0) unstable; urgency=medium
+
+  * New release 1.9
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 12 Nov 2019 22:14:24 +0100
+
 pyvac (1.8.59) unstable; urgency=medium
 
   * Fix issue with calendar to use
