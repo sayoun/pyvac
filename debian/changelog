@@ -1,3 +1,14 @@
+pyvac (1.8.59) unstable; urgency=medium
+
+  * Fix issue with calendar to use
+  * Fix bugs with pool history and user pools
+  * Hide request type detail from Off view
+  * Pool edition should also check name for unicity
+  * Update CP summary block for french users on home page
+  * Create user pool upon user edition if not existing and arrival date is set
+
+ -- Dejan Filipovic <sayoun@gandi.net>  Tue, 19 Feb 2019 16:48:24 +0100
+
 pyvac (1.8.58) unstable; urgency=medium
 
   * Force user login to be in ascii during user creation
@@ -20,7 +31,7 @@ pyvac (1.8.56) unstable; urgency=medium
 
   * Don't discard overlapping requests in export for LU country
   * Convert exceptionnal requests to hours for LU export
-  * Add a json export for who's who page 
+  * Add a json export for who's who page
 
  -- Dejan Filipovic <sayoun@gandi.net>  Sun, 24 Jun 2018 15:12:11 +0200
 
@@ -30,7 +41,7 @@ pyvac (1.8.55) unstable; urgency=medium
   * Fix template breaking on account form
   * Add confirmation box when requesting a sudo user
   * Adapt admin mail sender for APPROVED_ADMIN requests
-  * All BU admins will receive a copy for ACCEPTED_MANAGER requests 
+  * All BU admins will receive a copy for ACCEPTED_MANAGER requests
   * Admins can change a user current pool amount from the edit user page
   * Improve pool history page display of refunded request
 
@@ -51,7 +62,7 @@ pyvac (1.8.53) unstable; urgency=medium
 pyvac (1.8.52) unstable; urgency=medium
 
   * Fixes bug with user deletion and history desync
-  * Fixes bug with team update not working anymore for admin 
+  * Fixes bug with team update not working anymore for admin
 
  -- Dejan Filipovic <sayoun@gandi.net>  Thu, 08 Mar 2018 00:26:00 +0100
 
@@ -59,7 +70,7 @@ pyvac (1.8.51) unstable; urgency=medium
 
   * Add code to handle custom renderer to be used as template for who's who
     page
-  * Remove comments from whoswho template 
+  * Remove comments from whoswho template
   * Move holidays override to an external configuration file
 
  -- Dejan Filipovic <sayoun@gandi.net>  Wed, 28 Feb 2018 10:43:26 +0100
@@ -78,20 +89,20 @@ pyvac (1.8.49) unstable; urgency=medium
 
 pyvac (1.8.48) unstable; urgency=medium
 
-  * Improve who'swho page CSS 
+  * Improve who'swho page CSS
 
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 23 Feb 2018 14:50:21 +0100
 
 pyvac (1.8.47) unstable; urgency=medium
 
-  * Add dynamic who's whos page on new route /who 
+  * Add dynamic who's whos page on new route /who
 
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 23 Feb 2018 11:01:34 +0100
 
 pyvac (1.8.46) unstable; urgency=medium
 
   * Fix bug with ldap profile edition when not admin
-  * Fix photo profile upload to work on firefox again 
+  * Fix photo profile upload to work on firefox again
 
  -- Dejan Filipovic <sayoun@gandi.net>  Wed, 21 Feb 2018 16:23:11 +0100
 
@@ -118,7 +129,7 @@ pyvac (1.8.43) unstable; urgency=medium
 
 pyvac (1.8.42) unstable; urgency=medium
 
-  * Add blacklist_users feature to disable access if needed 
+  * Add blacklist_users feature to disable access if needed
 
  -- Dejan Filipovic <sayoun@gandi.net>  Tue, 05 Dec 2017 13:56:18 +0100
 
@@ -127,7 +138,7 @@ pyvac (1.8.41) unstable; urgency=medium
   * Fix off.html titlecase with accentuated names
   * Ignore unknown users when computing chapter overview
   * Fixes date selection to work regardless of timezones
-  * Fixes bug with photo upload not working anymore 
+  * Fixes bug with photo upload not working anymore
 
  -- Dejan Filipovic <sayoun@gandi.net>  Mon, 04 Dec 2017 17:50:11 +0100
 
@@ -142,7 +153,7 @@ pyvac (1.8.39) unstable; urgency=medium
   * Don't use stats when no stats are available (for manager overview)
   * Add option to sort exported data using Sage format
   * Fixes bug with extra pool not properly consumed
-  * Add an HTML version for the "off" view 
+  * Add an HTML version for the "off" view
 
  -- Dejan Filipovic <sayoun@gandi.net>  Thu, 13 Jul 2017 16:30:20 +0200
 
@@ -176,7 +187,7 @@ pyvac (1.8.35) unstable; urgency=medium
 pyvac (1.8.34) unstable; urgency=medium
 
   * Add new feature: Manager Overview
-  * Add new feature: Chapter Overview 
+  * Add new feature: Chapter Overview
 
  -- Dejan Filipovic <sayoun@gandi.net>  Tue, 16 May 2017 15:17:54 +0200
 
@@ -225,7 +236,7 @@ pyvac (1.8.27) unstable; urgency=medium
 pyvac (1.8.26) unstable; urgency=medium
 
   * Seniority CP fix: display in pool history and use it in acquis not restants
-  * Add registration number field for each user 
+  * Add registration number field for each user
 
  -- Dejan Filipovic <sayoun@gandi.net>  Wed, 15 Mar 2017 14:19:42 +0100
 
@@ -341,7 +352,7 @@ pyvac (1.8.9) unstable; urgency=medium
 pyvac (1.8.8) unstable; urgency=medium
 
   * Small improvment on display for export page
-  * Convert request days value to hours when needed on request list page 
+  * Convert request days value to hours when needed on request list page
 
  -- Dejan Filipovic <sayoun@gandi.net>  Fri, 12 Aug 2016 11:11:30 +0200
 
@@ -366,7 +377,7 @@ pyvac (1.8.5) unstable; urgency=medium
 pyvac (1.8.4) unstable; urgency=medium
 
   * Add CP for Luxembourg country
-  * Admins can now set arrival_date for LDAP users 
+  * Admins can now set arrival_date for LDAP users
 
  -- Dejan Filipovic <sayoun@gandi.net>  Tue, 26 Jul 2016 09:23:28 +0200
 
@@ -380,7 +391,7 @@ pyvac (1.8.2) unstable; urgency=medium
 
   * Take count of N-1 for Pool request creation and display in list
   * Add seniority bonus CP to users for 1st cycle
-  * Add new parameter to Off route, to display duration 
+  * Add new parameter to Off route, to display duration
 
  -- Dejan Filipovic <sayoun@gandi.net>  Mon, 20 Jun 2016 15:18:39 +0200
 
