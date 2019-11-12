@@ -308,8 +308,8 @@ class VacationTypeTestCase(ModelTestCase):
 
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
-        self.assertEqual(list(VacationType._vacation_classes.keys()),
-                         ['CP_lu', 'CP_fr', 'RTT_fr', 'Compensatoire_lu'])
+        self.assertEqual(sorted(list(VacationType._vacation_classes.keys())),
+                         ['CP_fr', 'CP_lu', 'Compensatoire_lu', 'RTT_fr'])
 
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType

@@ -184,7 +184,7 @@ This has no effect on CP acquisition.
             return
 
         exists = []
-        group_ids = [int(id) for id in self.request.params.getall('groups')]
+        group_ids = [int(id) for id in self.request.params.get('groups')]
 
         if not group_ids:
             # ensure that account has at least user group otherwise

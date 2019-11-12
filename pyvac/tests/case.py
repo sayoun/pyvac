@@ -81,12 +81,10 @@ class UnauthenticatedViewTestCase(TestCase):
                        headers=None, path='/', cookies=None, post=None, **kw):
         if params and not isinstance(params, MultiDict):
             mparams = MultiDict()
-            for k, v in list(params.items()):
-                if hasattr(v, '__iter__'):
-                    [mparams.add(k, vv) for vv in v]
-                else:
-                    mparams.add(k, v)
+            for k, v in params.items():
+                mparams.add(k, v)
                 params = mparams
+
         rv = DummyRequest(params, environ, headers, path, cookies,
                           post, matchdict=(matchdict or {}), **kw)
         return rv
