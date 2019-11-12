@@ -3,7 +3,7 @@ Jinja2==2.7.1
 Mako==0.9.1
 MarkupSafe==0.18
 PasteDeploy==1.5.2
-Pillow==2.2.2
+Pillow==6.2.0
 PyYAML==3.10
 Pygments==1.6
 SQLAlchemy==0.8.4
