@@ -18,12 +18,11 @@ requires = [
 
     'pyramid_jinja2',
     'pyramid_tm',
-    'zope.sqlalchemy',
+    'zope.sqlalchemy < 1',
 
-    'celery',
-    'kombu',
+    'celery < 4',
     'simplejson >=2.1',
-    'jsonschema >=0.7',
+    'jsonschema <0.8',
     'pyyaml',
 
     'cryptacular',
@@ -42,7 +41,7 @@ requires = [
     # 'waitress',
 ]
 
-tests_require = ['nose', 'mock', 'tox', 'freezegun']
+tests_require = ['nose', 'mock', 'tox <2', 'freezegun']
 if sys.version_info[:2] < (2, 7):
     requires.extend(['logutils'])
     tests_require += ['unittest2']
