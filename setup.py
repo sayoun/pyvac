@@ -1,6 +1,5 @@
 import re
 import os
-import sys
 
 from setuptools import setup, find_packages
 
@@ -37,11 +36,7 @@ requires = [
     'waitress',
 ]
 
-tests_require = ['nose', 'mock', 'tox <2', 'freezegun']
-if sys.version_info[:2] < (2, 7):
-    requires.extend(['logutils'])
-    tests_require += ['unittest2']
-
+tests_require = ['nose', 'mock', 'tox', 'freezegun']
 extras_require = {
     'test': tests_require,
 }
