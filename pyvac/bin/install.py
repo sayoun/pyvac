@@ -69,6 +69,8 @@ def populate(engine):
     session.add(vactype6)
     vactype7 = VacationType(name='Compensatoire')
     session.add(vactype7)
+    vactype8 = VacationType(name='Télétravail')
+    session.add(vactype8)
 
     fr_country = Countries(name='fr')
     session.add(fr_country)
@@ -167,6 +169,12 @@ def populate(engine):
 
     # Holiday recovery is only available for LU
     vactype7.countries.append(lu_country)
+
+    # Remote is available for everyone
+    vactype8.countries.append(fr_country)
+    vactype8.countries.append(lu_country)
+    vactype8.countries.append(us_country)
+    vactype8.countries.append(zh_country)
 
     common_password = 'changeme'
 

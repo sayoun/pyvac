@@ -82,6 +82,16 @@
             {% endfor %}
             </div>
 
+            <div class="controls">
+            {% for type in types %}
+                {% if type['id'] in [8] %}
+                <label class="radio inline">
+                  <input type="radio" name="type" id="type{{ type['name'] }}" value="{{ type['id'] }}">{{ type['name'] }}
+                </label>
+                {% endif %}
+            {% endfor %}
+            </div>
+
         </div>
 
         <div class="control-group-no-bottom">
