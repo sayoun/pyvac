@@ -1,3 +1,10 @@
+2.0
+---
+
+- Drop python2 support, which will reach End Of Life on 1st January 2020
+- Make codebase python3 compatible, code should work for python3.5 and python3.6
+- Update Readme and default configuration files
+
 1.9
 ---
 

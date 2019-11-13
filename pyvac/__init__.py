@@ -12,7 +12,7 @@ from .models import create_engine
 from .helpers.i18n import locale_negotiator
 from .helpers.authentication import RouteSwithchAuthPolicy
 
-__version__ = '1.9'
+__version__ = '2.0'
 
 
 def main(global_config, **settings):
