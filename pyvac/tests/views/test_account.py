@@ -7,11 +7,11 @@ class AccountTestCase(case.ViewTestCase):
         super(AccountTestCase, self).setUp()
         import uuid
         from pyvac.models import User, Group, Countries
-        fr_country = Countries.by_name(self.session, u'fr')
-        self.account_login = unicode(uuid.uuid4())
-        u = User(login=self.account_login, password=u'secret',
+        fr_country = Countries.by_name(self.session, 'fr')
+        self.account_login = str(uuid.uuid4())
+        u = User(login=self.account_login, password='secret',
                  _country=fr_country)
-        u.groups.append(Group.by_name(self.session, u'user'))
+        u.groups.append(Group.by_name(self.session, 'user'))
         self.session.add(u)
         self.session.flush()
         self.account_id = u.id
@@ -55,37 +55,37 @@ class AccountTestCase(case.ViewTestCase):
     def test_post_create_ok(self):
         from pyvac.views.account import Create
         from pyvac.models import User
-        view = Create(self.create_request({'form.submitted': u'1',
-                                           'user.login': u'dummy_new',
-                                           'user.password': u'secret',
-                                           'user.firstname': u'',
-                                           'user.lastname': u'',
-                                           'user.email': u'me@me.me',
-                                           'confirm_password': u'secret',
-                                           'groups': [u'1', u'2']
+        view = Create(self.create_request({'form.submitted': '1',
+                                           'user.login': 'dummy_new',
+                                           'user.password': 'secret',
+                                           'user.firstname': '',
+                                           'user.lastname': '',
+                                           'user.email': 'me@me.me',
+                                           'confirm_password': 'secret',
+                                           'groups': ['1', '2']
                                            }))()
         self.assertIsRedirect(view)
         self.account_todelete.append(User.by_login(self.session,
-                                                   u'dummy_new').id)
+                                                   'dummy_new').id)
 
     def test_post_create_wrong_pass_ko(self):
         from pyvac.views.account import Create
         from pyvac.models import User, Group
-        view = Create(self.create_request({'form.submitted': u'1',
-                                           'user.login': u'dummy_new',
-                                           'user.password': u'secret',
-                                           'user.firstname': u'',
-                                           'user.lastname': u'',
-                                           'user.email': u'me@me.me',
-                                           'confirm_password': u'secret2',
-                                           'groups': [u'1', u'2']
+        view = Create(self.create_request({'form.submitted': '1',
+                                           'user.login': 'dummy_new',
+                                           'user.password': 'secret',
+                                           'user.firstname': '',
+                                           'user.lastname': '',
+                                           'user.email': 'me@me.me',
+                                           'confirm_password': 'secret2',
+                                           'groups': ['1', '2']
                                            }))()
         self.assertEqual(set(view.keys()),
                          set(['errors', 'groups', 'pyvac', 'user',
                               'managers', 'csrf_token', 'use_ldap',
                               'countries', 'partial_time_tooltip']))
 
-        self.assertEqual(view['errors'], [u'passwords do not match'])
+        self.assertEqual(view['errors'], ['passwords do not match'])
         groups = [g for g in view['groups']]
         self.assertEqual(len(groups), 4)
         self.assertIsInstance(groups[0], Group)
@@ -114,38 +114,38 @@ class AccountTestCase(case.ViewTestCase):
         from pyvac.views.account import Edit
         from pyvac.models import User
         view = Edit(self.create_request({'form.submitted': '1',
-                                         'user.login': u'dummy_edited',
-                                         'user.firstname': u'',
-                                         'user.lastname': u'',
-                                         'user.email': u'me@me.me',
-                                         'groups': [u'1']
+                                         'user.login': 'dummy_edited',
+                                         'user.firstname': '',
+                                         'user.lastname': '',
+                                         'user.email': 'me@me.me',
+                                         'groups': ['1']
                                          },
                                         matchdict={'user_id': self.account_id
                                                    }))()
         self.assertIsRedirect(view)
         self.session.flush()
         user = User.by_id(self.session, self.account_id)
-        self.assertEqual(user.login, u'dummy_edited')
+        self.assertEqual(user.login, 'dummy_edited')
         self.assertEqual([g.id for g in user.groups], [1])
 
     def test_post_edit_first_last_names_ok(self):
         from pyvac.views.account import Edit
         from pyvac.models import User
         view = Edit(self.create_request({'form.submitted': '1',
-                                         'user.login': u'dummy_edited',
-                                         'user.firstname': u'foo',
-                                         'user.lastname': u'bar',
-                                         'user.email': u'me@me.me',
-                                         'groups': [u'1']
+                                         'user.login': 'dummy_edited',
+                                         'user.firstname': 'foo',
+                                         'user.lastname': 'bar',
+                                         'user.email': 'me@me.me',
+                                         'groups': ['1']
                                          },
                                         matchdict={'user_id': self.account_id
                                                    }))()
         self.assertIsRedirect(view)
         self.session.flush()
         user = User.by_id(self.session, self.account_id)
-        self.assertEqual(user.login, u'dummy_edited')
-        self.assertEqual(user.firstname, u'foo')
-        self.assertEqual(user.lastname, u'bar')
+        self.assertEqual(user.login, 'dummy_edited')
+        self.assertEqual(user.firstname, 'foo')
+        self.assertEqual(user.lastname, 'bar')
         self.assertEqual([g.id for g in user.groups], [1])
 
     def test_get_delete_ok(self):

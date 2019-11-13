@@ -13,8 +13,8 @@ from pyvac.helpers.ldap import LdapCache
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd))
+    print(('usage: %s <config_uri>\n'
+          '(example: "%s development.ini")' % (cmd, cmd)))
     sys.exit(1)
 
 
@@ -39,14 +39,14 @@ def populate(engine, ldap):
             continue
         login = user_data['login'].decode('utf-8')
         # check what type of user it is
-        group = u'user'
+        group = 'user'
         # if it's a manager he should be in manager group
         if user_data['dn'] in managers:
-            group = u'manager'
+            group = 'manager'
         # if it's an admin he should be in admin group
         what = '(member=%s)' % user_data['dn']
         if len(ldap._search_admin(what, None)) > 0:
-            group = u'admin'
+            group = 'admin'
 
         user = User.by_login(session, login)
         if not user:

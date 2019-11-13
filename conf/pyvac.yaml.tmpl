@@ -5,17 +5,25 @@ celeryconfig:
     CELERY_IMPORTS:
         - 'pyvac.task.poller'
         - 'pyvac.task.worker'
+        - 'pyvac.task.reminder'
+        - 'pyvac.task.heartbeat'
     # using rabbitmq amqp broker
-    BROKER_URL: '{{celery.amqp.broker_url}}'
+    BROKER_URL: 'redis://localhost:6379/0'
     BROKER_CONNECTION_MAX_RETRIES: 0
     BROKER_CONNECTION_RETRY: 'on'
-    CELERY_RESULT_BACKEND: 'amqp'
+    CELERY_RESULT_BACKEND: 'redis://localhost:6379/0'
     CELERY_TASK_RESULT_EXPIRES: 60
     CELERY_DISABLE_RATE_LIMITS: True
     CELERYBEAT_SCHEDULE:
         'pyvac-poller':
             task: 'poller'
             schedule: 60
+        'pyvac-reminder':
+            task: 'trial_reminder_poller'
+            schedule: 3600
+        'pyvac-heart-beat':
+            task: 'heart_beat'
+            schedule: 3600
     CELERY_QUEUES:
         pyvac_work:
             exchange: 'pyvac_work'
@@ -51,7 +59,15 @@ celeryconfig:
         - 'worker_accepted_notified':
             queue: 'pyvac_work'
             routing_key: 'pyvac_work'
+        - 'worker_trial_reminder':
+            queue: 'pyvac_work'
+            routing_key: 'pyvac_work'
         - 'poller':
+            queue: 'pyvac_poll'
+            routing_key: 'pyvac_poll'
+        - 'trial_reminder_poller':
+            queue: 'pyvac_poll'
+        - 'heart_beat':
             queue: 'pyvac_poll'
             routing_key: 'pyvac_poll'
     CELERYD_HIJACK_ROOT_LOGGER: False
@@ -60,10 +76,60 @@ celeryconfig:
 databases:
     pyvac:
         # Database engine configuration
-        sqlalchemy.url: '{sql.driver}://{sql.user}:{sql.password}@{sql.host}:{sql.port}/{sql.database}'
+        sqlalchemy.url: 'sqlite:///../pyvac.sqlite'
+        # sqlalchemy.url: 'postgresql://pyvac:pyvac@localhost:5432/pyvac'
         # Log sql request to logging
         sqlalchemy.echo: 0
 
 caldav:
     # http url including credentials to calendar were to write request entries after admin validation
     url: '{{caldav.url}}'
+
+smtp:
+    host:
+    port: 25
+    starttls: False
+    must_auth: False
+    login:
+    password:
+    from:
+    signature: 'Sent by Pyvac: '
+
+reminder:
+    sender: pyvac@localhost
+    trial_thresholds:
+        countries:
+            - fr
+            - lu
+        values:
+            fr:
+                - 3
+                - 6
+            lu:
+                - 5
+                - 6
+
+logging:
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+        syslog:
+            format: '%(name)s: [%(process)d] [%(levelname)s] %(message)s'
+        console:
+            format: '%(asctime)s [%(levelname)s]: %(name)s - %(message)s'
+    handlers:
+        console:
+            class: logging.StreamHandler
+            level: INFO
+            stream: ext://sys.stdout
+            formatter: console
+    root:
+      level: DEBUG
+      handlers:
+        - console
+    loggers:
+        pyvac:
+            level: DEBUG
+            propagate: False
+            handlers:
+                - console

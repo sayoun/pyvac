@@ -37,7 +37,7 @@ class RequestTestCase(case.ViewTestCase):
         self.session.delete(request)
 
     def test_get_list_admin_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
@@ -46,20 +46,20 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', u'pyvac',
-                              u'next', u'past']))
-        self.assertEqual(view[u'conflicts'], {
-            1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
-            2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'},
-            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'},
-            12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
-                     u'Jane Doe: 10/04/2015 - 21/04/2015'}})
-        self.assertEqual(len(view[u'conflicts']), 4)
-        self.assertEqual(len(view[u'requests']), 10)
-        self.assertIsInstance(view[u'requests'][0], Request)
+                         set(['conflicts', 'requests', 'pyvac',
+                              'next', 'past']))
+        self.assertEqual(view['conflicts'], {
+            1: {'': 'Jane Doe: 10/04/2015 - 21/04/2015'},
+            2: {'': 'John Doe: 10/04/2015 - 14/04/2015'},
+            3: {'': 'Third Manager: 24/04/2015 - 28/04/2015'},
+            12: {'': 'John Doe: 10/04/2015 - 14/04/2015\n'
+                     'Jane Doe: 10/04/2015 - 21/04/2015'}})
+        self.assertEqual(len(view['conflicts']), 4)
+        self.assertEqual(len(view['requests']), 10)
+        self.assertIsInstance(view['requests'][0], Request)
 
     def test_get_list_manager1_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager1',
+        self.config.testing_securitypolicy(userid='manager1',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
@@ -68,19 +68,19 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', u'pyvac',
-                              u'next', u'past']))
-        self.assertEqual(view[u'conflicts'], {
-            1: {u'': u'Jane Doe: 10/04/2015 - 21/04/2015'},
-            3: {u'': u'Third Manager: 24/04/2015 - 28/04/2015'},
-            12: {'': u'John Doe: 10/04/2015 - 14/04/2015\n'
-                     u'Jane Doe: 10/04/2015 - 21/04/2015'}})
-        self.assertEqual(len(view[u'conflicts']), 3)
-        self.assertEqual(len(view[u'requests']), 8)
-        self.assertIsInstance(view[u'requests'][0], Request)
+                         set(['conflicts', 'requests', 'pyvac',
+                              'next', 'past']))
+        self.assertEqual(view['conflicts'], {
+            1: {'': 'Jane Doe: 10/04/2015 - 21/04/2015'},
+            3: {'': 'Third Manager: 24/04/2015 - 28/04/2015'},
+            12: {'': 'John Doe: 10/04/2015 - 14/04/2015\n'
+                     'Jane Doe: 10/04/2015 - 21/04/2015'}})
+        self.assertEqual(len(view['conflicts']), 3)
+        self.assertEqual(len(view['requests']), 8)
+        self.assertIsInstance(view['requests'][0], Request)
 
     def test_get_list_manager2_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager2',
+        self.config.testing_securitypolicy(userid='manager2',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
@@ -89,16 +89,16 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', u'pyvac',
-                              u'next', u'past']))
-        self.assertEqual(view[u'conflicts'], {
-            2: {u'': u'John Doe: 10/04/2015 - 14/04/2015'}})
-        self.assertEqual(len(view[u'conflicts']), 1)
-        self.assertEqual(len(view[u'requests']), 2)
-        self.assertIsInstance(view[u'requests'][0], Request)
+                         set(['conflicts', 'requests', 'pyvac',
+                              'next', 'past']))
+        self.assertEqual(view['conflicts'], {
+            2: {'': 'John Doe: 10/04/2015 - 14/04/2015'}})
+        self.assertEqual(len(view['conflicts']), 1)
+        self.assertEqual(len(view['requests']), 2)
+        self.assertIsInstance(view['requests'][0], Request)
 
     def test_get_list_user_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import List
@@ -107,13 +107,13 @@ class RequestTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = List(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'conflicts', u'requests', u'pyvac',
-                              u'next', u'past']))
-        self.assertEqual(len(view[u'requests']), 2)
-        self.assertIsInstance(view[u'requests'][0], Request)
+                         set(['conflicts', 'requests', 'pyvac',
+                              'next', 'past']))
+        self.assertEqual(len(view['requests']), 2)
+        self.assertIsInstance(view['requests'][0], Request)
 
     def test_set_status_accept_admin_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Accept
@@ -121,14 +121,14 @@ class RequestTestCase(case.ViewTestCase):
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
         status = Accept(self.create_request({'request_id': req_id}))()
-        self.assertEqual(status, u'APPROVED_ADMIN')
+        self.assertEqual(status, 'APPROVED_ADMIN')
         self.session.commit()
-        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        self.assertEqual(req.status, 'APPROVED_ADMIN')
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
     def test_set_status_accept_manager_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager1',
+        self.config.testing_securitypolicy(userid='manager1',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Accept
@@ -136,14 +136,14 @@ class RequestTestCase(case.ViewTestCase):
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
         status = Accept(self.create_request({'request_id': req_id}))()
-        self.assertEqual(status, u'ACCEPTED_MANAGER')
+        self.assertEqual(status, 'ACCEPTED_MANAGER')
         self.session.commit()
-        self.assertEqual(req.status, u'ACCEPTED_MANAGER')
+        self.assertEqual(req.status, 'ACCEPTED_MANAGER')
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
     def test_set_status_refuse_admin_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Refuse
@@ -151,14 +151,14 @@ class RequestTestCase(case.ViewTestCase):
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
         status = Refuse(self.create_request({'request_id': req_id}))()
-        self.assertEqual(status, u'DENIED')
+        self.assertEqual(status, 'DENIED')
         self.session.commit()
-        self.assertEqual(req.status, u'DENIED')
+        self.assertEqual(req.status, 'DENIED')
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
     def test_set_status_refuse_admin_reason_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Refuse
@@ -166,16 +166,16 @@ class RequestTestCase(case.ViewTestCase):
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
         status = Refuse(self.create_request({'request_id': req_id,
-                                             'reason': u'we need you'}))()
-        self.assertEqual(status, u'DENIED')
+                                             'reason': 'we need you'}))()
+        self.assertEqual(status, 'DENIED')
         self.session.commit()
-        self.assertEqual(req.status, u'DENIED')
+        self.assertEqual(req.status, 'DENIED')
         self.assertEqual(req.notified, False)
-        self.assertEqual(req.reason, u'we need you')
+        self.assertEqual(req.reason, 'we need you')
         req.update_status(orig_status)
 
     def test_set_status_refuse_manager_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager1',
+        self.config.testing_securitypolicy(userid='manager1',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Refuse
@@ -183,14 +183,14 @@ class RequestTestCase(case.ViewTestCase):
         req = Request.by_id(self.session, req_id)
         orig_status = req.status
         status = Refuse(self.create_request({'request_id': req_id}))()
-        self.assertEqual(status, u'DENIED')
+        self.assertEqual(status, 'DENIED')
         self.session.commit()
-        self.assertEqual(req.status, u'DENIED')
+        self.assertEqual(req.status, 'DENIED')
         self.assertEqual(req.notified, False)
         req.update_status(orig_status)
 
     def test_set_status_cancel_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Cancel
@@ -201,61 +201,61 @@ class RequestTestCase(case.ViewTestCase):
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             status = Cancel(self.create_request({'request_id': req_id}))()
-            self.assertEqual(status, u'CANCELED')
+            self.assertEqual(status, 'CANCELED')
             self.session.commit()
-            self.assertEqual(req.status, u'CANCELED')
+            self.assertEqual(req.status, 'CANCELED')
             self.assertEqual(req.notified, False)
             req.update_status(orig_status)
 
     def test_set_status_cancel_ko_consumed_after(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Cancel
         req_id = 6
         req = Request.by_id(self.session, req_id)
-        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        self.assertEqual(req.status, 'APPROVED_ADMIN')
         with freeze_time('2099-02-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             status = Cancel(self.create_request({'request_id': req_id}))()
-            self.assertEqual(status, u'APPROVED_ADMIN')
+            self.assertEqual(status, 'APPROVED_ADMIN')
 
     def test_set_status_cancel_ko_consumed_during(self):
-        self.config.testing_securitypolicy(userid=u'manager3',
+        self.config.testing_securitypolicy(userid='manager3',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Cancel
         req_id = 5
         req = Request.by_id(self.session, req_id)
-        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        self.assertEqual(req.status, 'APPROVED_ADMIN')
         with freeze_time('2015-04-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             status = Cancel(self.create_request({'request_id': req_id}))()
-            self.assertEqual(status, u'APPROVED_ADMIN')
+            self.assertEqual(status, 'APPROVED_ADMIN')
 
     def test_set_status_cancel_consumed_admin_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Cancel
         req_id = 6
         req = Request.by_id(self.session, req_id)
-        self.assertEqual(req.status, u'APPROVED_ADMIN')
+        self.assertEqual(req.status, 'APPROVED_ADMIN')
         orig_status = req.status
         with freeze_time('2099-02-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             status = Cancel(self.create_request({'request_id': req_id}))()
-            self.assertEqual(status, u'CANCELED')
+            self.assertEqual(status, 'CANCELED')
             self.session.commit()
-            self.assertEqual(req.status, u'CANCELED')
+            self.assertEqual(req.status, 'CANCELED')
             self.assertEqual(req.notified, False)
             req.update_status(orig_status)
 
     def test_get_export_choice_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.views.request import Export
         with freeze_time('2015-02-01',
@@ -265,20 +265,20 @@ class RequestTestCase(case.ViewTestCase):
             self.assertEqual(set(view.keys()),
                              set(['months', 'current_month', 'pyvac',
                                   'export_day_tooltip']))
-            self.assertEqual(len(view[u'months']), 24)
+            self.assertEqual(len(view['months']), 24)
 
     def test_get_exported_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.views.request import Exported
         view = Exported(self.create_request({'month': '6/2014'}))()
         self.assertEqual(set(view.keys()),
                          set(['exported', 'pyvac']))
-        exported = [u'#,registration_number,lastname,firstname,from,to,number,type,label,message'] # noqa
-        self.assertEqual(view[u'exported'].split('\n'), exported)
+        exported = ['#,registration_number,lastname,firstname,from,to,number,type,label,message'] # noqa
+        self.assertEqual(view['exported'].split('\n'), exported)
 
     def test_post_send_no_param_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -288,7 +288,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
     def test_post_send_wrong_date_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -298,7 +298,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
     def test_post_send_wrong_period_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -309,7 +309,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
     def test_post_send_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -324,14 +324,14 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
     def test_post_send_n_1_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request, User, CPVacation
         from pyvac.views.request import Send
 
         total_req = Request.find(self.session, count=True)
 
-        jdoe = User.by_login(self.session, u'jdoe')
+        jdoe = User.by_login(self.session, 'jdoe')
         with freeze_time('2016-12-23',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -358,7 +358,7 @@ class RequestTestCase(case.ViewTestCase):
                 self.assertEqual(Request.find(self.session, count=True), total_req + 1)  # noqa
                 last_req = Request.find(self.session)[-1]
                 self.assertEqual(last_req.user_id, jdoe.id)
-                self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+                self.assertEqual(last_req.status, 'APPROVED_ADMIN')
                 self.assertEqual(last_req.days, 5.0)
                 pool = jdoe.get_cp_usage(self.session)
                 self.assertEqual(pool['n_1']['left'], 15)
@@ -393,7 +393,7 @@ class RequestTestCase(case.ViewTestCase):
                 self.assertEqual(Request.find(self.session, count=True), total_req + 1)  # noqa
                 last_req = Request.find(self.session)[-1]
                 self.assertEqual(last_req.user_id, jdoe.id)
-                self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+                self.assertEqual(last_req.status, 'APPROVED_ADMIN')
                 self.assertEqual(last_req.days, 5.0)
                 pool = jdoe.get_cp_usage(self.session)
                 self.assertEqual(pool['n_1']['left'], 0)
@@ -401,7 +401,7 @@ class RequestTestCase(case.ViewTestCase):
                 self.delete_last_req(last_req)
 
     def test_post_send_half_day_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -416,7 +416,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
     def test_post_send_half_day_ko(self):
-        self.config.testing_securitypolicy(userid=u'jdoe',
+        self.config.testing_securitypolicy(userid='jdoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -438,7 +438,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req)
 
     def test_post_send_half_day_other_half_ok(self):
-        self.config.testing_securitypolicy(userid=u'jdoe',
+        self.config.testing_securitypolicy(userid='jdoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -458,7 +458,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
     def test_post_send_sudo_default_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -473,14 +473,14 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        admin_user = User.by_login(self.session, u'admin')
+        admin_user = User.by_login(self.session, 'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
-        self.assertEqual(last_req.status, u'PENDING')
+        self.assertEqual(last_req.status, 'PENDING')
         self.assertFalse(last_req.notified)
         self.delete_last_req(last_req)
 
     def test_post_send_sudo_other_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -495,14 +495,14 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        target_user = User.by_login(self.session, u'manager1')
+        target_user = User.by_login(self.session, 'manager1')
         self.assertEqual(last_req.user_id, target_user.id)
-        self.assertEqual(last_req.status, u'APPROVED_ADMIN')
+        self.assertEqual(last_req.status, 'APPROVED_ADMIN')
         self.assertTrue(last_req.notified)
         self.delete_last_req(last_req)
 
     def test_post_send_sudo_unknown_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -517,21 +517,21 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        admin_user = User.by_login(self.session, u'admin')
+        admin_user = User.by_login(self.session, 'admin')
         self.assertEqual(last_req.user_id, admin_user.id)
-        self.assertEqual(last_req.status, u'PENDING')
+        self.assertEqual(last_req.status, 'PENDING')
         self.assertFalse(last_req.notified)
         self.delete_last_req(last_req)
 
     def test_post_send_rtt_holiday_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
 
         total_req = Request.find(self.session, count=True)
 
-        janedoe = User.by_login(self.session, u'janedoe')
+        janedoe = User.by_login(self.session, 'janedoe')
         old_created_at = janedoe.created_at
         janedoe.created_at = janedoe.created_at.replace(month=1)
         janedoe.get_rtt_usage(self.session)
@@ -550,13 +550,13 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        self.assertEqual(last_req.status, u'PENDING')
+        self.assertEqual(last_req.status, 'PENDING')
         self.assertEqual(last_req.days, 4.0)
         janedoe.created_at = old_created_at
         self.delete_last_req(last_req)
 
     def test_post_send_holiday_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -579,7 +579,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_exception_reason_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -598,12 +598,12 @@ class RequestTestCase(case.ViewTestCase):
 
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
-        expected = [u'error;You must provide a reason for '
+        expected = ['error;You must provide a reason for '
                     'Exceptionnel requests']
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_exception_reason_strip_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -623,12 +623,12 @@ class RequestTestCase(case.ViewTestCase):
 
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
-        expected = [u'error;You must provide a reason for '
+        expected = ['error;You must provide a reason for '
                     'Exceptionnel requests']
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_exception_reason_length_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -654,12 +654,12 @@ class RequestTestCase(case.ViewTestCase):
 
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req)
-        expected = [u'error;Exceptionnel reason must not exceed 140 '
+        expected = ['error;Exceptionnel reason must not exceed 140 '
                     'characters']
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_exception_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -681,17 +681,17 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        self.assertEqual(last_req.type, u'Exceptionnel')
+        self.assertEqual(last_req.type, 'Exceptionnel')
         self.delete_last_req(last_req)
 
     def test_post_send_recovery_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
         total_req = Request.find(self.session, count=True)
 
-        msg = u"I need to see Star Wars, because I'm a really huge fan !!!"
+        msg = "I need to see Star Wars, because I'm a really huge fan !!!"
         with freeze_time('2015-10-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -707,12 +707,12 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        self.assertEqual(last_req.type, u'Récupération')
+        self.assertEqual(last_req.type, 'Récupération')
         self.assertEqual(last_req.message, msg)
         self.delete_last_req(last_req)
 
     def test_post_send_recovery_no_message_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -732,12 +732,12 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        self.assertEqual(last_req.type, u'Récupération')
+        self.assertEqual(last_req.type, 'Récupération')
         self.assertEqual(last_req.message, None)
         self.delete_last_req(last_req)
 
     def test_post_send_overlap_ko(self):
-        self.config.testing_securitypolicy(userid=u'manager3',
+        self.config.testing_securitypolicy(userid='manager3',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -760,7 +760,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_rtt_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -781,7 +781,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
 
     def test_post_send_rtt_year_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -793,7 +793,7 @@ class RequestTestCase(case.ViewTestCase):
                                     datetime(2015, 12, 31))
             mock_foo.return_value = {'RTT': mocked_pool}
 
-            user = User.by_login(self.session, u'janedoe')
+            user = User.by_login(self.session, 'janedoe')
             rtt_pool = user.pool.get('RTT')
             self.assertTrue(rtt_pool)
 
@@ -812,7 +812,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_rtt_usage_empty_ok(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -824,7 +824,7 @@ class RequestTestCase(case.ViewTestCase):
 
         orig_get_rtt_usage = User.get_rtt_usage
         User.get_rtt_usage = mock_get_rtt_usage
-        user = User.by_login(self.session, u'janedoe')
+        user = User.by_login(self.session, 'janedoe')
         rtt_data = user.get_rtt_usage(self.session)
         self.assertIsNone(rtt_data)
 
@@ -839,7 +839,7 @@ class RequestTestCase(case.ViewTestCase):
         User.get_rtt_usage = orig_get_rtt_usage
 
     def test_post_send_rtt_usage_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -851,7 +851,7 @@ class RequestTestCase(case.ViewTestCase):
                                     datetime(2014, 12, 31))
             mock_foo.return_value = {'RTT': mocked_pool}
 
-            user = User.by_login(self.session, u'janedoe')
+            user = User.by_login(self.session, 'janedoe')
             rtt_pool = user.pool.get('RTT')
             self.assertTrue(rtt_pool)
 
@@ -869,7 +869,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_vacation_type_visibility_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -884,11 +884,11 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         # no new requests were made
         self.assertEqual(Request.find(self.session, count=True), total_req)
-        expected = [u'error;You are not allowed to use type: Maladie']
+        expected = ['error;You are not allowed to use type: Maladie']
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_vacation_type_visibility_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -904,11 +904,11 @@ class RequestTestCase(case.ViewTestCase):
         self.assertIsRedirect(view)
         self.assertEqual(Request.find(self.session, count=True), total_req + 1)
         last_req = Request.find(self.session)[-1]
-        self.assertEqual(last_req.type, u'Maladie')
+        self.assertEqual(last_req.type, 'Maladie')
         self.delete_last_req(last_req)
 
     def test_post_send_rtt_usage_not_enough_ko(self):
-        self.config.testing_securitypolicy(userid=u'janedoe',
+        self.config.testing_securitypolicy(userid='janedoe',
                                            permissive=True)
         from pyvac.models import Request, User
         from pyvac.views.request import Send
@@ -920,7 +920,7 @@ class RequestTestCase(case.ViewTestCase):
                                     datetime(2014, 12, 31))
             mock_foo.return_value = {'RTT': mocked_pool}
 
-            user = User.by_login(self.session, u'janedoe')
+            user = User.by_login(self.session, 'janedoe')
             rtt_pool = user.pool.get('RTT')
             self.assertTrue(rtt_pool)
 
@@ -938,7 +938,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(request.session.pop_flash(), expected)
 
     def test_post_send_cp_lu_full_ok(self):
-        self.config.testing_securitypolicy(userid=u'sarah.doe',
+        self.config.testing_securitypolicy(userid='sarah.doe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send
@@ -960,7 +960,7 @@ class RequestTestCase(case.ViewTestCase):
         self.assertEqual(last_req.days, 32.0)
 
     def test_post_send_cp_lu_half_ok(self):
-        self.config.testing_securitypolicy(userid=u'sarah.doe',
+        self.config.testing_securitypolicy(userid='sarah.doe',
                                            permissive=True)
         from pyvac.models import Request
         from pyvac.views.request import Send

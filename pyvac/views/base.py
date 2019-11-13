@@ -33,7 +33,7 @@ class ViewBase(object):
             self.login = login
             self.user = User.by_login(self.session, login)
         else:
-            self.login = u'anonymous'
+            self.login = 'anonymous'
             self.user = None
 
     def update_response(self, response):
@@ -148,7 +148,7 @@ class CreateView(RedirectView):
     def parse_form(self):
         kwargs = {}
         prefix = self.model.__tablename__
-        for k, v in self.request.params.items():
+        for k, v in list(self.request.params.items()):
             if v and k.startswith(prefix):
                 kwargs[k.split('.').pop()] = v
         return kwargs
@@ -161,7 +161,9 @@ class CreateView(RedirectView):
         trivial implementation for simple data in the form,
         using the model prefix.
         """
-        for k, v in self.parse_form().items():
+        for k, v in list(self.parse_form().items()):
+            if k == 'ldap_user':
+                v = bool(int(v))
             setattr(model, k, v)
 
     def update_view(self, model, view):

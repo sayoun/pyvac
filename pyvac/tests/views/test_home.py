@@ -14,35 +14,35 @@ class HomeTestCase(case.ViewTestCase):
         super(HomeTestCase, self).tearDown()
 
     def test_render_admin_ok(self):
-        self.config.testing_securitypolicy(userid=u'admin',
+        self.config.testing_securitypolicy(userid='admin',
                                            permissive=True)
         from pyvac.views import Home
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users',
-                              u'exception_info_tooltip',
-                              u'recovered_info_tooltip', u'recovered_cp',
-                              u'futures_approved', u'futures_pending',
-                              u'futures_breakdown']))
-        self.assertEqual(len(view[u'types']), 6)
+                         set(['matched_route', 'types', 'csrf_token',
+                              'pyvac', 'holidays', 'sudo_users',
+                              'exception_info_tooltip',
+                              'recovered_info_tooltip', 'recovered_cp',
+                              'futures_approved', 'futures_pending',
+                              'futures_breakdown']))
+        self.assertEqual(len(view['types']), 6)
 
     def test_render_country_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager3',
+        self.config.testing_securitypolicy(userid='manager3',
                                            permissive=True)
         from pyvac.views import Home
         view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users',
-                              u'exception_info_tooltip',
-                              u'recovered_info_tooltip', u'recovered_cp',
-                              u'futures_approved', u'futures_pending',
-                              u'futures_breakdown']))
-        self.assertEqual(len(view[u'types']), 4)
+                         set(['matched_route', 'types', 'csrf_token',
+                              'pyvac', 'holidays', 'sudo_users',
+                              'exception_info_tooltip',
+                              'recovered_info_tooltip', 'recovered_cp',
+                              'futures_approved', 'futures_pending',
+                              'futures_breakdown']))
+        self.assertEqual(len(view['types']), 4)
 
     def test_render_holiday_ok(self):
-        self.config.testing_securitypolicy(userid=u'manager2',
+        self.config.testing_securitypolicy(userid='manager2',
                                            permissive=True)
         from pyvac.views import Home
         with freeze_time('2015-12-25',
@@ -50,17 +50,17 @@ class HomeTestCase(case.ViewTestCase):
                                  'icalendar']):
             view = Home(self.create_request())()
         self.assertEqual(set(view.keys()),
-                         set([u'matched_route', u'types', u'csrf_token',
-                              u'pyvac', u'holidays', u'sudo_users',
-                              u'exception_info_tooltip',
-                              u'recovered_info_tooltip', u'recovered_cp',
-                              u'futures_approved', u'futures_pending',
-                              u'futures_breakdown']))
-        self.assertEqual(len(view[u'types']), 5)
-        self.assertEqual(len(view[u'holidays']), 22)
+                         set(['matched_route', 'types', 'csrf_token',
+                              'pyvac', 'holidays', 'sudo_users',
+                              'exception_info_tooltip',
+                              'recovered_info_tooltip', 'recovered_cp',
+                              'futures_approved', 'futures_pending',
+                              'futures_breakdown']))
+        self.assertEqual(len(view['types']), 5)
+        self.assertEqual(len(view['holidays']), 22)
 
     def test_render_user_rtt_ok(self):
-        self.config.testing_securitypolicy(userid=u'jdoe',
+        self.config.testing_securitypolicy(userid='jdoe',
                                            permissive=True)
         from pyvac.views import Home
         with freeze_time('2014-12-25',
@@ -71,15 +71,15 @@ class HomeTestCase(case.ViewTestCase):
                 mock_foo.return_value = datetime(2014, 1, 1)
                 view = Home(self.create_request())()
                 self.assertEqual(set(view.keys()),
-                                 set([u'matched_route', u'types',
-                                      u'csrf_token',
-                                      u'pyvac', u'holidays', u'sudo_users',
-                                      u'exception_info_tooltip',
-                                      u'recovered_info_tooltip',
-                                      u'recovered_cp',
-                                      u'futures_approved', u'futures_pending',
-                                      u'futures_breakdown']))
-                self.assertEqual(len(view[u'types']), 5)
+                                 set(['matched_route', 'types',
+                                      'csrf_token',
+                                      'pyvac', 'holidays', 'sudo_users',
+                                      'exception_info_tooltip',
+                                      'recovered_info_tooltip',
+                                      'recovered_cp',
+                                      'futures_approved', 'futures_pending',
+                                      'futures_breakdown']))
+                self.assertEqual(len(view['types']), 5)
                 view_user = view['pyvac']['user']
                 view_user.rtt = view_user.get_rtt_usage(self.session)
                 self.assertTrue(view_user.rtt)
@@ -95,15 +95,15 @@ class HomeTestCase(case.ViewTestCase):
                 mock_foo.return_value = datetime(2011, 1, 1)
                 view = Home(self.create_request())()
                 self.assertEqual(set(view.keys()),
-                                 set([u'matched_route', u'types',
-                                      u'csrf_token',
-                                      u'pyvac', u'holidays', u'sudo_users',
-                                      u'exception_info_tooltip',
-                                      u'recovered_info_tooltip',
-                                      u'recovered_cp',
-                                      u'futures_approved', u'futures_pending',
-                                      u'futures_breakdown']))
-                self.assertEqual(len(view[u'types']), 5)
+                                 set(['matched_route', 'types',
+                                      'csrf_token',
+                                      'pyvac', 'holidays', 'sudo_users',
+                                      'exception_info_tooltip',
+                                      'recovered_info_tooltip',
+                                      'recovered_cp',
+                                      'futures_approved', 'futures_pending',
+                                      'futures_breakdown']))
+                self.assertEqual(len(view['types']), 5)
                 view_user = view['pyvac']['user']
                 view_user.rtt = view_user.get_rtt_usage(self.session)
                 self.assertTrue(view_user.rtt)
@@ -121,15 +121,15 @@ class HomeTestCase(case.ViewTestCase):
                 mock_foo.return_value = datetime(2016, 1, 1)
                 view = Home(self.create_request())()
                 self.assertEqual(set(view.keys()),
-                                 set([u'matched_route', u'types',
-                                      u'csrf_token',
-                                      u'pyvac', u'holidays', u'sudo_users',
-                                      u'exception_info_tooltip',
-                                      u'recovered_info_tooltip',
-                                      u'recovered_cp',
-                                      u'futures_approved', u'futures_pending',
-                                      u'futures_breakdown']))
-                self.assertEqual(len(view[u'types']), 5)
+                                 set(['matched_route', 'types',
+                                      'csrf_token',
+                                      'pyvac', 'holidays', 'sudo_users',
+                                      'exception_info_tooltip',
+                                      'recovered_info_tooltip',
+                                      'recovered_cp',
+                                      'futures_approved', 'futures_pending',
+                                      'futures_breakdown']))
+                self.assertEqual(len(view['types']), 5)
                 view_user = view['pyvac']['user']
                 view_user.rtt = view_user.get_rtt_usage(self.session)
                 self.assertTrue(view_user.rtt)

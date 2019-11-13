@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-from ldap import dn
+from .ldap import dn
 from datetime import timedelta
 from pyramid.httpexceptions import HTTPNotFound
 
@@ -63,7 +63,7 @@ def JsonHTTPNotFound(message=None):
     if message:
         if isinstance(message, dict):
             msg = json.dumps(message)
-        response.text = unicode(msg)
+        response.text = str(msg)
     return response
 
 

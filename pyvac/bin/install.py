@@ -15,8 +15,8 @@ from pyvac.models import (
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd))
+    print(('usage: %s <config_uri>\n'
+          '(example: "%s development.ini")' % (cmd, cmd)))
     sys.exit(1)
 
 
@@ -25,62 +25,62 @@ def populate(engine):
     Base.metadata.create_all(engine)
     session = DBSession()
 
-    user_perm = Permission(name=u'user_view')
-    admin_perm = Permission(name=u'admin_view')
-    manager_perm = Permission(name=u'manager_view')
-    sudo_perm = Permission(name=u'sudo_view')
+    user_perm = Permission(name='user_view')
+    admin_perm = Permission(name='admin_view')
+    manager_perm = Permission(name='manager_view')
+    sudo_perm = Permission(name='sudo_view')
     session.add(user_perm)
     session.add(admin_perm)
     session.add(manager_perm)
     session.add(sudo_perm)
 
-    admin_group = Group(name=u'admin')
+    admin_group = Group(name='admin')
     admin_group.permissions.append(user_perm)
     admin_group.permissions.append(admin_perm)
     admin_group.permissions.append(manager_perm)
     admin_group.permissions.append(sudo_perm)
     session.add(admin_group)
 
-    manager_group = Group(name=u'manager')
+    manager_group = Group(name='manager')
     manager_group.permissions.append(user_perm)
     manager_group.permissions.append(manager_perm)
     manager_group.permissions.append(sudo_perm)
     session.add(manager_group)
 
-    user_group = Group(name=u'user')
+    user_group = Group(name='user')
     user_group.permissions.append(user_perm)
     session.add(user_group)
 
-    sudoer_group = Group(name=u'sudoer')
+    sudoer_group = Group(name='sudoer')
     sudoer_group.permissions.append(sudo_perm)
     session.add(sudoer_group)
 
-    vactype1 = VacationType(name=u'CP')
+    vactype1 = VacationType(name='CP')
     session.add(vactype1)
-    vactype2 = VacationType(name=u'RTT')
+    vactype2 = VacationType(name='RTT')
     session.add(vactype2)
-    vactype3 = VacationType(name=u'Congé Parental')
+    vactype3 = VacationType(name='Congé Parental')
     session.add(vactype3)
-    vactype4 = VacationType(name=u'Récupération')
+    vactype4 = VacationType(name='Récupération')
     session.add(vactype4)
-    vactype5 = VacationType(name=u'Maladie', visibility=u'admin')
+    vactype5 = VacationType(name='Maladie', visibility='admin')
     session.add(vactype5)
-    vactype6 = VacationType(name=u'Exceptionnel')
+    vactype6 = VacationType(name='Exceptionnel')
     session.add(vactype6)
-    vactype7 = VacationType(name=u'Compensatoire')
+    vactype7 = VacationType(name='Compensatoire')
     session.add(vactype7)
 
-    fr_country = Countries(name=u'fr')
+    fr_country = Countries(name='fr')
     session.add(fr_country)
-    lu_country = Countries(name=u'lu')
+    lu_country = Countries(name='lu')
     session.add(lu_country)
-    us_country = Countries(name=u'us')
+    us_country = Countries(name='us')
     session.add(us_country)
-    zh_country = Countries(name=u'zh')
+    zh_country = Countries(name='zh')
     session.add(zh_country)
 
     now = datetime.now()
-    cp_pool1 = Pool(name=u'acquis',
+    cp_pool1 = Pool(name='acquis',
                     date_start=datetime(now.year, 6, 1),
                     date_end=datetime(now.year + 1, 5, 31),
                     status='active',
@@ -90,7 +90,7 @@ def populate(engine):
                     date_last_increment=now,
                     )
     session.add(cp_pool1)
-    cp_pool2 = Pool(name=u'restant',
+    cp_pool2 = Pool(name='restant',
                     date_start=datetime(now.year - 1, 6, 1),
                     date_end=datetime(now.year, 5, 31),
                     status='active',
@@ -100,8 +100,8 @@ def populate(engine):
                     date_last_increment=now,
                     )
     session.add(cp_pool2)
-    cplu_pool1 = Pool(name=u'acquis',
-                      alias=u'légaux',
+    cplu_pool1 = Pool(name='acquis',
+                      alias='légaux',
                       date_start=datetime(now.year, 1, 1),
                       date_end=datetime(now.year + 1, 3, 31),
                       status='active',
@@ -111,8 +111,8 @@ def populate(engine):
                       date_last_increment=now,
                       )
     session.add(cplu_pool1)
-    cplu_pool2 = Pool(name=u'restant',
-                      alias=u'report',
+    cplu_pool2 = Pool(name='restant',
+                      alias='report',
                       date_start=datetime(now.year - 1, 1, 1),
                       date_end=datetime(now.year, 3, 31),
                       status='active',
@@ -168,14 +168,14 @@ def populate(engine):
     # Holiday recovery is only available for LU
     vactype7.countries.append(lu_country)
 
-    common_password = u'changeme'
+    common_password = 'changeme'
 
-    admin = User(login=u'admin',
+    admin = User(login='admin',
                  password=common_password,
-                 email=u'root@localhost.localdomain',
-                 firstname=u'The',
-                 lastname=u'Administrator',
-                 role=u'admin',
+                 email='root@localhost.localdomain',
+                 firstname='The',
+                 lastname='Administrator',
+                 role='admin',
                  _country=fr_country)
     admin.groups.append(admin_group)
     session.add(admin)

@@ -44,15 +44,15 @@ def replay(settings):
     requests = Request.find(session,
                             where=(Request.status == 'APPROVED_ADMIN',),
                             order_by=Request.user_id)
-    print('total requests', len(requests))
+    print(('total requests', len(requests)))
     print()
 
     req_to_add = []
 
     # for each requests
     for req in requests:
-        print('-' * 10)
-        print(req.id, req.summarycal, req.date_from, req.date_to)
+        print(('-' * 10))
+        print((req.id, req.summarycal, req.date_from, req.date_to))
         # check if entry in caldav exists
         results = calendar.date_search(req.date_from, req.date_to)
         if not results:
@@ -79,7 +79,7 @@ def replay(settings):
 
     for req_id in set(req_to_add):
         req = Request.by_id(session, req_id)
-        print('processing', req.id, req.summarycal, req.date_from, req.date_to)
+        print(('processing', req.id, req.summarycal, req.date_from, req.date_to))
         ics_url = addToCal(caldav_url,
                            req.date_from,
                            req.date_to,
@@ -94,8 +94,8 @@ def replay(settings):
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd))
+    print(('usage: %s <config_uri>\n'
+          '(example: "%s development.ini")' % (cmd, cmd)))
     sys.exit(1)
 
 

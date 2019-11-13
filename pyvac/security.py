@@ -67,10 +67,10 @@ class RootFactory(object):
         rm = request.method
         try:
             cru = request.current_route_url()
-        except ValueError, e:
+        except ValueError as e:
             cru = str(e)
 
-        log.info(u'[%s] %s %s' % (ca, rm, cru))
+        log.info('[%s] %s %s' % (ca, rm, cru))
         self.__acl__ = self.get_acl(request)
 
     def get_acl(self, request):

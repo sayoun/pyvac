@@ -1,6 +1,5 @@
 import re
 import os
-import sys
 
 from setuptools import setup, find_packages
 
@@ -13,39 +12,31 @@ with open(os.path.join(here, 'pyvac', '__init__.py')) as v_file:
                          re.S).match(v_file.read()).group(1)
 
 requires = [
+    'cryptacular',
+    'caldav',
+    'celery',
+    'icalendar',
+    'jsonschema >=0.7',
+    'kombu',
+    'redis',
+    'passlib',
+    'psycopg2',
     'pyramid',
-    'SQLAlchemy',
-
     'pyramid_jinja2',
     'pyramid_tm',
-    'zope.sqlalchemy < 1',
-
-    'celery < 4',
-    'simplejson >=2.1',
-    'jsonschema <0.8',
-    'pyyaml',
-
-    'cryptacular',
-    'passlib',
-
-    'caldav',
-    'icalendar',
     'python-ldap',
-
-    'workalendar',
-    'unidecode',
-
-    'psycopg2',
+    'pyyaml',
+    'simplejson >=2.1',
+    'SQLAlchemy',
     'translationstring',
+    'unidecode',
+    'workalendar < 1.0',
+    'zope.sqlalchemy',
     # dev only
-    # 'waitress',
+    'waitress',
 ]
 
-tests_require = ['nose', 'mock', 'tox <2', 'freezegun']
-if sys.version_info[:2] < (2, 7):
-    requires.extend(['logutils'])
-    tests_require += ['unittest2']
-
+tests_require = ['nose', 'mock', 'tox', 'freezegun']
 extras_require = {
     'test': tests_require,
 }

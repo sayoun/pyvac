@@ -18,45 +18,45 @@ class GroupTestCase(ModelTestCase):
 
     def test_by_name(self):
         from pyvac.models import Group
-        grp = Group.by_name(self.session, u'admin')
+        grp = Group.by_name(self.session, 'admin')
         self.assertIsInstance(grp, Group)
-        self.assertEqual(grp.name, u'admin')
+        self.assertEqual(grp.name, 'admin')
 
 
 class UserTestCase(ModelTestCase):
 
     def test_by_login_ko_mirrored(self):
         from pyvac.models import User
-        user = User.by_login(self.session, u'johndo')
+        user = User.by_login(self.session, 'johndo')
         self.assertEqual(user, None)
 
     def test_by_credentials_ko_unexists(self):
         from pyvac.models import User
-        user = User.by_credentials(self.session, u'u404', u"' OR 1 = 1 #")
+        user = User.by_credentials(self.session, 'u404', "' OR 1 = 1 #")
         self.assertEqual(user, None)
 
     def test_by_credentials_ko_mirrored(self):
         from pyvac.models import User
-        user = User.by_credentials(self.session, u'johndo', '')
+        user = User.by_credentials(self.session, 'johndo', '')
         self.assertEqual(user, None)
 
     def test_by_credentials_ko_password(self):
         from pyvac.models import User
-        user = User.by_credentials(self.session, u'admin', 'CHANGEME')
+        user = User.by_credentials(self.session, 'admin', 'CHANGEME')
         self.assertIsNone(user)
 
     def test_by_credentials_ok(self):
         from pyvac.models import User
-        user = User.by_credentials(self.session, u'jdoe', u'changeme')
+        user = User.by_credentials(self.session, 'jdoe', 'changeme')
         self.assertIsInstance(user, User)
-        self.assertEqual(user.login, u'jdoe')
-        self.assertEqual(user.name, u'John Doe')
-        self.assertEqual(user.role, u'user')
+        self.assertEqual(user.login, 'jdoe')
+        self.assertEqual(user.name, 'John Doe')
+        self.assertEqual(user.role, 'user')
 
     def test_hash_password(self):
         from pyvac.models import User
-        u = User(login=u'test_password', password=u'secret')
-        self.assertNotEqual(u.password, u'secret', 'password must be hashed')
+        u = User(login='test_password', password='secret')
+        self.assertNotEqual(u.password, 'secret', 'password must be hashed')
 
     def test_by_role(self):
         from pyvac.models import User
@@ -65,17 +65,17 @@ class UserTestCase(ModelTestCase):
 
     def test_get_admin_by_country(self):
         from pyvac.models import User
-        admin = User.get_admin_by_country(self.session, u'fr')
-        self.assertEqual(admin.login, u'admin')
-        self.assertEqual(admin.country, u'fr')
+        admin = User.get_admin_by_country(self.session, 'fr')
+        self.assertEqual(admin.login, 'admin')
+        self.assertEqual(admin.country, 'fr')
 
     def test_get_admin_by_country_full(self):
         from pyvac.models import User
-        admins = User.get_admin_by_country(self.session, u'fr', full=True)
+        admins = User.get_admin_by_country(self.session, 'fr', full=True)
         self.assertEqual(len(admins), 1)
         admin = admins[0]
-        self.assertEqual(admin.login, u'admin')
-        self.assertEqual(admin.country, u'fr')
+        self.assertEqual(admin.login, 'admin')
+        self.assertEqual(admin.country, 'fr')
 
     def test_by_country(self):
         from pyvac.models import User
@@ -88,11 +88,11 @@ class UserTestCase(ModelTestCase):
 
     def test_get_rtt_usage(self):
         from pyvac.models import User
-        user = User.by_login(self.session, u'jdoe')
+        user = User.by_login(self.session, 'jdoe')
         self.assertIsInstance(user, User)
-        self.assertEqual(user.login, u'jdoe')
-        self.assertEqual(user.name, u'John Doe')
-        self.assertEqual(user.role, u'user')
+        self.assertEqual(user.login, 'jdoe')
+        self.assertEqual(user.name, 'John Doe')
+        self.assertEqual(user.role, 'user')
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -103,24 +103,24 @@ class UserTestCase(ModelTestCase):
                             'taken': 0.5, 'year': 2014}
                 self.assertEqual(user.get_rtt_usage(self.session), expected)
                 # no RTT for us country
-                user = User.by_login(self.session, u'manager3')
+                user = User.by_login(self.session, 'manager3')
                 self.assertIsInstance(user, User)
-                self.assertEqual(user.country, u'us')
+                self.assertEqual(user.country, 'us')
                 self.assertIsNone(user.get_rtt_usage(self.session))
 
     def test_get_rtt_taken_year(self):
         from pyvac.models import User
-        user = User.by_login(self.session, u'jdoe')
+        user = User.by_login(self.session, 'jdoe')
         self.assertIsInstance(user, User)
-        self.assertEqual(user.login, u'jdoe')
-        self.assertEqual(user.name, u'John Doe')
-        self.assertEqual(user.role, u'user')
+        self.assertEqual(user.login, 'jdoe')
+        self.assertEqual(user.name, 'John Doe')
+        self.assertEqual(user.role, 'user')
 
         self.assertEqual(user.get_rtt_taken_year(self.session, 2014), 0.5)
         # no RTT for us country
-        user = User.by_login(self.session, u'manager3')
+        user = User.by_login(self.session, 'manager3')
         self.assertIsInstance(user, User)
-        self.assertEqual(user.country, u'us')
+        self.assertEqual(user.country, 'us')
         self.assertEqual(user.get_rtt_taken_year(self.session, 2014), 0)
 
 
@@ -128,7 +128,7 @@ class RequestTestCase(ModelTestCase):
 
     def test_by_manager(self):
         from pyvac.models import User, Request
-        manager1 = User.by_login(self.session, u'manager1')
+        manager1 = User.by_login(self.session, 'manager1')
         with freeze_time('2015-03-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -140,7 +140,7 @@ class RequestTestCase(ModelTestCase):
 
     def test_by_user(self):
         from pyvac.models import User, Request
-        user1 = User.by_login(self.session, u'jdoe')
+        user1 = User.by_login(self.session, 'jdoe')
         with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -150,15 +150,15 @@ class RequestTestCase(ModelTestCase):
         request = requests[-1]
         self.assertIsInstance(request, Request)
         self.assertEqual(request.days, 5)
-        self.assertEqual(request.type, u'CP')
-        self.assertEqual(request.status, u'PENDING')
+        self.assertEqual(request.type, 'CP')
+        self.assertEqual(request.status, 'PENDING')
         self.assertEqual(request.notified, False)
         self.assertEqual(request.date_from, datetime(2015, 4, 10, 0, 0))
         self.assertEqual(request.date_to, datetime(2015, 4, 14, 0, 0))
 
     def test_by_user_outdated(self):
         from pyvac.models import User, Request
-        user1 = User.by_login(self.session, u'jdoe')
+        user1 = User.by_login(self.session, 'jdoe')
         with freeze_time('2015-08-01',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -172,21 +172,21 @@ class RequestTestCase(ModelTestCase):
 
     def test_by_status_not_notified_ko(self):
         from pyvac.models import Request
-        nb_requests = Request.by_status(self.session, u'ACCEPTED_MANAGER',
+        nb_requests = Request.by_status(self.session, 'ACCEPTED_MANAGER',
                                         count=True)
         self.assertEqual(nb_requests, 0)
 
     def test_by_status_not_notified_ok(self):
         from pyvac.models import Request
-        requests = Request.by_status(self.session, u'ACCEPTED_MANAGER',
+        requests = Request.by_status(self.session, 'ACCEPTED_MANAGER',
                                      notified=True)
         self.assertEqual(len(requests), 2)
         # take the first
         request = requests[0]
         self.assertIsInstance(request, Request)
         self.assertEqual(request.days, 5)
-        self.assertEqual(request.type, u'RTT')
-        self.assertEqual(request.status, u'ACCEPTED_MANAGER')
+        self.assertEqual(request.type, 'RTT')
+        self.assertEqual(request.status, 'ACCEPTED_MANAGER')
         self.assertEqual(request.notified, True)
         self.assertEqual(request.date_from, datetime(2015, 4, 24, 0, 0))
         self.assertEqual(request.date_to, datetime(2015, 4, 28, 0, 0))
@@ -225,7 +225,7 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         month = 8
         year = 2011
-        country = u'fr'
+        country = 'fr'
         requests = Request.get_by_month(self.session, country, month, year)
         self.assertEqual(len(requests), 1)
 
@@ -233,33 +233,33 @@ class RequestTestCase(ModelTestCase):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.summary, u'John Doe: 10/04/2015 - 14/04/2015')
+        self.assertEqual(req.summary, 'John Doe: 10/04/2015 - 14/04/2015')
 
     def test_summarycal(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.summarycal, u'John Doe - 5.0 CP')
+        self.assertEqual(req.summarycal, 'John Doe - 5.0 CP')
 
     def test_summarycsv(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 1)
         self.assertIsInstance(req, Request)
-        msg = u'1337,Doe,John,10/04/2015,14/04/2015,5.0,CP,,'
+        msg = '1337,Doe,John,10/04/2015,14/04/2015,5.0,CP,,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_label(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 6)
         self.assertIsInstance(req, Request)
-        msg = u'1337,Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM,'
+        msg = '1337,Doe,John,24/08/2011,24/08/2011,0.5,RTT,AM,'
         self.assertEqual(req.summarycsv, msg)
 
     def test_summarycsv_message(self):
         from pyvac.models import Request
         req = Request.by_id(self.session, 14)
         self.assertIsInstance(req, Request)
-        msg = (u",Doe,Jane,13/06/2016,13/06/2016,1.0,Exceptionnel,,"
+        msg = (",Doe,Jane,13/06/2016,13/06/2016,1.0,Exceptionnel,,"
                "I need to see Star Wars, I'm a huge fan")
         self.assertEqual(req.summarycsv, msg)
 
@@ -268,7 +268,7 @@ class VacationTypeTestCase(ModelTestCase):
 
     def test_by_country_ok(self):
         from pyvac.models import User, VacationType
-        manager3 = User.by_login(self.session, u'manager3')
+        manager3 = User.by_login(self.session, 'manager3')
         vac_types = VacationType.by_country(self.session, manager3.country)
         self.assertEqual(len(vac_types), 5)
         # take the first
@@ -277,43 +277,43 @@ class VacationTypeTestCase(ModelTestCase):
 
     def test_by_name_country_no_rtt_ko(self):
         from pyvac.models import User, VacationType
-        manager3 = User.by_login(self.session, u'manager3')
-        vac = VacationType.by_name_country(self.session, u'RTT',
+        manager3 = User.by_login(self.session, 'manager3')
+        vac = VacationType.by_name_country(self.session, 'RTT',
                                            manager3.country)
         self.assertIsNone(vac)
 
     def test_by_name_country_rtt_ok(self):
         from pyvac.models import User, VacationType
-        jdoe = User.by_login(self.session, u'jdoe')
+        jdoe = User.by_login(self.session, 'jdoe')
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             kwargs = {'session': self.session,
-                      'name': u'RTT', 'country': jdoe.country}
+                      'name': 'RTT', 'country': jdoe.country}
             vac = VacationType.by_name_country(**kwargs)
             self.assertEqual(vac.acquired(**kwargs), 10)
 
     def test_by_name_country_rtt_truncated_ok(self):
         from pyvac.models import User, VacationType
-        jdoe = User.by_login(self.session, u'jdoe')
+        jdoe = User.by_login(self.session, 'jdoe')
         jdoe.created_at = datetime(2014, 9, 13)
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
             kwargs = {'session': self.session,
-                      'name': u'RTT', 'country': jdoe.country,
+                      'name': 'RTT', 'country': jdoe.country,
                       'user': jdoe}
             vac = VacationType.by_name_country(**kwargs)
             self.assertEqual(vac.acquired(**kwargs), 3)
 
     def test_sub_classes_ok(self):
         from pyvac.models import VacationType
-        self.assertEqual(VacationType._vacation_classes.keys(),
-                         [u'CP_lu', u'CP_fr', u'RTT_fr', u'Compensatoire_lu'])
+        self.assertEqual(sorted(list(VacationType._vacation_classes.keys())),
+                         ['CP_fr', 'CP_lu', 'Compensatoire_lu', 'RTT_fr'])
 
     def test_sub_classes_rtt_ok(self):
         from pyvac.models import VacationType
-        sub = VacationType._vacation_classes[u'RTT_fr']
+        sub = VacationType._vacation_classes['RTT_fr']
         with freeze_time('2014-12-25',
                          ignore=['celery', 'psycopg2', 'sqlalchemy',
                                  'icalendar']):
@@ -335,7 +335,7 @@ class CPVacationTestCase(ModelTestCase):
 
     def test_lu_holidays_recovered(self):
         from pyvac.models import User
-        user = User.by_login(self.session, u'sarah.doe')
+        user = User.by_login(self.session, 'sarah.doe')
         self.assertIsInstance(user, User)
 
         with patch('pyvac.models.User.arrival_date',
@@ -360,7 +360,7 @@ class CPVacationTestCase(ModelTestCase):
                 mocked_pool2 = mock_pool(0, date_start, date_end)
                 mock_foo.return_value = {'CP acquis': mocked_pool1,
                                          'CP restant': mocked_pool2}
-                user = User.by_login(self.session, u'sarah.doe')
+                user = User.by_login(self.session, 'sarah.doe')
                 self.assertIsInstance(user, User)
 
                 days = 3
@@ -379,7 +379,7 @@ class CPVacationTestCase(ModelTestCase):
                 mocked_pool2 = mock_pool(0, date_start, date_end)
                 mock_foo.return_value = {'CP acquis': mocked_pool1,
                                          'CP restant': mocked_pool2}
-                user = User.by_login(self.session, u'sarah.doe')
+                user = User.by_login(self.session, 'sarah.doe')
                 self.assertIsInstance(user, User)
 
                 days = 3
@@ -404,7 +404,7 @@ class CPVacationTestCase(ModelTestCase):
                     mocked_pool2 = mock_pool(0, date_start, date_end)
                     mock_foo.return_value = {'CP acquis': mocked_pool1,
                                              'CP restant': mocked_pool2}
-                    user = User.by_login(self.session, u'sarah.doe')
+                    user = User.by_login(self.session, 'sarah.doe')
                     self.assertIsInstance(user, User)
                     days = 3
                     date_from = datetime.now().replace(year=datetime.now().year + 1) # noqa
@@ -426,7 +426,7 @@ class CPVacationTestCase(ModelTestCase):
                     mocked_pool2 = mock_pool(0, date_start, date_end)
                     mock_foo.return_value = {'CP acquis': mocked_pool1,
                                              'CP restant': mocked_pool2}
-                    user = User.by_login(self.session, u'sarah.doe')
+                    user = User.by_login(self.session, 'sarah.doe')
                     self.assertIsInstance(user, User)
                     days = 250
                     date_from = datetime.now()
@@ -445,7 +445,7 @@ class CPVacationTestCase(ModelTestCase):
                 mocked_pool2 = mock_pool(0, date_start, date_end)
                 mock_foo.return_value = {'CP acquis': mocked_pool1,
                                          'CP restant': mocked_pool2}
-                user = User.by_login(self.session, u'sarah.doe')
+                user = User.by_login(self.session, 'sarah.doe')
                 self.assertIsInstance(user, User)
                 days = 20
                 date_from = datetime.now()
@@ -531,7 +531,7 @@ class CPVacationTestCase(ModelTestCase):
                 mock_foo.return_value = {'CP acquis': mocked_pool1,
                                          'CP restant': mocked_pool2}
 
-                user = User.by_login(self.session, u'jdoe')
+                user = User.by_login(self.session, 'jdoe')
                 self.assertIsInstance(user, User)
                 cp_pool = user.pool.get('CP acquis')
                 self.assertTrue(cp_pool)
@@ -555,7 +555,7 @@ class CPVacationTestCase(ModelTestCase):
                 mock_foo.return_value = {'CP acquis': mocked_pool1,
                                          'CP restant': mocked_pool2}
 
-                user = User.by_login(self.session, u'jdoe')
+                user = User.by_login(self.session, 'jdoe')
                 self.assertIsInstance(user, User)
                 cp_pool = user.pool.get('CP acquis')
                 self.assertTrue(cp_pool)
@@ -585,7 +585,7 @@ class SudoerTestCase(ModelTestCase):
     def test_alias(self):
         from pyvac.models import Sudoer
         from pyvac.models import User
-        user = User.by_login(self.session, u'janedoe')
+        user = User.by_login(self.session, 'janedoe')
         self.assertIsInstance(user, User)
 
         sudoers = Sudoer.alias(self.session, user)
@@ -596,7 +596,7 @@ class SudoerTestCase(ModelTestCase):
     def test_alias_ko(self):
         from pyvac.models import Sudoer
         from pyvac.models import User
-        user = User.by_login(self.session, u'jdoe')
+        user = User.by_login(self.session, 'jdoe')
         self.assertIsInstance(user, User)
 
         sudoers = Sudoer.alias(self.session, user)

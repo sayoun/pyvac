@@ -1,6 +1,6 @@
 import re
 
-from zope.sqlalchemy import ZopeTransactionExtension
+from zope.sqlalchemy import register
 
 from sqlalchemy import Column, Integer, DateTime, engine_from_config
 from sqlalchemy.sql.expression import func
@@ -141,12 +141,12 @@ class SessionFactory(object):
     sessions = {}
 
     @classmethod
-    def register(cls, name, scoped):
+    def register(cls, name, scoped, engine):
         if scoped:
-            cls.sessions[name] = scoped_session(sessionmaker(
-                extension=ZopeTransactionExtension()))
+            cls.sessions[name] = scoped_session(sessionmaker(bind=engine))
+            register(cls.sessions[name])
         else:
-            cls.sessions[name] = sessionmaker()
+            cls.sessions[name] = sessionmaker(bind=engine)
         return cls.sessions[name]
 
     @classmethod
@@ -164,7 +164,7 @@ class SessionFactory(object):
 def create_engine(db_name, settings, prefix='sqlalchemy.', scoped=False):
     engine = engine_from_config(settings, prefix)
 
-    DBSession = SessionFactory.register(db_name, scoped)
+    DBSession = SessionFactory.register(db_name, scoped, engine)
     DBSession.configure(bind=engine)
     Database.get(db_name).metadata.bind = engine
 
