@@ -32,7 +32,7 @@ pyramid-jinja2==2.8
 pyramid-tm==2.3
 pyrsistent==0.15.5
 python-dateutil==2.8.1
-python-ldap==3.2.0
+python-ldap==3.4.0
 pytz==2019.3
 PyYAML==5.1.2
 requests==2.22.0
