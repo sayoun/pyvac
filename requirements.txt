@@ -2,7 +2,7 @@ amqp==2.5.1
 attrs==19.3.0
 billiard==3.6.1.0
 caldav==0.6.1
-celery==4.4.0rc3
+celery==5.2.2
 certifi==2019.9.11
 chardet==3.0.4
 cryptacular==1.5.5
