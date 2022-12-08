@@ -3,7 +3,7 @@ attrs==19.3.0
 billiard==3.6.1.0
 caldav==0.6.1
 celery==4.4.0rc3
-certifi==2019.9.11
+certifi==2022.12.7
 chardet==3.0.4
 cryptacular==1.5.5
 ephem==3.7.7.0
